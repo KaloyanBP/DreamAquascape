@@ -1,8 +1,28 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using DreamAquascape.Web.ViewModels;
+@model IEnumerable<AccessoryViewModel>
+@{
+    ViewData["Title"] = "Aquascape Accessories";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<h1 class="display-4 mb-4 text-center">Aquascape Accessories for Sale</h1>
+
+<div class="container">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach (var accessory in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <img src="@accessory.ImageUrl" class="card-img-top" alt="@accessory.Title" style="object-fit:cover; height:200px;">
+                    <div class="card-body">
+                        <h5 class="card-title">@accessory.Title</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">@accessory.Subtitle</h6>
+                        <p class="card-text">
+                            <strong>Price:</strong> $@accessory.Price<br />
+                            <strong>Outstanding:</strong> @accessory.OutstandingCount
+                        </p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 </div>

@@ -1,4 +1,4 @@
-﻿namespace DreamAquascape.ViewModels
+﻿namespace DreamAquascape.Web.ViewModels
 {
     public class ErrorViewModel
     {
