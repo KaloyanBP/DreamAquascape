@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DreamAquascape.Data.Models"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DreamAquascape.GCommon", "DreamAquascape.GCommon\DreamAquascape.GCommon.csproj", "{02D263B2-7B13-49F3-B91D-AF79FC028C60}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DreamAquascape.ViewModels", "DreamAquascape.ViewModels\DreamAquascape.ViewModels.csproj", "{24CC7B10-2716-47BA-8B64-3DD1A334A854}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DreamAquascape.Web.ViewModels", "DreamAquascape.Web.ViewModels\DreamAquascape.Web.ViewModels.csproj", "{C1DEC064-6699-9CF9-C448-E5B7819D3058}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,10 +45,10 @@ Global
 		{02D263B2-7B13-49F3-B91D-AF79FC028C60}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{02D263B2-7B13-49F3-B91D-AF79FC028C60}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{02D263B2-7B13-49F3-B91D-AF79FC028C60}.Release|Any CPU.Build.0 = Release|Any CPU
-		{24CC7B10-2716-47BA-8B64-3DD1A334A854}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{24CC7B10-2716-47BA-8B64-3DD1A334A854}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{24CC7B10-2716-47BA-8B64-3DD1A334A854}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{24CC7B10-2716-47BA-8B64-3DD1A334A854}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1DEC064-6699-9CF9-C448-E5B7819D3058}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1DEC064-6699-9CF9-C448-E5B7819D3058}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1DEC064-6699-9CF9-C448-E5B7819D3058}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1DEC064-6699-9CF9-C448-E5B7819D3058}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -58,7 +58,7 @@ Global
 		{953DA0DC-3624-4F20-B0CC-094F893DDFEF} = {CE5D2E17-5A0A-4C74-B15D-31CFC103F24F}
 		{4294C79F-2B63-45E3-A976-E001C2612D11} = {CE5D2E17-5A0A-4C74-B15D-31CFC103F24F}
 		{810D1404-5B98-4A24-941B-62813B0CEB29} = {CE5D2E17-5A0A-4C74-B15D-31CFC103F24F}
-		{24CC7B10-2716-47BA-8B64-3DD1A334A854} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{C1DEC064-6699-9CF9-C448-E5B7819D3058} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8C0A72DC-6561-4386-95AB-90B4F696C771}
