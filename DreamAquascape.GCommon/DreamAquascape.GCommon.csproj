@@ -6,8 +6,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\DreamAquascape.GCommon\DreamAquascape.GCommon.csproj" />
-  </ItemGroup>
-
 </Project>

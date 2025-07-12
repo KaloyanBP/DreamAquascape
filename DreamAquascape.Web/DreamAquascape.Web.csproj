@@ -15,4 +15,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.17" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DreamAquascape.GCommon\DreamAquascape.GCommon.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DreamAquascape.Data.Common\DreamAquascape.Data.Common.csproj" />
+    <ProjectReference Include="..\DreamAquascape.GCommon\DreamAquascape.GCommon.csproj" />
   </ItemGroup>
 
 </Project>

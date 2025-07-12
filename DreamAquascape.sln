@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DreamAquascape.Data.Common"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DreamAquascape.Data.Models", "DreamAquascape.Data.Models\DreamAquascape.Data.Models.csproj", "{810D1404-5B98-4A24-941B-62813B0CEB29}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DreamAquascape.GCommon", "DreamAquascape.GCommon\DreamAquascape.GCommon.csproj", "{02D263B2-7B13-49F3-B91D-AF79FC028C60}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,10 @@ Global
 		{810D1404-5B98-4A24-941B-62813B0CEB29}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{810D1404-5B98-4A24-941B-62813B0CEB29}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{810D1404-5B98-4A24-941B-62813B0CEB29}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02D263B2-7B13-49F3-B91D-AF79FC028C60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02D263B2-7B13-49F3-B91D-AF79FC028C60}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02D263B2-7B13-49F3-B91D-AF79FC028C60}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02D263B2-7B13-49F3-B91D-AF79FC028C60}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
