@@ -7,23 +7,70 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/DreamAquascape.Web.styles.css" asp-append-version="true" />
+    <style>
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2dfdb 100%);
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+        }
+
+        .navbar-glass {
+            background: rgba(255,255,255,0.85);
+            box-shadow: 0 4px 24px rgba(0, 105, 92, 0.08);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: #009688 !important;
+            letter-spacing: 1px;
+        }
+
+        .nav-link {
+            color: #00695c !important;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+            .nav-link.active, .nav-link:hover {
+                color: #26a69a !important;
+            }
+
+        .footer-glass {
+            background: rgba(255,255,255,0.85);
+            box-shadow: 0 -2px 16px rgba(0, 105, 92, 0.06);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem 1.5rem 0 0;
+            margin-bottom: 1.5rem;
+        }
+
+        main {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+    </style>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">DreamAquascape.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+        <nav class="navbar navbar-expand-lg navbar-glass shadow-sm">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="https://img.icons8.com/color/48/000000/aquarium.png" alt="Logo" style="height:32px;vertical-align:middle;margin-right:8px;">
+                    DreamAquascape
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Privacy" ? "active" : "")" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
                     <partial name="_LoginPartial" />
@@ -36,10 +83,9 @@
             @RenderBody()
         </main>
     </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - DreamAquascape.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="footer-glass text-muted mt-5 py-3">
+        <div class="container text-center">
+            &copy; 2025 - DreamAquascape.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy" class="text-decoration-none text-info">Privacy</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
