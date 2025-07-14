@@ -86,6 +86,14 @@ namespace DreamAquascape.Web.Controllers
                         Description = "Inspired by nature.",
                         ImageUrl = "https://www.2hraquarist.com/cdn/shop/articles/Fernando_Ferreira2_1000x.jpg?v=1582643596",
                         VoteCount = 5
+                    },
+                    new ContestEntryViewModel
+                    {
+                        Id = 3,
+                        UserName = "Avatar Inspired world",
+                        Description = "Inspired by movie.",
+                        ImageUrl = "https://www.2hraquarist.com/cdn/shop/articles/Fernando_Ferreira2_1000x.jpg?v=1582643596",
+                        VoteCount = 5
                     }
                 },
                 CanVote = true,

@@ -1,46 +1,82 @@
 ﻿@model DreamAquascape.Web.ViewModels.Contest.ContestDetailsViewModel
-<h2>@Model.Title</h2>
-<p>@Model.Description</p>
-<p>Start: @Model.StartDate.ToShortDateString() | End: @Model.EndDate.ToShortDateString()</p>
-<p>Status: @(Model.IsActive ? "Active" : "Archived")</p>
-@if (Model.Prize != null)
-{
-    <p><strong>Prize:</strong> @Model.Prize.Name - @Model.Prize.Description</p>
-}
 
-<h3>Entries</h3>
-@if (Model.Entries.Any())
-{
-    <ul>
-        @foreach (var entry in Model.Entries)
+<div class="container my-4">
+    <div class="card shadow-lg mb-4">
+        <div class="card-body">
+            <h2 class="card-title">@Model.Title</h2>
+            <p class="card-text">@Model.Description</p>
+            <div class="mb-2">
+                <span class="badge bg-info me-2">
+                    Start: @Model.StartDate.ToShortDateString()
+                </span>
+                <span class="badge bg-info me-2">
+                    End: @Model.EndDate.ToShortDateString()
+                </span>
+                <span class="badge @(Model.IsActive ? "bg-success" : "bg-secondary")">
+                    @(Model.IsActive ? "Active" : "Archived")
+                </span>
+            </div>
+            @if (Model.Prize != null)
+            {
+                <div class="alert alert-warning mt-3">
+                    <strong>Prize:</strong> @Model.Prize.Name - @Model.Prize.Description
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Entries</h3>
+        @if (Model.CanSubmitEntry)
         {
-            <li>
-                <img src="@entry.ImageUrl" alt="Aquascape" width="200" />
-                <p>@entry.UserName</p>
-                <p>@entry.Description</p>
-                <p>Votes: @entry.VoteCount</p>
-                @if (Model.CanVote)
-                {
-                    <form method="post" asp-action="Vote" asp-route-entryId="@entry.Id">
-                        <button type="submit">Vote</button>
-                    </form>
-                }
-                @if (Model.WinnerEntryId == entry.Id)
-                {
-                    <span class="badge bg-success">Winner</span>
-                }
-            </li>
+            <a href="@Url.Action("Create", "ContestEntries", new { contestId = Model.Id })" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Submit Your Entry
+            </a>
         }
-    </ul>
-}
-else
-{
-    <p>No entries yet.</p>
-}
+    </div>
 
-@if (Model.CanSubmitEntry)
-{
-    <a href="@Url.Action("Create", "ContestEntries", new { contestId = Model.Id })" class="btn btn-primary">Submit Your Entry</a>
-}
+    @if (Model.Entries.Any())
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var entry in Model.Entries)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <img src="@entry.ImageUrl" alt="Aquascape" class="card-img-top" style="object-fit:cover; height:220px;">
+                        <div class="card-body">
+                            <h5 class="card-title">@entry.UserName</h5>
+                            <p class="card-text">@entry.Description</p>
+                        </div>
+                        <div class="card-footer d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">Votes: @entry.VoteCount</span>
+                            <div>
+                                @if (Model.CanVote)
+                                {
+                                    <form method="post" asp-action="Vote" asp-route-entryId="@entry.Id" class="d-inline">
+                                        <button type="submit" class="btn btn-outline-success btn-sm">
+                                            <i class="bi bi-hand-thumbs-up"></i> Vote
+                                        </button>
+                                    </form>
+                                }
+                                @if (Model.WinnerEntryId == entry.Id)
+                                {
+                                    <span class="badge bg-success ms-2">Winner</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-secondary">No entries yet.</div>
+    }
 
-<a href="@Url.Action("Index", "Contests")">Back to Contests</a>
+    <div class="mt-4">
+        <a href="@Url.Action("Index", "Contests")" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Contests
+        </a>
+    </div>
+</div>
