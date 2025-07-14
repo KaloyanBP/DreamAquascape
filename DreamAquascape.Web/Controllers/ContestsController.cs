@@ -76,7 +76,7 @@ namespace DreamAquascape.Web.Controllers
                         Id = 1,
                         UserName = "Aquascaper123",
                         Description = "My first aquascape!",
-                        ImageUrl = "https://example.com/aquascape1.jpg",
+                        ImageUrl = "https://www.2hraquarist.com/cdn/shop/articles/chonlatee_jaturonrusmee2018_1000x.jpg?v=1567494592",
                         VoteCount = 10
                     },
                     new ContestEntryViewModel
@@ -84,7 +84,7 @@ namespace DreamAquascape.Web.Controllers
                         Id = 2,
                         UserName = "NatureLover",
                         Description = "Inspired by nature.",
-                        ImageUrl = "https://example.com/aquascape2.jpg",
+                        ImageUrl = "https://www.2hraquarist.com/cdn/shop/articles/Fernando_Ferreira2_1000x.jpg?v=1582643596",
                         VoteCount = 5
                     }
                 },
