@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DreamAquascape.Web.Controllers
 {
+    /// <summary>
+    /// Handles the shopping section: lists aquascaping accessories, displays product details, and manages product creation/editing for admins.
+    /// </summary>
     public class AccessoriesController : Controller
     {
         public IActionResult Index()
