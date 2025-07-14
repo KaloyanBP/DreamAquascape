@@ -43,7 +43,7 @@ else
                                 <strong>End:</strong> @contest.EndDate.ToShortDateString()<br />
                                 <span class="badge bg-success">Active</span>
                             </p>
-                            <a class="btn btn-primary" href="@($"/contests/{contest.Id}")">Details</a>
+                            <a class="btn btn-primary" href="@Url.Action("Details", "Contests", new { id = contest.Id })">Details</a>
                         </div>
                     </div>
                 </div>
@@ -83,7 +83,7 @@ else
                                     <strong>End:</strong> @contest.EndDate.ToShortDateString()<br />
                                     <span class="badge bg-secondary">Archived</span>
                                 </p>
-                                <a class="btn btn-sm btn-primary" href="@($"/contests/{contest.Id}")">Details</a>
+                                <a class="btn btn-primary" href="@Url.Action("Details", "Contests", new { id = contest.Id })">Details</a>
                             </div>
                         </div>
                     </div>

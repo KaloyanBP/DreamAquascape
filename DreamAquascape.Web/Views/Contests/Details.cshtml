@@ -1,0 +1,46 @@
+﻿@model DreamAquascape.Web.ViewModels.Contest.ContestDetailsViewModel
+<h2>@Model.Title</h2>
+<p>@Model.Description</p>
+<p>Start: @Model.StartDate.ToShortDateString() | End: @Model.EndDate.ToShortDateString()</p>
+<p>Status: @(Model.IsActive ? "Active" : "Archived")</p>
+@if (Model.Prize != null)
+{
+    <p><strong>Prize:</strong> @Model.Prize.Name - @Model.Prize.Description</p>
+}
+
+<h3>Entries</h3>
+@if (Model.Entries.Any())
+{
+    <ul>
+        @foreach (var entry in Model.Entries)
+        {
+            <li>
+                <img src="@entry.ImageUrl" alt="Aquascape" width="200" />
+                <p>@entry.UserName</p>
+                <p>@entry.Description</p>
+                <p>Votes: @entry.VoteCount</p>
+                @if (Model.CanVote)
+                {
+                    <form method="post" asp-action="Vote" asp-route-entryId="@entry.Id">
+                        <button type="submit">Vote</button>
+                    </form>
+                }
+                @if (Model.WinnerEntryId == entry.Id)
+                {
+                    <span class="badge bg-success">Winner</span>
+                }
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No entries yet.</p>
+}
+
+@if (Model.CanSubmitEntry)
+{
+    <a href="@Url.Action("Create", "ContestEntries", new { contestId = Model.Id })" class="btn btn-primary">Submit Your Entry</a>
+}
+
+<a href="@Url.Action("Index", "Contests")">Back to Contests</a>
