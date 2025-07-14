@@ -1,0 +1,36 @@
+﻿@model IEnumerable<DreamAquascape.Web.ViewModels.Contest.ContestItemViewModel>
+
+<h3>Archived Contests</h3>
+@if (!Model.Any())
+{
+    <p>No archived contests.</p>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var contest in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm" style="max-width: 350px; margin: auto;">
+                    @if (!string.IsNullOrEmpty(contest.ImageUrl))
+                    {
+                        <img src="@contest.ImageUrl" class="card-img-top" alt="@contest.Title" style="object-fit:cover; height:120px;">
+                    }
+                    else
+                    {
+                        <img src="https://via.placeholder.com/350x120?text=Aquascape" class="card-img-top" alt="No image" style="object-fit:cover; height:120px;">
+                    }
+                    <div class="card-body">
+                        <h6 class="card-title">@contest.Title</h6>
+                        <p class="card-text" style="font-size:0.95em;">
+                            <strong>Start:</strong> @contest.StartDate.ToShortDateString()<br />
+                            <strong>End:</strong> @contest.EndDate.ToShortDateString()<br />
+                            <span class="badge bg-secondary">Archived</span>
+                        </p>
+                        <a class="btn btn-primary" href="@Url.Action("Details", "Contests", new { id = contest.Id })">Details</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
