@@ -79,6 +79,11 @@
                         </li>
                     </ul>
                     <partial name="_LoginPartial" />
+                    <ul class="navbar-nav mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Accessories" ? "active" : "")" asp-area="" asp-controller="Contests" asp-action="Index"><i class="bi bi-cart4 fs-2 fw-bold me-2"></i></a>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </nav>
