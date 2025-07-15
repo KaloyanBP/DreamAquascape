@@ -1,0 +1,86 @@
+﻿@model DreamAquascape.Web.ViewModels.ContestEntry.CreateContestEntryViewModel
+
+@{
+    ViewData["Title"] = "Submit Your Aquascape Entry";
+}
+
+<div class="container my-5">
+    <!-- Card for a clean, modern look -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Submit Your Aquascape Entry</h2>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" enctype="multipart/form-data" method="post" novalidate>
+                @* Display validation summary *@
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <!-- Image Upload -->
+                <div class="mb-3">
+                    <label for="ImageFile" class="form-label fw-bold">
+                        Upload Photo <span class="text-danger">*</span>
+                    </label>
+                    <input class="form-control" type="file" id="ImageFile" name="ImageFile" accept="image/*" onchange="previewImage(event)" required />
+                    <div class="invalid-feedback">Please upload a photo of your aquascape.</div>
+                </div>
+                <!-- Image Preview -->
+                <div class="mb-4" id="imagePreviewContainer" style="display:none;">
+                    <p class="fw-semibold mb-1">Preview:</p>
+                    <img id="imagePreview" src="#" alt="Image Preview" class="img-fluid rounded" style="max-height: 300px; object-fit: cover;" />
+                </div>
+
+                <!-- Title -->
+                <div class="mb-3">
+                    <label for="Title" class="form-label fw-bold">
+                        Entry Title <span class="text-danger">*</span>
+                    </label>
+                    <input asp-for="Title" class="form-control" id="Title" required />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-3">
+                    <label for="Description" class="form-label fw-bold">
+                        Description <span class="text-danger">*</span>
+                    </label>
+                    <textarea asp-for="Description" class="form-control" id="Description" rows="4" required></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <!-- Hidden Contest ID -->
+                <input type="hidden" asp-for="ContestId" />
+
+                <!-- Submit Button -->
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">Submit Entry</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Function to show image preview
+        function previewImage(event) {
+            const input = event.target;
+            const previewContainer = document.getElementById('imagePreviewContainer');
+            const previewImage = document.getElementById('imagePreview');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                    previewContainer.style.display = 'block';
+                };
+
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                previewImage.src = '#';
+                previewContainer.style.display = 'none';
+            }
+        }
+    </script>
+}
