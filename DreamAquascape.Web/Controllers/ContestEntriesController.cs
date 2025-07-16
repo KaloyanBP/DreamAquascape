@@ -16,7 +16,7 @@ namespace DreamAquascape.Web.Controllers
         [HttpGet]
         public IActionResult Create(int contestId)
         {
-            var model = new CreateContestEntryViewModel { ContestId = contestId };
+            var model = new CreateContestViewModel { ContestId = contestId };
             return View(model);
         }
 

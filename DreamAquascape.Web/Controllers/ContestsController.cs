@@ -34,7 +34,7 @@ namespace DreamAquascape.Web.Controllers
             {
                 Id = id,
                 Title = "Aquascape Contest 2023",
-                Description = "Showcase your best aquascaping skills!",
+                Description = "Showcase your best aquascaping skills! In the event of a tie, the entry submitted earliest will be declared the winner.",
                 StartDate = new DateTime(2023, 6, 1),
                 EndDate = new DateTime(2023, 12, 31),
                 IsActive = true,
@@ -75,6 +75,26 @@ namespace DreamAquascape.Web.Controllers
             };
 
             return View(contest);
+        }
+
+        [HttpGet]
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Create(
+            string title,
+            string description,
+            IFormFile imageFile,
+            DateTime SubmissionStartDate,
+            DateTime SubmissionEndDate,
+            DateTime VotingStartDate,
+            DateTime VotingEndDate,
+            DateTime? ResultDate)
+        {
+            return View();
         }
 
         public IActionResult Archive()

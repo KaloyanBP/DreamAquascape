@@ -3,6 +3,16 @@
 
 <h2 class="mb-4">Monthly Aquascaping Contests</h2>
 
+@* @if (User.IsInRole("Administrator"))
+ *@
+@if (true)
+{
+    <a class="btn btn-success mb-4" href="@Url.Action("Create", "Contests")">
+        <i class="bi bi-plus-circle me-2 fs-5"></i>
+        Create New Contest
+    </a>
+}
+
 @if (Model == null)
 {
     <p>Loading contests...</p>
@@ -38,8 +48,8 @@ else
                         <div class="card-body">
                             <h5 class="card-title">@contest.Title</h5>
                             <p class="card-text">
-                                <strong>Start:</strong> @contest.StartDate.ToShortDateString()<br />
-                                <strong>End:</strong> @contest.EndDate.ToShortDateString()<br />
+                                <strong>Start:</strong> @contest.StartDate.ToShortDateString()<br>
+                                <strong>End:</strong> @contest.EndDate.ToShortDateString()<br>
                                 <span class="badge bg-success">Active</span>
                             </p>
                             <a class="btn btn-primary" href="@Url.Action("Details", "Contests", new { id = contest.Id })">Details</a>

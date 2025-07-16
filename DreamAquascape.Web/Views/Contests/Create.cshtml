@@ -1,14 +1,14 @@
-﻿@model DreamAquascape.Web.ViewModels.ContestEntry.CreateContestViewModel
+﻿@model DreamAquascape.Web.ViewModels.Contest.CreateContestViewModel
 
 @{
-    ViewData["Title"] = "Submit Your Aquascape Entry";
+    ViewData["Title"] = "Create a New Contest";
 }
 
 <div class="container my-5">
     <!-- Card for a clean, modern look -->
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
-            <h2 class="mb-0">Submit Your Aquascape Entry</h2>
+            <h2 class="mb-0">Create a New Contest</h2>
         </div>
         <div class="card-body">
             <form asp-action="Create" enctype="multipart/form-data" method="post" novalidate>
@@ -18,7 +18,7 @@
                 <!-- Image Upload -->
                 <div class="mb-3">
                     <label for="ImageFile" class="form-label fw-bold">
-                        Upload Photo <span class="text-danger">*</span>
+                        Upload Contest Image <span class="text-danger">*</span>
                     </label>
                     <input class="form-control" type="file" id="ImageFile" name="ImageFile" accept="image/*" onchange="previewImage(event)" required />
                     <div class="invalid-feedback">Please upload a photo of your aquascape.</div>
@@ -32,7 +32,7 @@
                 <!-- Title -->
                 <div class="mb-3">
                     <label for="Title" class="form-label fw-bold">
-                        Entry Title <span class="text-danger">*</span>
+                        Contest Title <span class="text-danger">*</span>
                     </label>
                     <input asp-for="Title" class="form-control" id="Title" required />
                     <span asp-validation-for="Title" class="text-danger"></span>
@@ -47,16 +47,46 @@
                     <span asp-validation-for="Description" class="text-danger"></span>
                 </div>
 
-                <!-- Hidden Contest ID -->
-                <input type="hidden" asp-for="ContestId" />
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="SubmissionStartDate" class="form-label fw-bold">Submission Start Date <span class="text-danger">*</span></label>
+                        <input asp-for="SubmissionStartDate" class="form-control" type="datetime-local" required />
+                        <span asp-validation-for="SubmissionStartDate" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SubmissionEndDate" class="form-label fw-bold">Submission End Date <span class="text-danger">*</span></label>
+                        <input asp-for="SubmissionEndDate" class="form-control" type="datetime-local" required />
+                        <span asp-validation-for="SubmissionEndDate" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="VotingStartDate" class="form-label fw-bold">Voting Start Date <span class="text-danger">*</span></label>
+                        <input asp-for="VotingStartDate" class="form-control" type="datetime-local" required />
+                        <span asp-validation-for="VotingStartDate" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="VotingEndDate" class="form-label fw-bold">Voting End Date <span class="text-danger">*</span></label>
+                        <input asp-for="VotingEndDate" class="form-control" type="datetime-local" required />
+                        <span asp-validation-for="VotingEndDate" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="ResultDate" class="form-label fw-bold">Result Publish Date (Optional)</label>
+                        <input asp-for="ResultDate" class="form-control" type="datetime-local" />
+                    </div>
+                </div>
 
                 <!-- Submit Button -->
                 <div class="row">
                     <div class="col">
-                        <a class="btn btn-secondary btn-lg w-100" href="/Contests/Details/@Model.ContestId">Cancel</a>
+                        <a class="btn btn-secondary btn-lg w-100" href="/Contests/">Cancel</a>
                     </div>
                     <div class="col">
-                        <button type="submit" class="btn btn-primary btn-lg w-100">Submit Entry</button>
+                        <button type="submit" class="btn btn-primary btn-lg w-100">Submit Contest</button>
                     </div>
                 </div>
             </form>
