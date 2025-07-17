@@ -5,28 +5,28 @@
 }
 
 <div class="container my-5">
-    <!-- Card for a clean, modern look -->
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
             <h2 class="mb-0">Submit Your Aquascape Entry</h2>
         </div>
         <div class="card-body">
             <form asp-action="Create" enctype="multipart/form-data" method="post" novalidate>
-                @* Display validation summary *@
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                <!-- Image Upload -->
+                <!-- Multiple Image Upload -->
                 <div class="mb-3">
-                    <label for="ImageFile" class="form-label fw-bold">
-                        Upload Photo <span class="text-danger">*</span>
+                    <label for="ImageFiles" class="form-label fw-bold">
+                        Upload Photos <span class="text-danger">*</span>
                     </label>
-                    <input class="form-control" type="file" id="ImageFile" name="ImageFile" accept="image/*" onchange="previewImage(event)" required />
-                    <div class="invalid-feedback">Please upload a photo of your aquascape.</div>
+                    <input class="form-control" type="file" id="ImageFiles" name="ImageFiles" accept="image/*" multiple required
+                           onchange="previewImages(event)">
+                    <div class="form-text">You can upload 1 to 3 images.</div>
+                    <div class="invalid-feedback">Please upload at least one photo (max 3).</div>
                 </div>
-                <!-- Image Preview -->
+                <!-- Image Previews -->
                 <div class="mb-4" id="imagePreviewContainer" style="display:none;">
                     <p class="fw-semibold mb-1">Preview:</p>
-                    <img id="imagePreview" src="#" alt="Image Preview" class="img-fluid rounded" style="max-height: 300px; object-fit: cover;" />
+                    <div id="imagePreviewList" class="d-flex gap-3 flex-wrap"></div>
                 </div>
 
                 <!-- Title -->
@@ -34,7 +34,7 @@
                     <label for="Title" class="form-label fw-bold">
                         Entry Title <span class="text-danger">*</span>
                     </label>
-                    <input asp-for="Title" class="form-control" id="Title" required />
+                    <input asp-for="Title" class="form-control" id="Title" required>
                     <span asp-validation-for="Title" class="text-danger"></span>
                 </div>
 
@@ -48,7 +48,7 @@
                 </div>
 
                 <!-- Hidden Contest ID -->
-                <input type="hidden" asp-for="ContestId" />
+                <input type="hidden" asp-for="ContestId">
 
                 <!-- Submit Button -->
                 <div class="row">
@@ -67,25 +67,42 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        // Function to show image preview
-        function previewImage(event) {
+        // Show previews for multiple images, limit to 3
+        function previewImages(event) {
             const input = event.target;
             const previewContainer = document.getElementById('imagePreviewContainer');
-            const previewImage = document.getElementById('imagePreview');
+            const previewList = document.getElementById('imagePreviewList');
+            previewList.innerHTML = '';
 
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
+            if (input.files && input.files.length > 0) {
+                const files = Array.from(input.files).slice(0, 3); // Max 3 images
 
-                reader.onload = function(e) {
-                    previewImage.src = e.target.result;
-                    previewContainer.style.display = 'block';
-                };
+                files.forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'img-fluid rounded border';
+                        img.style.maxHeight = '150px';
+                        img.style.objectFit = 'cover';
+                        previewList.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                });
 
-                reader.readAsDataURL(input.files[0]);
+                previewContainer.style.display = 'block';
             } else {
-                previewImage.src = '#';
                 previewContainer.style.display = 'none';
             }
         }
+
+        // Optional: Prevent selecting more than 3 files
+        document.getElementById('ImageFiles').addEventListener('change', function(e) {
+            if (this.files.length > 3) {
+                alert('You can upload a maximum of 3 images.');
+                this.value = '';
+                document.getElementById('imagePreviewContainer').style.display = 'none';
+            }
+        });
     </script>
 }

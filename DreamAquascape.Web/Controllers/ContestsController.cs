@@ -50,7 +50,11 @@ namespace DreamAquascape.Web.Controllers
                         Id = 1,
                         UserName = "Aquascaper123",
                         Description = "My first aquascape!",
-                        ImageUrl = "https://www.2hraquarist.com/cdn/shop/articles/chonlatee_jaturonrusmee2018_1000x.jpg?v=1567494592",
+                        EntryImages = new List<string>() { 
+                            "https://www.2hraquarist.com/cdn/shop/articles/chonlatee_jaturonrusmee2018_1000x.jpg?v=1567494592",
+                            "https://www.2hraquarist.com/cdn/shop/articles/Fernando_Ferreira2_1000x.jpg?v=1582643596",
+                            "https://marcusfishtanks.com/cdn/shop/articles/Cover_6cbc74d7-cb0c-4a26-8b52-5ffaabbf5235.jpg?v=1733482162"
+                            },
                         VoteCount = 10
                     },
                     new ContestEntryViewModel
@@ -58,7 +62,11 @@ namespace DreamAquascape.Web.Controllers
                         Id = 2,
                         UserName = "NatureLover",
                         Description = "Inspired by nature.",
-                        ImageUrl = "https://www.2hraquarist.com/cdn/shop/articles/Fernando_Ferreira2_1000x.jpg?v=1582643596",
+                        EntryImages = new List<string>() {
+                            "https://www.plantedwell.com/wp-content/uploads/2021/01/bonsai-tank-aquascaping.jpg.webp",
+                            "https://www.plantedwell.com/wp-content/uploads/2021/01/fluval-edge-bonsai-mini-aquascape.jpg.webp",
+                            "https://www.plantedwell.com/wp-content/uploads/2021/01/iwagumi-mini-aquascape.jpg.webp"
+                            },
                         VoteCount = 5
                     },
                     new ContestEntryViewModel
@@ -66,7 +74,10 @@ namespace DreamAquascape.Web.Controllers
                         Id = 3,
                         UserName = "Avatar Inspired world",
                         Description = "Inspired by movie.",
-                        ImageUrl = "https://www.2hraquarist.com/cdn/shop/articles/Fernando_Ferreira2_1000x.jpg?v=1582643596",
+                        EntryImages = new List<string>() {
+                            "https://www.plantedwell.com/wp-content/uploads/2021/01/nano-bonsai-aquascape.jpg.webp",
+                            "https://www.plantedwell.com/wp-content/uploads/2021/01/small-bonsai-driftwood-aquascaping.jpg.webp",
+                            },
                         VoteCount = 5
                     }
                 },

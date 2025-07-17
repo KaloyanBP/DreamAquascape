@@ -21,7 +21,7 @@ namespace DreamAquascape.Web.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(int contestId, string title, string description, IFormFile imageFile)
+        public IActionResult Create(int contestId, string title, string description, IFormFile[] imageFiles)
         {
             //// Handle file upload
             //string imageUrl = null;

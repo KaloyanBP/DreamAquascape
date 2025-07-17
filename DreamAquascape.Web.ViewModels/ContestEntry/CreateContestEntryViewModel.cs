@@ -17,6 +17,6 @@ namespace DreamAquascape.Web.ViewModels.ContestEntry
         [Display(Name = "Description")]
         public string Description { get; set; } = string.Empty;
 
-        public string ImageFileUrl { get; set; } = string.Empty;
+        public List<string> EntryImages { get; set; } = new List<string>();
     }
 }

@@ -34,7 +34,7 @@
         public int Id { get; set; }
         public string UserName { get; set; } = string.Empty;
         public string? Description { get; set; }
-        public string ImageUrl { get; set; } = string.Empty;
+        public List<string> EntryImages { get; set; } = new List<string>();
         public int VoteCount { get; set; }
     }
 }
