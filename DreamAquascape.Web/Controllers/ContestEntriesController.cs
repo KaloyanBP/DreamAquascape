@@ -1,4 +1,5 @@
-﻿using DreamAquascape.Web.ViewModels.ContestEntry;
+﻿using DreamAquascape.Services.Core.Interfaces;
+using DreamAquascape.Web.ViewModels.ContestEntry;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DreamAquascape.Web.Controllers
@@ -8,6 +9,12 @@ namespace DreamAquascape.Web.Controllers
     /// </summary>
     public class ContestEntriesController : Controller
     {
+        private readonly IFileUploadService _fileUploadService;
+        public ContestEntriesController(IFileUploadService fileUploadService)
+        { 
+            _fileUploadService = fileUploadService ?? throw new ArgumentNullException(nameof(fileUploadService));
+        }
+
         public IActionResult Index()
         {
             return View();
@@ -16,25 +23,15 @@ namespace DreamAquascape.Web.Controllers
         [HttpGet]
         public IActionResult Create(int contestId)
         {
-            var model = new CreateContestViewModel { ContestId = contestId };
+            var model = new CreateContestEntryViewModel { ContestId = contestId };
             return View(model);
         }
 
         [HttpPost]
-        public IActionResult Create(int contestId, string title, string description, IFormFile[] imageFiles)
+        public async Task<IActionResult> Create(int contestId, string title, string description, IFormFile[] imageFiles)
         {
-            //// Handle file upload
-            //string imageUrl = null;
-            //if (imageFile != null && imageFile.Length > 0)
-            //{
-            //    var fileName = Guid.NewGuid() + Path.GetExtension(imageFile.FileName);
-            //    var filePath = Path.Combine(_env.WebRootPath, "images/entries", fileName);
-            //    using (var stream = new FileStream(filePath, FileMode.Create))
-            //    {
-            //        imageFile.CopyTo(stream);
-            //    }
-            //    imageUrl = "/images/entries/" + fileName;
-            //}
+            // Handle file upload
+            var imageUrls = await _fileUploadService.SaveMultipleEntryImagesAsync(imageFiles);
 
             //var model = new CreateContestEntryViewModel
             //{

@@ -23,12 +23,6 @@
         public bool CanSubmitEntry { get; set; }
     }
 
-    public class PrizeViewModel
-    {
-        public string Name { get; set; } = string.Empty;
-        public string? Description { get; set; }
-    }
-
     public class ContestEntryViewModel
     {
         public int Id { get; set; }

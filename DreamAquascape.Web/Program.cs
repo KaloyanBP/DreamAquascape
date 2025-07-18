@@ -1,4 +1,6 @@
 using DreamAquascape.Data;
+using DreamAquascape.Services.Core;
+using DreamAquascape.Services.Core.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,6 +21,14 @@ namespace DreamAquascape.Web
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddControllersWithViews();
+
+            builder.Services.AddTransient<IFileUploadService>(provider =>
+            {
+                var env = provider.GetRequiredService<IWebHostEnvironment>();
+                var logger = provider.GetRequiredService<ILogger<FileUploadService>>();
+                var configuration = provider.GetRequiredService<IConfiguration>();
+                return new FileUploadService(env.WebRootPath, logger, configuration);
+            });
 
             var app = builder.Build();
 

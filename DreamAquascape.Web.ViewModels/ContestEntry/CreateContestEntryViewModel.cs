@@ -2,7 +2,7 @@
 
 namespace DreamAquascape.Web.ViewModels.ContestEntry
 {
-    public class CreateContestViewModel
+    public class CreateContestEntryViewModel
     {
         [Required]
         public int ContestId { get; set; }
