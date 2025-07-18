@@ -26,8 +26,7 @@ namespace DreamAquascape.Web
             {
                 var env = provider.GetRequiredService<IWebHostEnvironment>();
                 var logger = provider.GetRequiredService<ILogger<FileUploadService>>();
-                var configuration = provider.GetRequiredService<IConfiguration>();
-                return new FileUploadService(env.WebRootPath, logger, configuration);
+                return new FileUploadService(env.WebRootPath, logger);
             });
 
             var app = builder.Build();

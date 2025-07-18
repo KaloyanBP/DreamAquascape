@@ -1,19 +1,12 @@
 ﻿using DreamAquascape.Services.Core.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-
+using static DreamAquascape.GCommon.ApplicationConstants;
 
 namespace DreamAquascape.Services.Core
 {
     public class FileUploadService : IFileUploadService
     {
-        public const string UploadPath = "uploads";
-        public const string EntryImageUploadPath = "entries";
-        public const string ContestImageUploadPath = "contests";
-        public const string PrizeImageUploadPath = "prizes";
-        public const long MaxFileSize = 5 * 1024 * 1024;
-        public static readonly string[] AllowedImageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
-
         private readonly string _webRootPath;
         private readonly ILogger<FileUploadService> _logger;
 
