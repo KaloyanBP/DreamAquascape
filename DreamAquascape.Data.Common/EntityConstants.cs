@@ -38,7 +38,6 @@
 
         public static class Vote
         {
-            public const int UserIdMaxLength = 100;
             public const int UserNameMaxLength = 100;
             public const int IpAddressMaxLength = 45; // IPv6 length
         }
@@ -52,7 +51,6 @@
 
         public static class UserContestParticipation
         {
-            public const int UserIdMaxLength = 100;
         }
     }
 }

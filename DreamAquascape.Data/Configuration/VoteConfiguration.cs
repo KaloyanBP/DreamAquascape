@@ -19,10 +19,6 @@ namespace DreamAquascape.Data.Configuration
             entity.Property(v => v.ContestEntryId)
                 .IsRequired();
 
-            entity.Property(v => v.UserId)
-                .IsRequired()
-                .HasMaxLength(UserIdMaxLength);
-
             entity.Property(v => v.VotedAt)
                 .IsRequired()
                 .HasDefaultValueSql("GETUTCDATE()");

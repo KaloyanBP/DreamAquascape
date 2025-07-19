@@ -16,11 +16,6 @@ namespace DreamAquascape.Data.Configuration
                 .Property(ucp => ucp.ContestId)
                 .IsRequired();
 
-            entity
-                .Property(ucp => ucp.UserId)
-                .IsRequired()
-                .HasMaxLength(UserIdMaxLength);
-
             entity.Property(ucp => ucp.ParticipationDate)
                 .IsRequired()
                 .HasDefaultValueSql("GETUTCDATE()");
@@ -59,12 +54,12 @@ namespace DreamAquascape.Data.Configuration
             entity.HasOne(ucp => ucp.VotedForEntry)
                 .WithMany() // ContestEntry doesn't need navigation back to participations
                 .HasForeignKey(ucp => ucp.VotedForEntryId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.NoAction); // No action to allow multiple votes, handled in business logic
 
             entity.HasOne(ucp => ucp.SubmittedEntry)
                 .WithMany() // ContestEntry doesn't need navigation back to participations
                 .HasForeignKey(ucp => ucp.SubmittedEntryId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.NoAction);
 
             entity.HasQueryFilter(ucp => !ucp.Contest.IsDeleted);
         }
