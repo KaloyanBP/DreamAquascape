@@ -38,17 +38,16 @@ namespace DreamAquascape.Data.Configuration
                        .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(v => v.Contest)
-                .WithMany() // Contest doesn't need navigation back to votes
+                .WithMany(c => c.Votes)
                 .HasForeignKey(v => v.ContestId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(v => v.ContestEntry)
-                .WithMany() // ContestEntry doesn't need navigation back to votes
+                .WithMany(ce => ce.Votes)
                 .HasForeignKey(v => v.ContestEntryId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Table name
-            entity.ToTable("Votes");
+            entity.HasQueryFilter(v => !v.Contest.IsDeleted);
         }
     }
 }

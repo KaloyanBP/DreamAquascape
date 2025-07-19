@@ -18,7 +18,8 @@ namespace DreamAquascape.Data.Configuration
 
             entity
                 .Property(ucp => ucp.UserId)
-                .IsRequired();
+                .IsRequired()
+                .HasMaxLength(UserIdMaxLength);
 
             entity.Property(ucp => ucp.ParticipationDate)
                 .IsRequired()
@@ -46,7 +47,7 @@ namespace DreamAquascape.Data.Configuration
                 .IsRequired(false);
 
             entity.HasOne(ucp => ucp.Contest)
-                .WithMany() // Contest doesn't need navigation back to participations
+                .WithMany(c => c.Participants)
                 .HasForeignKey(ucp => ucp.ContestId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -64,6 +65,8 @@ namespace DreamAquascape.Data.Configuration
                 .WithMany() // ContestEntry doesn't need navigation back to participations
                 .HasForeignKey(ucp => ucp.SubmittedEntryId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasQueryFilter(ucp => !ucp.Contest.IsDeleted);
         }
     }
 }

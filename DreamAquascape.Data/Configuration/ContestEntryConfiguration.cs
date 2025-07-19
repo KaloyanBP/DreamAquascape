@@ -57,11 +57,6 @@ namespace DreamAquascape.Data.Configuration
                 .HasForeignKey(ei => ei.ContestEntryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasMany(ce => ce.Votes)
-                .WithOne(v => v.ContestEntry)
-                .HasForeignKey(v => v.ContestEntryId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             entity
                 .HasIndex(ce => ce.ContestId);
 

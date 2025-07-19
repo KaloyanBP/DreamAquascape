@@ -108,11 +108,6 @@ namespace DreamAquascape.Data.Configuration
                 .WithMany() // ContestEntry doesn't need navigation back to Contest as winner
                 .HasForeignKey(c => c.WinnerEntryId)
                 .OnDelete(DeleteBehavior.SetNull);
-
-            entity.HasMany(c => c.Participants)
-                .WithOne(ucp => ucp.Contest)
-                .HasForeignKey(ucp => ucp.ContestId)
-                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

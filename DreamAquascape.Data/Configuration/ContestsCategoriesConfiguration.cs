@@ -20,6 +20,8 @@ namespace DreamAquascape.Data.Configuration
                 .WithMany(c => c.Contests)
                 .HasForeignKey(cc => cc.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasQueryFilter(cc => !cc.Contest.IsDeleted);
         }
     }
 }

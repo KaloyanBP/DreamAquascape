@@ -42,6 +42,8 @@ namespace DreamAquascape.Data.Configuration
                 .WithMany(ce => ce.EntryImages)
                 .HasForeignKey(ei => ei.ContestEntryId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasQueryFilter(ei => !ei.ContestEntry.IsDeleted);
         }
     }
 }
