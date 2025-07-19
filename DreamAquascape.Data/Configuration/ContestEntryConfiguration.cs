@@ -63,6 +63,9 @@ namespace DreamAquascape.Data.Configuration
             // Global query filter to exclude soft deleted contest entries
             entity
                 .HasQueryFilter(ce => !ce.IsDeleted);
+
+            entity.
+                ToTable("ContestEntries");
         }
     }
 }
