@@ -31,63 +31,70 @@ namespace DreamAquascape.Web.Controllers
         }
 
         [HttpGet]
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            // Simulate fetching contest details from a database or service
-            var contest = new ContestDetailsViewModel
+            var contest = await _contestService.GetContestWithEntriesAsync(id);
+
+            if (contest == null)
             {
-                Id = id,
-                Title = "Aquascape Contest 2023",
-                Description = "Showcase your best aquascaping skills! In the event of a tie, the entry submitted earliest will be declared the winner.",
-                StartDate = new DateTime(2023, 6, 1),
-                EndDate = new DateTime(2023, 12, 31),
-                IsActive = true,
-                Prize = new PrizeViewModel
-                {
-                    Name = "Aquascaping Kit",
-                    Description = "Includes plants, substrate, and tools."
-                },
-                Entries = new List<ContestEntryViewModel>
-                {
-                    new ContestEntryViewModel
-                    {
-                        Id = 1,
-                        UserName = "Aquascaper123",
-                        Description = "My first aquascape!",
-                        EntryImages = new List<string>() { 
-                            "https://www.2hraquarist.com/cdn/shop/articles/chonlatee_jaturonrusmee2018_1000x.jpg?v=1567494592",
-                            "https://www.2hraquarist.com/cdn/shop/articles/Fernando_Ferreira2_1000x.jpg?v=1582643596",
-                            "https://marcusfishtanks.com/cdn/shop/articles/Cover_6cbc74d7-cb0c-4a26-8b52-5ffaabbf5235.jpg?v=1733482162"
-                            },
-                        VoteCount = 10
-                    },
-                    new ContestEntryViewModel
-                    {
-                        Id = 2,
-                        UserName = "NatureLover",
-                        Description = "Inspired by nature.",
-                        EntryImages = new List<string>() {
-                            "https://www.plantedwell.com/wp-content/uploads/2021/01/bonsai-tank-aquascaping.jpg.webp",
-                            "https://www.plantedwell.com/wp-content/uploads/2021/01/fluval-edge-bonsai-mini-aquascape.jpg.webp",
-                            "https://www.plantedwell.com/wp-content/uploads/2021/01/iwagumi-mini-aquascape.jpg.webp"
-                            },
-                        VoteCount = 5
-                    },
-                    new ContestEntryViewModel
-                    {
-                        Id = 3,
-                        UserName = "Avatar Inspired world",
-                        Description = "Inspired by movie.",
-                        EntryImages = new List<string>() {
-                            "https://www.plantedwell.com/wp-content/uploads/2021/01/nano-bonsai-aquascape.jpg.webp",
-                            "https://www.plantedwell.com/wp-content/uploads/2021/01/small-bonsai-driftwood-aquascaping.jpg.webp",
-                            },
-                        VoteCount = 5
-                    }
-                },
-                CanVote = true,
-                CanSubmitEntry = true
-            };
+                return NotFound();
+            }
+
+            // Simulate fetching contest details from a database or service
+            //var contest = new ContestDetailsViewModel
+            //{
+            //    Id = id,
+            //    Title = "Aquascape Contest 2023",
+            //    Description = "Showcase your best aquascaping skills! In the event of a tie, the entry submitted earliest will be declared the winner.",
+            //    StartDate = new DateTime(2023, 6, 1),
+            //    EndDate = new DateTime(2023, 12, 31),
+            //    IsActive = true,
+            //    Prize = new PrizeViewModel
+            //    {
+            //        Name = "Aquascaping Kit",
+            //        Description = "Includes plants, substrate, and tools."
+            //    },
+            //    Entries = new List<ContestEntryViewModel>
+            //    {
+            //        new ContestEntryViewModel
+            //        {
+            //            Id = 1,
+            //            UserName = "Aquascaper123",
+            //            Description = "My first aquascape!",
+            //            EntryImages = new List<string>() {
+            //                "https://www.2hraquarist.com/cdn/shop/articles/chonlatee_jaturonrusmee2018_1000x.jpg?v=1567494592",
+            //                "https://www.2hraquarist.com/cdn/shop/articles/Fernando_Ferreira2_1000x.jpg?v=1582643596",
+            //                "https://marcusfishtanks.com/cdn/shop/articles/Cover_6cbc74d7-cb0c-4a26-8b52-5ffaabbf5235.jpg?v=1733482162"
+            //                },
+            //            VoteCount = 10
+            //        },
+            //        new ContestEntryViewModel
+            //        {
+            //            Id = 2,
+            //            UserName = "NatureLover",
+            //            Description = "Inspired by nature.",
+            //            EntryImages = new List<string>() {
+            //                "https://www.plantedwell.com/wp-content/uploads/2021/01/bonsai-tank-aquascaping.jpg.webp",
+            //                "https://www.plantedwell.com/wp-content/uploads/2021/01/fluval-edge-bonsai-mini-aquascape.jpg.webp",
+            //                "https://www.plantedwell.com/wp-content/uploads/2021/01/iwagumi-mini-aquascape.jpg.webp"
+            //                },
+            //            VoteCount = 5
+            //        },
+            //        new ContestEntryViewModel
+            //        {
+            //            Id = 3,
+            //            UserName = "Avatar Inspired world",
+            //            Description = "Inspired by movie.",
+            //            EntryImages = new List<string>() {
+            //                "https://www.plantedwell.com/wp-content/uploads/2021/01/nano-bonsai-aquascape.jpg.webp",
+            //                "https://www.plantedwell.com/wp-content/uploads/2021/01/small-bonsai-driftwood-aquascaping.jpg.webp",
+            //                },
+            //            VoteCount = 5
+            //        }
+            //    },
+            //    CanVote = true,
+            //    CanSubmitEntry = true
+            //};
 
             return View(contest);
         }
@@ -118,26 +125,53 @@ namespace DreamAquascape.Web.Controllers
             string title,
             string description,
             IFormFile imageFile,
-            DateTime SubmissionStartDate,
-            DateTime SubmissionEndDate,
-            DateTime VotingStartDate,
-            DateTime VotingEndDate,
-            DateTime? ResultDate)
+            DateTime submissionStartDate,
+            DateTime submissionEndDate,
+            DateTime votingStartDate,
+            DateTime votingEndDate,
+            DateTime? resultDate,
+            string prizeName,
+            string prizeDescription,
+            decimal? prizeMonetaryValue,
+            IFormFile? prizeImageFile)
         {
             try
             {
                 var imageUrl = await _fileUploadService.SaveContestImageAsync(imageFile);
+                if (string.IsNullOrEmpty(imageUrl))
+                {
+                    ModelState.AddModelError("ImageFile", "Failed to upload contest image.");
+                    return View();
+                }
+
+                string prizeImageUrl = null;
+                if (prizeImageFile != null)
+                {
+                    prizeImageUrl = await _fileUploadService.SavePrizeImageAsync(prizeImageFile);
+                    if (string.IsNullOrEmpty(prizeImageUrl))
+                    {
+                        ModelState.AddModelError("PrizeImage", "Failed to upload prize image.");
+                        return View();
+                    }
+                }
+
+                var prizeViewModel = new PrizeViewModel
+                {
+                    Name = prizeName,
+                    Description = prizeDescription,
+                    ImageUrl = prizeImageUrl
+                };
 
                 var viewModel = new CreateContestViewModel
                 {
                     Title = title,
                     Description = description,
                     ImageFileUrl = imageUrl,
-                    SubmissionStartDate = SubmissionStartDate,
-                    SubmissionEndDate = SubmissionEndDate,
-                    VotingStartDate = VotingStartDate,
-                    VotingEndDate = VotingEndDate,
-                    ResultDate = ResultDate
+                    SubmissionStartDate = submissionStartDate,
+                    SubmissionEndDate = submissionEndDate,
+                    VotingStartDate = votingStartDate,
+                    VotingEndDate = votingEndDate,
+                    ResultDate = resultDate
                 };
 
                 if (!ModelState.IsValid)
@@ -154,7 +188,7 @@ namespace DreamAquascape.Web.Controllers
                 }
 
                 // Submit the contest
-                var createdContest = await _contestService.SubmitContestAsync(viewModel, userId);
+                var createdContest = await _contestService.SubmitContestAsync(viewModel, prizeViewModel, userId);
 
                 TempData["SuccessMessage"] = $"Contest '{createdContest.Title}' has been created successfully!";
 

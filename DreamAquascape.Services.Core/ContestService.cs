@@ -45,7 +45,41 @@ namespace DreamAquascape.Services.Core
                 .ToListAsync();
         }
 
-        public async Task<Contest> SubmitContestAsync(CreateContestViewModel dto, string createdBy)
+        public async Task<ContestDetailsViewModel?> GetContestWithEntriesAsync(int contestId)
+        {
+            return await _context.Contests
+                .Include(c => c.Entries)
+                .AsNoTracking()
+                .Where(c => c.Id == contestId && c.IsActive && !c.IsDeleted)
+                .Select(c => new ContestDetailsViewModel
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    Description = c.Description,
+                    StartDate = c.SubmissionStartDate,
+                    EndDate = c.VotingEndDate,
+                    IsActive = c.IsActive,
+                    CanSubmitEntry = true, // TODO: Add logic to determine if user can submit entry
+                    CanVote = true,
+                    Prize = c.Prize != null ? new PrizeViewModel
+                    {
+                        Name = c.Prize.Name,
+                        Description = c.Prize.Description
+                    } : null,
+                    Entries = c.Entries.Select(e => new ContestEntryViewModel
+                    {
+                        Id = e.Id,
+                        //UserName = e.Participant.UserName, 
+                        Description = e.Description,
+                        EntryImages = e.EntryImages.Select(img => img.ImageUrl).ToList(),
+                        VoteCount = e.Votes.Count()
+                    }).ToList(),
+                    WinnerEntryId = c.WinnerEntryId,
+                })
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<Contest> SubmitContestAsync(CreateContestViewModel dto, PrizeViewModel prizeDto, string createdBy)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -68,7 +102,13 @@ namespace DreamAquascape.Services.Core
                     ResultDate = dto.ResultDate,
                     CreatedBy = createdBy,
                     IsActive = true,
-                    IsDeleted = false
+                    IsDeleted = false,
+                    Prize = new Prize
+                    {
+                        Name = prizeDto.Name,
+                        Description = prizeDto.Description,
+                        ImageUrl = prizeDto.ImageUrl
+                    }
                 };
                 await _context.Contests.AddAsync(contest);
                 await _context.SaveChangesAsync(); // Save to get the contest ID
