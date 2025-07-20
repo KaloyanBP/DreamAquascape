@@ -1,6 +1,10 @@
-﻿using DreamAquascape.Services.Core.Interfaces;
+﻿using DreamAquascape.Services.Common.Exceptions;
+using DreamAquascape.Services.Core;
+using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels.ContestEntry;
+using Humanizer;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace DreamAquascape.Web.Controllers
 {
@@ -10,7 +14,9 @@ namespace DreamAquascape.Web.Controllers
     public class ContestEntriesController : Controller
     {
         private readonly IFileUploadService _fileUploadService;
-        public ContestEntriesController(IFileUploadService fileUploadService)
+        private readonly ContestService _contestService;
+
+        public ContestEntriesController(IFileUploadService fileUploadService, ContestService contestService)
         { 
             _fileUploadService = fileUploadService ?? throw new ArgumentNullException(nameof(fileUploadService));
         }
@@ -32,6 +38,28 @@ namespace DreamAquascape.Web.Controllers
         {
             // Handle file upload
             var imageUrls = await _fileUploadService.SaveMultipleEntryImagesAsync(imageFiles);
+
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+
+                var model = new CreateContestEntryViewModel 
+                { 
+                    ContestId = contestId,
+                    Title = title,
+                    Description = description,
+                };
+                var entry = await _contestService.SubmitEntryAsync(model, userId, userName);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
 
             //var model = new CreateContestEntryViewModel
             //{

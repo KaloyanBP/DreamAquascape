@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DreamAquascape.Data.Models
 {
+    [Comment("Tracks all user activities in contests in a central place")]
     public class UserContestParticipation
     {
         public int Id { get; set; }
