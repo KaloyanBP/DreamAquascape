@@ -20,6 +20,31 @@ namespace DreamAquascape.Services.Core
             _logger = logger;
         }
 
+        public async Task<IEnumerable<ContestItemViewModel>> GetActiveContestsAsync()
+        {
+            return await _context.Contests
+                .Where(c => c.IsActive && !c.IsDeleted && c.SubmissionStartDate <= DateTime.UtcNow && c.SubmissionEndDate >= DateTime.UtcNow)
+                .OrderByDescending(c => c.SubmissionStartDate)
+                .Select(c => new ContestItemViewModel
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    ImageUrl = c.ImageFileUrl ?? "",
+                    StartDate = c.SubmissionStartDate,
+                    EndDate = c.VotingEndDate,
+                    //Description = c.Description,
+                    //ImageFileUrl = c.ImageFileUrl,
+                    //SubmissionStartDate = c.SubmissionStartDate,
+                    //SubmissionEndDate = c.SubmissionEndDate,
+                    //VotingStartDate = c.VotingStartDate,
+                    //VotingEndDate = c.VotingEndDate,
+                    //ResultDate = c.ResultDate,
+                    //CreatedBy = c.CreatedBy,
+                    IsActive = c.IsActive,
+                })
+                .ToListAsync();
+        }
+
         public async Task<Contest> SubmitContestAsync(CreateContestViewModel dto, string createdBy)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();

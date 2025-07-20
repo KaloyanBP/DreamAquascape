@@ -19,22 +19,15 @@ namespace DreamAquascape.Web.Controllers
             _contestService = contestService ?? throw new ArgumentNullException(nameof(contestService));
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             // Return list of active contents
-            List<ContestItemViewModel> contests = new List<ContestItemViewModel>
+            var contests = await _contestService.GetActiveContestsAsync();
+            if (contests == null || !contests.Any())
             {
-                new ContestItemViewModel
-                {
-                    Id = 1,
-                    Title = "Aquascape Contest 2023",
-                    StartDate = new DateTime(2023, 6, 1),
-                    EndDate = new DateTime(2023, 12, 31),
-                    IsActive = true,
-                    ImageUrl = "https://charterhouse-aquatics.com/cdn/shop/articles/aquascaping_72.jpg?v=1719156854"
-                }
-            };
-            return View(contests.OrderByDescending(x => x.IsActive));
+                return View("NoContests");
+            }
+            return View(contests);
         }
 
         [HttpGet]
