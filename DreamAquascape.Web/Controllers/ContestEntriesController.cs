@@ -2,7 +2,6 @@
 using DreamAquascape.Services.Core;
 using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels.ContestEntry;
-using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -14,11 +13,12 @@ namespace DreamAquascape.Web.Controllers
     public class ContestEntriesController : Controller
     {
         private readonly IFileUploadService _fileUploadService;
-        private readonly ContestService _contestService;
+        private readonly IContestService _contestService;
 
-        public ContestEntriesController(IFileUploadService fileUploadService, ContestService contestService)
+        public ContestEntriesController(IFileUploadService fileUploadService, IContestService contestService)
         { 
             _fileUploadService = fileUploadService ?? throw new ArgumentNullException(nameof(fileUploadService));
+            _contestService = contestService ?? throw new ArgumentNullException(nameof(contestService));
         }
 
         public IActionResult Index()
@@ -49,6 +49,7 @@ namespace DreamAquascape.Web.Controllers
                     ContestId = contestId,
                     Title = title,
                     Description = description,
+                    EntryImages = imageUrls
                 };
                 var entry = await _contestService.SubmitEntryAsync(model, userId, userName);
             }

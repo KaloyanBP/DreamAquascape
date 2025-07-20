@@ -1,5 +1,7 @@
-﻿using DreamAquascape.Web.ViewModels.Contest;
+﻿using DreamAquascape.Services.Core.Interfaces;
+using DreamAquascape.Web.ViewModels.Contest;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace DreamAquascape.Web.Controllers
 {
@@ -8,6 +10,15 @@ namespace DreamAquascape.Web.Controllers
     /// </summary>
     public class ContestsController : Controller
     {
+        private readonly IFileUploadService _fileUploadService;
+        private readonly IContestService _contestService;
+
+        public ContestsController(IFileUploadService fileUploadService, IContestService contestService)
+        {
+            _fileUploadService = fileUploadService ?? throw new ArgumentNullException(nameof(fileUploadService));
+            _contestService = contestService ?? throw new ArgumentNullException(nameof(contestService));
+        }
+
         public IActionResult Index()
         {
             // Return list of active contents
@@ -91,11 +102,26 @@ namespace DreamAquascape.Web.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            return View();
+            try
+            {
+                var viewModel = new CreateContestViewModel
+                {
+                    SubmissionStartDate = DateTime.Now.AddDays(1),
+                    SubmissionEndDate = DateTime.Now.AddDays(8),
+                    VotingStartDate = DateTime.Now.AddDays(8).AddHours(1),
+                    VotingEndDate = DateTime.Now.AddDays(15),
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception _ex)
+            {
+                return RedirectToAction("Index");
+            }
         }
 
         [HttpPost]
-        public IActionResult Create(
+        public async Task<IActionResult> Create(
             string title,
             string description,
             IFormFile imageFile,
@@ -105,7 +131,52 @@ namespace DreamAquascape.Web.Controllers
             DateTime VotingEndDate,
             DateTime? ResultDate)
         {
-            return View();
+            try
+            {
+                var imageUrl = await _fileUploadService.SaveContestImageAsync(imageFile);
+
+                var viewModel = new CreateContestViewModel
+                {
+                    Title = title,
+                    Description = description,
+                    ImageFileUrl = imageUrl,
+                    SubmissionStartDate = SubmissionStartDate,
+                    SubmissionEndDate = SubmissionEndDate,
+                    VotingStartDate = VotingStartDate,
+                    VotingEndDate = VotingEndDate,
+                    ResultDate = ResultDate
+                };
+
+                if (!ModelState.IsValid)
+                {
+                    // Reload dropdown data
+                    return View(viewModel);
+                }
+
+                // Get current user ID
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                // Submit the contest
+                var createdContest = await _contestService.SubmitContestAsync(viewModel, userId);
+
+                TempData["SuccessMessage"] = $"Contest '{createdContest.Title}' has been created successfully!";
+
+                return RedirectToAction("Details", new { id = createdContest.Id });
+            }
+            catch (InvalidOperationException ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return View();
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "An error occurred while creating the contest. Please try again.");
+                return View();
+            }
         }
 
         public IActionResult Archive()

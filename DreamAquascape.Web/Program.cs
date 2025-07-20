@@ -28,6 +28,7 @@ namespace DreamAquascape.Web
                 var logger = provider.GetRequiredService<ILogger<FileUploadService>>();
                 return new FileUploadService(env.WebRootPath, logger);
             });
+            builder.Services.AddScoped<IContestService, ContestService>();
 
             var app = builder.Build();
 

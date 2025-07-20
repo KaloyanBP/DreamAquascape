@@ -1,13 +1,15 @@
 ﻿using DreamAquascape.Data;
 using DreamAquascape.Data.Models;
 using DreamAquascape.Services.Common.Exceptions;
+using DreamAquascape.Services.Core.Interfaces;
+using DreamAquascape.Web.ViewModels.Contest;
 using DreamAquascape.Web.ViewModels.ContestEntry;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace DreamAquascape.Services.Core
 {
-    public class ContestService
+    public class ContestService: IContestService
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<ContestService> _logger;
@@ -16,6 +18,45 @@ namespace DreamAquascape.Services.Core
         {
             _context = context;
             _logger = logger;
+        }
+
+        public async Task<Contest> SubmitContestAsync(CreateContestViewModel dto, string createdBy)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Validate submission dates
+                if (dto.SubmissionStartDate >= dto.SubmissionEndDate)
+                    throw new InvalidOperationException("Submission start date must be before end date");
+                if (dto.VotingStartDate <= dto.SubmissionEndDate || dto.VotingEndDate <= dto.VotingStartDate)
+                    throw new InvalidOperationException("Voting dates must be after submission end date and before voting end date");
+                // Create the contest
+                var contest = new Contest
+                {
+                    Title = dto.Title,
+                    Description = dto.Description,
+                    ImageFileUrl = dto.ImageFileUrl,
+                    SubmissionStartDate = dto.SubmissionStartDate,
+                    SubmissionEndDate = dto.SubmissionEndDate,
+                    VotingStartDate = dto.VotingStartDate,
+                    VotingEndDate = dto.VotingEndDate,
+                    ResultDate = dto.ResultDate,
+                    CreatedBy = createdBy,
+                    IsActive = true,
+                    IsDeleted = false
+                };
+                await _context.Contests.AddAsync(contest);
+                await _context.SaveChangesAsync(); // Save to get the contest ID
+                _logger.LogInformation("Contest {ContestId} created by user {UserId}", contest.Id, createdBy);
+                await transaction.CommitAsync();
+                return contest;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Failed to create contest by user {UserId}", createdBy);
+                throw;
+            }
         }
 
         public async Task<ContestEntry> SubmitEntryAsync(CreateContestEntryViewModel dto, string userId, string userName)
@@ -49,7 +90,8 @@ namespace DreamAquascape.Services.Core
                     Description = dto.Description,
                     SubmittedAt = DateTime.UtcNow,
                     IsActive = true,
-                    IsDeleted = false
+                    IsDeleted = false,
+                    EntryImages = GetEntryImages(dto.EntryImages)
                 };
 
                 await _context.ContestEntries.AddAsync(entry);
@@ -245,6 +287,24 @@ namespace DreamAquascape.Services.Core
                     userId, contestId);
                 throw;
             }
+        }
+        private ICollection<EntryImage> GetEntryImages(List<string> imageUrls)
+        {
+            if (imageUrls == null || !imageUrls.Any())
+                throw new ArgumentException("Entry images cannot be null or empty");
+
+            var entryImages = new List<EntryImage>();
+            for (int i = 0; i < imageUrls.Count; i++)
+            {
+                entryImages.Add(new EntryImage
+                {
+                    ImageUrl = imageUrls[i],
+                    DisplayOrder = i + 1,
+                    UploadedAt = DateTime.UtcNow
+                });
+            }
+
+            return entryImages;
         }
     }
 }
