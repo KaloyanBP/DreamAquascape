@@ -41,7 +41,8 @@
             @foreach (var entry in Model.Entries)
             {
                 <div class="col">
-                    <div class="card h-100 shadow-sm">
+                    <div class="card h-100 shadow-sm  @(entry.IsOwnEntry ? "border-primary" : "")">
+
                         <!-- Carousel for multiple images -->
                         <div id="carouselEntry@(entry.Id)" class="carousel slide" data-bs-ride="carousel">
                             <div class="carousel-inner">
@@ -70,19 +71,71 @@
                             <p class="card-text">@entry.Description</p>
                         </div>
                         <div class="card-footer d-flex justify-content-between align-items-center">
-                            <span class="badge bg-primary">Votes: @entry.VoteCount</span>
                             <div>
-                                @if (Model.CanVote)
+                                <span class="badge bg-primary">
+                                    <i class="bi bi-hand-thumbs-up"></i> @entry.VoteCount votes
+                                </span>
+                                @if (entry.IsOwnEntry)
                                 {
-                                    <form method="post" asp-action="Vote" asp-route-entryId="@entry.Id" class="d-inline">
-                                        <button type="submit" class="btn btn-outline-success btn-sm">
-                                            <i class="bi bi-hand-thumbs-up"></i> Vote
-                                        </button>
-                                    </form>
+                                    <span class="badge bg-primary">Your Entry</span>
                                 }
+                            </div>
+                            <div class="entry-actions">
+                                @if (User.Identity.IsAuthenticated)
+                                {
+                                    @if (entry.CanUserVote)
+                                    {
+                                        <!-- User can vote -->
+                                        <form method="post" asp-controller="Votes" asp-action="CastVote" class="d-inline">
+                                            <input type="hidden" name="contestId" value="@Model.Id" />
+                                            <input type="hidden" name="entryId" value="@entry.Id" />
+                                            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-success btn-sm">
+                                                <i class="bi bi-hand-thumbs-up"></i> Vote
+                                            </button>
+                                        </form>
+                                    }
+                                    else if (entry.HasUserVoted)
+                                    {
+                                        <!-- User has already voted -->
+                                        <span class="badge bg-success me-2">
+                                            <i class="bi bi-check-circle"></i> Voted
+                                        </span>
+
+                                        <!-- Option to remove vote -->
+                                        <form method="post" asp-controller="Votes" asp-action="RemoveVote" class="d-inline">
+                                            <input type="hidden" name="contestId" value="@Model.Id" />
+                                            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-secondary btn-sm"
+                                                    onclick="return confirm('Are you sure you want to remove your vote?')">
+                                                <i class="bi bi-x-circle"></i> Remove Vote
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <!-- User cannot vote (own entry, contest ended, etc.) -->
+                                        <span class="text-muted">
+                                            <i class="bi bi-info-circle"></i> Cannot vote
+                                        </span>
+                                    }
+                                }
+                                else
+                                {
+                                    <!-- User not logged in -->
+                                    <a href="@Url.Action("Login", "Account", new { returnUrl = Context.Request.Path })"
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-box-arrow-in-right"></i> Login to Vote
+                                    </a>
+                                }
+
                                 @if (Model.WinnerEntryId == entry.Id)
                                 {
-                                    <span class="badge bg-success ms-2">Winner</span>
+                                    <span class="badge bg-warning text-dark ms-2">
+                                        <i class="bi bi-trophy"></i> Winner
+                                    </span>
                                 }
                             </div>
                         </div>

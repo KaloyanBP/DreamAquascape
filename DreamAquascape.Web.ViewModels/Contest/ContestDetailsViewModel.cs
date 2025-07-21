@@ -21,14 +21,24 @@
         // UI flags
         public bool CanVote { get; set; }
         public bool CanSubmitEntry { get; set; }
+        public bool UserHasSubmittedEntry { get; set; }
+        public bool UserHasVoted { get; set; }
+        public int? UserVotedForEntryId { get; set; }
+        public int? UserSubmittedEntryId { get; set; }
     }
 
     public class ContestEntryViewModel
     {
         public int Id { get; set; }
         public string UserName { get; set; } = string.Empty;
+        public string? Title { get; set; }
         public string? Description { get; set; }
         public List<string> EntryImages { get; set; } = new List<string>();
+        public bool CanUserVote { get; set; }
+        public bool HasUserVoted { get; set; }
         public int VoteCount { get; set; }
+        public bool IsWinner { get; set; }
+        public bool IsOwnEntry { get; set; }
+        public DateTime SubmittedAt { get; set; }
     }
 }

@@ -33,7 +33,8 @@ namespace DreamAquascape.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            var contest = await _contestService.GetContestWithEntriesAsync(id);
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var contest = await _contestService.GetContestWithEntriesAsync(id, currentUserId);
 
             if (contest == null)
             {

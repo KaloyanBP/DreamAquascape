@@ -45,38 +45,89 @@ namespace DreamAquascape.Services.Core
                 .ToListAsync();
         }
 
-        public async Task<ContestDetailsViewModel?> GetContestWithEntriesAsync(int contestId)
+        public async Task<ContestDetailsViewModel?> GetContestWithEntriesAsync(int contestId, string? currentUserId = null)
         {
-            return await _context.Contests
+            // First, get the contest with all related data using Include
+            var contest = await _context.Contests
                 .Include(c => c.Entries)
+                    .ThenInclude(e => e.Votes)
+                .Include(c => c.Entries)
+                    .ThenInclude(e => e.EntryImages)
+                .Include(c => c.Prize)
+                .Include(c => c.Participants)
                 .AsNoTracking()
-                .Where(c => c.Id == contestId && c.IsActive && !c.IsDeleted)
-                .Select(c => new ContestDetailsViewModel
+                .FirstOrDefaultAsync(c => c.Id == contestId && c.IsActive && !c.IsDeleted);
+
+            if (contest == null)
+                return null;
+
+            // Find user participation if user is authenticated
+            var userParticipation = !string.IsNullOrEmpty(currentUserId)
+                ? contest.Participants.FirstOrDefault(p => p.UserId == currentUserId)
+                : null;
+
+            var now = DateTime.UtcNow;
+
+            return new ContestDetailsViewModel
+            {
+                Id = contest.Id,
+                Title = contest.Title,
+                Description = contest.Description,
+                StartDate = contest.SubmissionStartDate,
+                EndDate = contest.VotingEndDate,
+                IsActive = contest.IsActive,
+
+                CanSubmitEntry = !string.IsNullOrEmpty(currentUserId) &&
+                               now >= contest.SubmissionStartDate &&
+                               now <= contest.SubmissionEndDate &&
+                               (userParticipation?.HasSubmittedEntry != true),
+
+                CanVote = !string.IsNullOrEmpty(currentUserId) &&
+                         now >= contest.VotingStartDate &&
+                         now <= contest.VotingEndDate &&
+                         (userParticipation?.HasVoted != true),
+
+                Prize = contest.Prize != null ? new PrizeViewModel
                 {
-                    Id = c.Id,
-                    Title = c.Title,
-                    Description = c.Description,
-                    StartDate = c.SubmissionStartDate,
-                    EndDate = c.VotingEndDate,
-                    IsActive = c.IsActive,
-                    CanSubmitEntry = true, // TODO: Add logic to determine if user can submit entry
-                    CanVote = true,
-                    Prize = c.Prize != null ? new PrizeViewModel
-                    {
-                        Name = c.Prize.Name,
-                        Description = c.Prize.Description
-                    } : null,
-                    Entries = c.Entries.Select(e => new ContestEntryViewModel
+                    Name = contest.Prize.Name,
+                    Description = contest.Prize.Description,
+                } : null,
+
+                Entries = contest.Entries
+                    .Where(e => !e.IsDeleted)
+                    .Select(e => new ContestEntryViewModel
                     {
                         Id = e.Id,
-                        //UserName = e.Participant.UserName, 
+                        Title = e.Title,
+                        //UserName = e.UserName,
                         Description = e.Description,
-                        EntryImages = e.EntryImages.Select(img => img.ImageUrl).ToList(),
-                        VoteCount = e.Votes.Count()
-                    }).ToList(),
-                    WinnerEntryId = c.WinnerEntryId,
-                })
-                .FirstOrDefaultAsync();
+                        EntryImages = e.EntryImages
+                            .OrderBy(img => img.DisplayOrder)
+                            .Select(img => img.ImageUrl)
+                            .ToList(),
+
+                        CanUserVote = !string.IsNullOrEmpty(currentUserId) &&
+                                     now >= contest.VotingStartDate &&
+                                     now <= contest.VotingEndDate &&
+                                     e.ParticipantId != currentUserId &&
+                                     (userParticipation?.HasVoted != true),
+
+                        HasUserVoted = userParticipation?.VotedForEntryId == e.Id,
+                        IsWinner = contest.WinnerEntryId == e.Id,
+                        IsOwnEntry = e.ParticipantId == currentUserId,
+                        VoteCount = e.Votes.Count(),
+                        SubmittedAt = e.SubmittedAt
+                    })
+                    .OrderByDescending(e => e.VoteCount)
+                    .ThenBy(e => e.SubmittedAt)
+                    .ToList(),
+
+                WinnerEntryId = contest.WinnerEntryId,
+                UserHasSubmittedEntry = userParticipation?.HasSubmittedEntry ?? false,
+                UserHasVoted = userParticipation?.HasVoted ?? false,
+                UserVotedForEntryId = userParticipation?.VotedForEntryId,
+                UserSubmittedEntryId = userParticipation?.SubmittedEntryId
+            };
         }
 
         public async Task<Contest> SubmitContestAsync(CreateContestViewModel dto, PrizeViewModel prizeDto, string createdBy)
@@ -353,6 +404,64 @@ namespace DreamAquascape.Services.Core
                 throw;
             }
         }
+
+        public async Task RemoveVoteAsync(int contestId, string userId)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Validate voting period
+                var contest = await _context.Contests
+                    .FirstOrDefaultAsync(c => c.Id == contestId && c.IsActive && !c.IsDeleted);
+
+                if (contest == null)
+                {
+                    throw new NotFoundException("Contest not found");
+                }
+
+                if (DateTime.UtcNow < contest.VotingStartDate || DateTime.UtcNow > contest.VotingEndDate)
+                {
+                    throw new InvalidOperationException("Contest voting period is not active");
+                }
+
+                // Get existing vote
+                var existingVote = await _context.Votes
+                    .FirstOrDefaultAsync(v => v.ContestId == contestId && v.UserId == userId);
+
+                if (existingVote == null)
+                {
+                    throw new NotFoundException("No existing vote found for this user");
+                }
+
+                // Remove the vote
+                _context.Votes.Remove(existingVote);
+
+                // Update participation record
+                var participation = await _context.UserContestParticipations
+                    .FirstOrDefaultAsync(p => p.ContestId == contestId && p.UserId == userId);
+
+                if (participation != null)
+                {
+                    participation.HasVoted = false;
+                    participation.VotedForEntryId = null;
+                    participation.VotedAt = null;
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                _logger.LogInformation("Vote removed by user {UserId} in contest {ContestId}",
+                    userId, contestId);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Failed to remove vote for user {UserId} in contest {ContestId}",
+                    userId, contestId);
+                throw;
+            }
+        }
+
         private ICollection<EntryImage> GetEntryImages(List<string> imageUrls)
         {
             if (imageUrls == null || !imageUrls.Any())
