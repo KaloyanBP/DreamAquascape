@@ -1,5 +1,196 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model DreamAquascape.Web.ViewModels.AdminDashboard.DashboardStatsViewModel
 @{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="dashboard-container">
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="page-title">
+                    <i class="bi bi-speedometer2 me-2"></i>
+                    Admin Dashboard
+                </h1>
+                <p class="page-subtitle text-muted">Overview of contest management system</p>
+            </div>
+            <div class="col-auto">
+                <span class="badge bg-success" id="last-updated">
+                    Last updated: <span id="update-time">@DateTime.Now.ToString("HH:mm:ss")</span>
+                </span>
+                <button class="btn btn-outline-primary btn-sm ms-2" id="refresh-dashboard"
+                        onclick="location.href='@Url.Action("Dashboard", "Admin")'; return false;">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card stats-card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title text-muted mb-0">Total Contests</h5>
+                            <h2 class="card-text fw-bold text-primary mb-0" id="total-contests">@Model.TotalContests</h2>
+                            <small class="text-success">
+                                <i class="bi bi-arrow-up"></i>
+                                <span id="active-contests">@Model.ActiveContests</span> active
+                            </small>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stats-icon bg-primary">
+                                <i class="bi bi-trophy"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card stats-card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title text-muted mb-0">Total Entries</h5>
+                            <h2 class="card-text fw-bold text-info mb-0" id="total-entries">@Model.TotalEntries</h2>
+                            <small class="text-warning">
+                                <i class="bi bi-clock"></i>
+                                <span id="pending-entries">@Model.PendingEntries</span> pending
+                            </small>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stats-icon bg-info">
+                                <i class="bi bi-images"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card stats-card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title text-muted mb-0">Total Votes</h5>
+                            <h2 class="card-text fw-bold text-success mb-0" id="total-votes">@Model.TotalVotes</h2>
+                            <small class="text-info">
+                                <i class="bi bi-graph-up"></i>
+                                @Model.AverageVotesPerEntry.ToString("F1") avg/entry
+                            </small>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stats-icon bg-success">
+                                <i class="bi bi-hand-thumbs-up"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card stats-card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title text-muted mb-0">Active Users</h5>
+                            <h2 class="card-text fw-bold text-warning mb-0" id="total-users">@Model.TotalUsers</h2>
+                            <small class="text-success">
+                                <i class="bi bi-percent"></i>
+                                @Model.UserEngagementRate.ToString("F1")% engaged
+                            </small>
+                        </div>
+                        <div class="col-auto">
+                            <div class="stats-icon bg-warning">
+                                <i class="bi bi-people"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+<style>
+    .dashboard-container {
+        padding: 0;
+    }
+        
+    .page-header {
+        background: linear-gradient(135deg, #dce4e5 0%, #63c9d5 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 0.5rem;
+        margin-bottom: 2rem;
+    }
+        
+    .page-title {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: 300;
+    }
+        
+    .page-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+        
+    .stats-card {
+        transition: transform 0.2s ease-in-out;
+    }
+        
+    .stats-card:hover {
+        transform: translateY(-2px);
+    }
+        
+    .stats-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+        
+    .activity-item {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #eee;
+    }
+        
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+        
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        background: #f8f9fa;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+        
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+    }
+        
+    #last-updated {
+        font-size: 0.875rem;
+    }
+        
+    .btn-group-sm .btn {
+        font-size: 0.75rem;
+    }
+</style>
 }

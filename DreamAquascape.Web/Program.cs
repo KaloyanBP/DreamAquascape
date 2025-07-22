@@ -1,3 +1,4 @@
+using AquascapingContest.AdminDashboard.Services;
 using DreamAquascape.Data;
 using DreamAquascape.Services.Core;
 using DreamAquascape.Services.Core.Interfaces;
@@ -29,6 +30,7 @@ namespace DreamAquascape.Web
                 return new FileUploadService(env.WebRootPath, logger);
             });
             builder.Services.AddScoped<IContestService, ContestService>();
+            builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 
             var app = builder.Build();
 

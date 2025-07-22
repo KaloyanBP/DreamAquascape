@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="~/DreamAquascape.Web.styles.css" asp-append-version="true" />
     <link href="~/lib/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
     <link href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" rel="stylesheet" />
+    @await RenderSectionAsync("Styles", required: false)
     <style>
         body {
             min-height: 100vh;
@@ -76,6 +77,9 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Contests" ? "active" : "")" asp-area="" asp-controller="Contests" asp-action="Index">Contests</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Admin" ? "active" : "")" asp-area="" asp-controller="Admin" asp-action="Index">Admin Dashboard</a>
                         </li>
                     </ul>
                     <partial name="_LoginPartial" />
