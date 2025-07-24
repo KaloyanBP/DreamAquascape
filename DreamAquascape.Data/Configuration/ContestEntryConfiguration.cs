@@ -29,7 +29,7 @@ namespace DreamAquascape.Data.Configuration
             entity
                 .Property(ce => ce.SubmittedAt)
                 .IsRequired()
-                .HasDefaultValueSql("GETDATE()");
+                .HasDefaultValueSql("GETUTCDATE()");
 
             entity
                 .Property(ce => ce.IsActive)

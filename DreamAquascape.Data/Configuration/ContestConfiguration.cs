@@ -57,7 +57,7 @@ namespace DreamAquascape.Data.Configuration
             entity
                 .Property(c => c.CreatedDate)
                 .IsRequired()
-                .HasDefaultValueSql("GETDATE()");
+                .HasDefaultValueSql("GETUTCDATE()");
 
             // Define constraints for the CreatedBy column
             entity
