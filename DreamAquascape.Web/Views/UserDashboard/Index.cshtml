@@ -1,0 +1,415 @@
+﻿@model DreamAquascape.Web.ViewModels.UserDashboard.UserDashboardViewModel
+@{
+    ViewData["Title"] = "My Dashboard";
+}
+
+<div class="user-dashboard-container">
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="page-title">
+                    <i class="bi bi-speedometer2 me-2"></i>
+                    Welcome back, @Model.UserName!
+                </h1>
+                <p class="page-subtitle text-muted">Your aquascaping contest activity hub</p>
+            </div>
+            <div class="col-auto">
+                <div class="btn-group" role="group">
+                    <a href="/contests/create-entry" class="btn btn-primary">
+                        <i class="bi bi-plus me-2"></i>Submit Entry
+                    </a>
+                    <a href="/contests" class="btn btn-outline-primary">
+                        <i class="bi bi-search me-2"></i>Browse Contests
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="row mb-4" id="quick-stats-section">
+        @await Html.PartialAsync("_QuickStatsPartial", Model.QuickStats)
+    </div>
+
+    <!-- Contests Needing Attention Alert -->
+    @{
+        var needsAttention = Model.ActiveContests.Where(c =>
+        (!c.HasSubmitted && c.Phase == "Submission") ||
+        (!c.HasVoted && c.Phase == "Voting" && !c.HasSubmitted) ||
+        c.DaysRemaining <= 3).ToList();
+    }
+
+    @if (needsAttention.Any())
+    {
+        <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="alert-heading mb-1">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Contests Need Your Attention
+                    </h5>
+                    <p class="mb-0">
+                        You have @needsAttention.Count contest(s) that need your attention -
+                        deadlines approaching or actions pending.
+                    </p>
+                </div>
+                <div class="col-auto">
+                    <a href="#active-contests-section" class="btn btn-warning btn-sm">
+                        <i class="bi bi-eye me-1"></i>View Details
+                    </a>
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Main Content Grid -->
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-xl-8 col-lg-7">
+            <!-- Active Contests Section -->
+            <div class="card border-0 shadow-sm mb-4" id="active-contests-section">
+                <div class="card-header bg-white">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-trophy me-2 text-primary"></i>
+                                Active Contests
+                            </h5>
+                        </div>
+                        <div class="col-auto">
+                            <a href="/dashboard/active-contests" class="btn btn-outline-primary btn-sm">
+                                View All
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (Model.ActiveContests.Any())
+                    {
+                        <div class="row">
+                            @foreach (var contest in Model.ActiveContests.Take(4))
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <div class="contest-card h-100">
+                                        <div class="contest-image-container">
+                                            @if (!string.IsNullOrEmpty(contest.ImageFileUrl))
+                                            {
+                                                <img src="@contest.ImageFileUrl" alt="@contest.Title" class="contest-image">
+                                            }
+                                            else
+                                            {
+                                                <div class="contest-image-placeholder">
+                                                    <i class="bi bi-image fa-2x text-muted"></i>
+                                                </div>
+                                            }
+                                            <div class="contest-status-badge @GetStatusBadgeClass(contest.Phase)">
+                                                @contest.Phase
+                                            </div>
+                                        </div>
+                                        <div class="contest-card-body">
+                                            <h6 class="contest-title">@contest.Title</h6>
+                                            <div class="contest-meta">
+                                                <div class="row text-muted small">
+                                                    <div class="col">
+                                                        <i class="bi bi-people me-1"></i>@contest.TotalEntries entries
+                                                    </div>
+                                                    <div class="col-auto">
+                                                        <i class="bi bi-calendar me-1"></i>@contest.DaysRemaining days left
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="contest-actions mt-2">
+                                                @if (!contest.HasSubmitted && contest.Phase == "Submission")
+                                                {
+                                                    <a href="/contests/@contest.ContestId/submit" class="btn btn-primary btn-sm">
+                                                        <i class="bi bi-upload me-1"></i>Submit Entry
+                                                    </a>
+                                                }
+                                                else if (!contest.HasVoted && contest.Phase == "Voting" && !contest.HasSubmitted)
+                                                {
+                                                    <a href="/contests/@contest.ContestId/vote" class="btn btn-success btn-sm">
+                                                        <i class="bi bi-hand-thumbs-up me-1"></i>Vote Now
+                                                    </a>
+                                                }
+                                                else if (contest.HasSubmitted && contest.Phase != "Results")
+                                                {
+                                                    <a href="/entries/@contest.UserEntryId" class="btn btn-info btn-sm">
+                                                        <i class="bi bi-eye me-1"></i>View My Entry
+                                                    </a>
+                                                }
+
+                                                @if (!contest.IsFollowing)
+                                                {
+                                                    <button class="btn btn-outline-secondary btn-sm follow-contest-btn"
+                                                            data-contest-id="@contest.ContestId">
+                                                        <i class="bi bi-heart me-1"></i>Follow
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button class="btn btn-secondary btn-sm unfollow-contest-btn"
+                                                            data-contest-id="@contest.ContestId">
+                                                        <i class="bi bi-heart-break me-1"></i>Unfollow
+                                                    </button>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="bi bi-trophy fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No Active Contests</h5>
+                            <p class="text-muted">You're not participating in any active contests right now.</p>
+                            <a href="/contests" class="btn btn-primary">
+                                <i class="bi bi-search me-2"></i>Browse Contests
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Recent Submissions Section -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-images me-2 text-success"></i>
+                                Recent Submissions
+                            </h5>
+                        </div>
+                        <div class="col-auto">
+                            <a href="/dashboard/my-submissions" class="btn btn-outline-success btn-sm">
+                                View All
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body" id="recent-submissions-section">
+                    @await Html.PartialAsync("_RecentSubmissionsPartial", Model.MySubmissions.Take(3).ToList())
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-xl-4 col-lg-5">
+            <!-- Quick Actions -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-lightning me-2 text-warning"></i>
+                        Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="/contests/create-entry" class="btn btn-primary">
+                            <i class="bi bi-plus me-2"></i>Submit New Entry
+                        </a>
+                        <a href="/contests?filter=voting" class="btn btn-outline-success">
+                            <i class="bi bi-hand-thumbs-up me-2"></i>Vote in Contests
+                        </a>
+                        <a href="/contests" class="btn btn-outline-info">
+                            <i class="bi bi-search me-2"></i>Browse All Contests
+                        </a>
+                        <a href="/profile" class="btn btn-outline-secondary">
+                            <i class="bi bi-person me-2"></i>Edit Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Voting History -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-hand-thumbs-up me-2 text-info"></i>
+                                Recent Votes
+                            </h5>
+                        </div>
+                        <div class="col-auto">
+                            <a href="/dashboard/voting-history" class="btn btn-outline-info btn-sm">
+                                View All
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (Model.VotingHistory.Any())
+                    {
+                        @foreach (var vote in Model.VotingHistory.Take(3))
+                        {
+                            <div class="voting-item mb-3">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <h6 class="mb-1">@vote.EntryTitle</h6>
+                                        <div class="small text-muted">
+                                            by @vote.EntryOwner
+                                            <br>@vote.VotedAt.ToString("MMM dd, yyyy")
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        @if (vote.EntryWon.HasValue)
+                                        {
+                                            @if (vote.EntryWon.Value)
+                                            {
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-crown me-1"></i>Winner
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">
+                                                    #@vote.EntryFinalRanking
+                                                </span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-primary">Active</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-3">
+                            <i class="bi bi-hand-thumbs-up fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">No voting history yet</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            initializeUserDashboard();
+        });
+
+        function initializeUserDashboard() {
+            // Follow/Unfollow contest handlers
+            $('.follow-contest-btn').on('click', function() {
+                const contestId = $(this).data('contest-id');
+                followContest(contestId);
+            });
+
+            $('.unfollow-contest-btn').on('click', function() {
+                const contestId = $(this).data('contest-id');
+                unfollowContest(contestId);
+            });
+
+            // Auto-refresh dashboard every 5 minutes
+            setInterval(function() {
+                refreshQuickStats();
+            }, 300000);
+        }
+
+        function followContest(contestId) {
+            $.ajax({
+                url: '/dashboard/api/follow-contest',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    contestId: contestId,
+                    notificationsEnabled: true
+                }),
+                success: function(response) {
+                    if (response.success) {
+                        showToast('Contest followed successfully!', 'success');
+                        // Update button
+                        const btn = $(`.follow-contest-btn[data-contest-id="${contestId}"]`);
+                        btn.removeClass('btn-outline-secondary follow-contest-btn')
+                           .addClass('btn-secondary unfollow-contest-btn')
+                           .html('<i class="bi bi-heart-break me-1"></i>Unfollow');
+
+                        // Re-bind event handler
+                        btn.off('click').on('click', function() {
+                            unfollowContest(contestId);
+                        });
+                    } else {
+                        showToast(response.message || 'Failed to follow contest', 'error');
+                    }
+                },
+                error: function() {
+                    showToast('An error occurred while following the contest', 'error');
+                }
+            });
+        }
+
+        function unfollowContest(contestId) {
+            $.ajax({
+                url: `/dashboard/api/unfollow-contest/${contestId}`,
+                method: 'POST',
+                success: function(response) {
+                    if (response.success) {
+                        showToast('Contest unfollowed successfully!', 'success');
+                        // Update button
+                        const btn = $(`.unfollow-contest-btn[data-contest-id="${contestId}"]`);
+                        btn.removeClass('btn-secondary unfollow-contest-btn')
+                           .addClass('btn-outline-secondary follow-contest-btn')
+                           .html('<i class="bi bi-heart me-1"></i>Follow');
+
+                        // Re-bind event handler
+                        btn.off('click').on('click', function() {
+                            followContest(contestId);
+                        });
+                    } else {
+                        showToast(response.message || 'Failed to unfollow contest', 'error');
+                    }
+                },
+                error: function() {
+                    showToast('An error occurred while unfollowing the contest', 'error');
+                }
+            });
+        }
+
+        function refreshQuickStats() {
+            $.get('/dashboard/partial/quick-stats')
+                .done(function(data) {
+                    $('#quick-stats-section').html(data);
+                })
+                .fail(function() {
+                    console.log('Failed to refresh quick stats');
+                });
+        }
+
+        function showToast(message, type = 'info') {
+            // Implement toast notification - you can use Bootstrap toast or similar
+            console.log(`${type.toUpperCase()}: ${message}`);
+        }
+    </script>
+}
+
+@functions {
+    string GetStatusBadgeClass(string phase)
+    {
+        return phase switch
+        {
+            "Submission" => "badge bg-primary",
+            "Voting" => "badge bg-success",
+            "Results" => "badge bg-warning",
+            _ => "badge bg-secondary"
+        };
+    }
+}
+
+@section Styles {
+<link rel="stylesheet" href="~/css/dashboard.css" />
+}
+
+}

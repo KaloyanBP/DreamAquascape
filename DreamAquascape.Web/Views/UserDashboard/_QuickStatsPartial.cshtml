@@ -1,0 +1,108 @@
+@model DreamAquascape.Web.ViewModels.UserDashboard.UserQuickStatsViewModel
+
+<div class="col-xl-3 col-md-6 mb-3">
+    <div class="card stats-card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="card-title text-muted mb-0">Contests Participated</h5>
+                    <h2 class="card-text fw-bold text-primary mb-0">@Model.TotalContestsParticipated</h2>
+                    <small class="text-success">
+                        <i class="bi bi-trophy"></i>
+                        @Model.ContestsWon won
+                    </small>
+                </div>
+                <div class="col-auto">
+                    <div class="stats-icon bg-primary">
+                        <i class="bi bi-trophy"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-xl-3 col-md-6 mb-3">
+    <div class="card stats-card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="card-title text-muted mb-0">Entries Submitted</h5>
+                    <h2 class="card-text fw-bold text-info mb-0">@Model.TotalEntriesSubmitted</h2>
+                    <small class="text-info">
+                        <i class="bi bi-graph-up"></i>
+                        @Model.AverageVotesPerEntry.ToString("F1") avg votes
+                    </small>
+                </div>
+                <div class="col-auto">
+                    <div class="stats-icon bg-info">
+                        <i class="bi bi-images"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-xl-3 col-md-6 mb-3">
+    <div class="card stats-card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="card-title text-muted mb-0">Votes Cast</h5>
+                    <h2 class="card-text fw-bold text-success mb-0">@Model.TotalVotesCast</h2>
+                    <small class="text-warning">
+                        <i class="bi bi-clock"></i>
+                        @Model.PendingVotes pending
+                    </small>
+                </div>
+                <div class="col-auto">
+                    <div class="stats-icon bg-success">
+                        <i class="bi bi-hand-thumbs-up"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-xl-3 col-md-6 mb-3">
+    <div class="card stats-card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="card-title text-muted mb-0">Win Rate</h5>
+                    <h2 class="card-text fw-bold text-warning mb-0">@Model.WinRate.ToString("F1")%</h2>
+                    <small class="text-success">
+                        <i class="bi bi-heart"></i>
+                           123456
+@*                         @Model.ContestsFollowing following
+ *@                    </small>
+                </div>
+                <div class="col-auto">
+                    <div class="stats-icon bg-warning">
+                        <i class="bi bi-percent"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.RecentAchievements.Any())
+{
+    <div class="col-12">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <h6 class="alert-heading">
+                <i class="bi bi-star me-2"></i>Recent Achievements
+            </h6>
+            <ul class="mb-0">
+                @foreach (var achievement in Model.RecentAchievements)
+                {
+                    <li>@achievement</li>
+                }
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+}
