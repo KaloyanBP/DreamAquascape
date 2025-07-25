@@ -8,6 +8,7 @@ namespace DreamAquascape.Web.Controllers
     /// <summary>
     /// Handles listing, viewing, creating, editing, and archiving aquascaping contests. Manages contest lifecycle and displays contest details.
     /// </summary>
+    [Route("Contests")]
     public class ContestsController : Controller
     {
         private readonly IFileUploadService _fileUploadService;
@@ -19,6 +20,7 @@ namespace DreamAquascape.Web.Controllers
             _contestService = contestService ?? throw new ArgumentNullException(nameof(contestService));
         }
 
+        [HttpGet("")]
         public async Task<IActionResult> Index()
         {
             // Return list of active contents
@@ -30,7 +32,7 @@ namespace DreamAquascape.Web.Controllers
             return View(contests);
         }
 
-        [HttpGet]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> Details(int id)
         {
             var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -44,7 +46,7 @@ namespace DreamAquascape.Web.Controllers
             return View(contest);
         }
 
-        [HttpGet]
+        [HttpGet("Create")]
         public IActionResult Create()
         {
             try
@@ -65,7 +67,7 @@ namespace DreamAquascape.Web.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("Create")]
         public async Task<IActionResult> Create(
             string title,
             string description,

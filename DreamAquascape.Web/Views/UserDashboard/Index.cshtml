@@ -123,10 +123,13 @@
                                             <div class="contest-actions mt-2">
                                                 @if (!contest.HasSubmitted && contest.Phase == "Submission")
                                                 {
-                                                    <a href="/contests/@contest.ContestId/submit" class="btn btn-primary btn-sm">
+                                                    <a asp-controller="ContestEntries" asp-action="Create" asp-route-contestId="@contest.ContestId" class="btn btn-primary btn-sm">
                                                         <i class="bi bi-upload me-1"></i>Submit Entry
                                                     </a>
-                                                }
+@*                                                     <a href="/contests/@contest.ContestId/submit" class="btn btn-primary btn-sm">
+                                                        <i class="bi bi-upload me-1"></i>Submit Entry
+                                                    </a>
+ *@                                                }
                                                 else if (!contest.HasVoted && contest.Phase == "Voting" && !contest.HasSubmitted)
                                                 {
                                                     <a href="/contests/@contest.ContestId/vote" class="btn btn-success btn-sm">
@@ -135,7 +138,11 @@
                                                 }
                                                 else if (contest.HasSubmitted && contest.Phase != "Results")
                                                 {
-                                                    <a href="/entries/@contest.UserEntryId" class="btn btn-info btn-sm">
+@*                                                     <a href="/entries/@contest.UserEntryId" class="btn btn-info btn-sm">
+                                                        <i class="bi bi-eye me-1"></i>View My Entry
+                                                    </a>
+ *@
+                                                        <a asp-controller="ContestEntries" asp-action="Details" asp-route-contestId="@contest.ContestId"  asp-route-entryId="@contest.UserEntryId" class="btn btn-info btn-sm">
                                                         <i class="bi bi-eye me-1"></i>View My Entry
                                                     </a>
                                                 }
@@ -219,7 +226,7 @@
                         <a href="/contests" class="btn btn-outline-info">
                             <i class="bi bi-search me-2"></i>Browse All Contests
                         </a>
-                        <a href="/profile" class="btn btn-outline-secondary">
+                        <a href="/Identity/Account/Manage" class="btn btn-outline-secondary">
                             <i class="bi bi-person me-2"></i>Edit Profile
                         </a>
                     </div>
@@ -410,6 +417,4 @@
 
 @section Styles {
 <link rel="stylesheet" href="~/css/dashboard.css" />
-}
-
 }
