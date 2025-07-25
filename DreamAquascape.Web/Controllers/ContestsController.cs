@@ -41,62 +41,6 @@ namespace DreamAquascape.Web.Controllers
                 return NotFound();
             }
 
-            // Simulate fetching contest details from a database or service
-            //var contest = new ContestDetailsViewModel
-            //{
-            //    Id = id,
-            //    Title = "Aquascape Contest 2023",
-            //    Description = "Showcase your best aquascaping skills! In the event of a tie, the entry submitted earliest will be declared the winner.",
-            //    StartDate = new DateTime(2023, 6, 1),
-            //    EndDate = new DateTime(2023, 12, 31),
-            //    IsActive = true,
-            //    Prize = new PrizeViewModel
-            //    {
-            //        Name = "Aquascaping Kit",
-            //        Description = "Includes plants, substrate, and tools."
-            //    },
-            //    Entries = new List<ContestEntryViewModel>
-            //    {
-            //        new ContestEntryViewModel
-            //        {
-            //            Id = 1,
-            //            UserName = "Aquascaper123",
-            //            Description = "My first aquascape!",
-            //            EntryImages = new List<string>() {
-            //                "https://www.2hraquarist.com/cdn/shop/articles/chonlatee_jaturonrusmee2018_1000x.jpg?v=1567494592",
-            //                "https://www.2hraquarist.com/cdn/shop/articles/Fernando_Ferreira2_1000x.jpg?v=1582643596",
-            //                "https://marcusfishtanks.com/cdn/shop/articles/Cover_6cbc74d7-cb0c-4a26-8b52-5ffaabbf5235.jpg?v=1733482162"
-            //                },
-            //            VoteCount = 10
-            //        },
-            //        new ContestEntryViewModel
-            //        {
-            //            Id = 2,
-            //            UserName = "NatureLover",
-            //            Description = "Inspired by nature.",
-            //            EntryImages = new List<string>() {
-            //                "https://www.plantedwell.com/wp-content/uploads/2021/01/bonsai-tank-aquascaping.jpg.webp",
-            //                "https://www.plantedwell.com/wp-content/uploads/2021/01/fluval-edge-bonsai-mini-aquascape.jpg.webp",
-            //                "https://www.plantedwell.com/wp-content/uploads/2021/01/iwagumi-mini-aquascape.jpg.webp"
-            //                },
-            //            VoteCount = 5
-            //        },
-            //        new ContestEntryViewModel
-            //        {
-            //            Id = 3,
-            //            UserName = "Avatar Inspired world",
-            //            Description = "Inspired by movie.",
-            //            EntryImages = new List<string>() {
-            //                "https://www.plantedwell.com/wp-content/uploads/2021/01/nano-bonsai-aquascape.jpg.webp",
-            //                "https://www.plantedwell.com/wp-content/uploads/2021/01/small-bonsai-driftwood-aquascaping.jpg.webp",
-            //                },
-            //            VoteCount = 5
-            //        }
-            //    },
-            //    CanVote = true,
-            //    CanSubmitEntry = true
-            //};
-
             return View(contest);
         }
 
@@ -107,9 +51,9 @@ namespace DreamAquascape.Web.Controllers
             {
                 var viewModel = new CreateContestViewModel
                 {
-                    SubmissionStartDate = DateTime.Now.AddDays(1),
+                    SubmissionStartDate = DateTime.Now,
                     SubmissionEndDate = DateTime.Now.AddDays(8),
-                    VotingStartDate = DateTime.Now.AddDays(8).AddHours(1),
+                    VotingStartDate = DateTime.Now.AddMinutes(1),
                     VotingEndDate = DateTime.Now.AddDays(15),
                 };
 

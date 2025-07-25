@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using DreamAquascape.Web.ViewModels.UserDashboard;
+using DreamAquascape.Services.Core.Interfaces;
 
 namespace DreamAquascape.Web.Controllers
 {
@@ -7,21 +8,22 @@ namespace DreamAquascape.Web.Controllers
     /// Personal contest dashboard
     /// </summary>
     [Route("user")]
-    public class UserDashboardController : Controller
+    public class UserDashboardController : BaseController
     {
+        private readonly IUserDashboardService _userDashboardService;
+
+        public UserDashboardController(IUserDashboardService userDashboardService)
+        {
+            _userDashboardService = userDashboardService;
+        }
+
         [Route("dashboard")]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             var model = new UserDashboardViewModel
             {
                 UserName = "AquaFan",
-                QuickStats = new UserQuickStatsViewModel
-                {
-                    TotalContestsParticipated = 5,
-                    TotalEntriesSubmitted = 12,
-                    TotalVotesCast = 34,
-                    ContestsWon = 2
-                },
+                QuickStats = await _userDashboardService.GetUserQuickStatsAsync(GetUserId()!),
                 ActiveContests = new List<UserActiveContestViewModel>
             {
                 new UserActiveContestViewModel

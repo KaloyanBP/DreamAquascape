@@ -31,6 +31,7 @@ namespace DreamAquascape.Web
             });
             builder.Services.AddScoped<IContestService, ContestService>();
             builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+            builder.Services.AddScoped<IUserDashboardService, UserDashboardService>();
 
             var app = builder.Build();
 
