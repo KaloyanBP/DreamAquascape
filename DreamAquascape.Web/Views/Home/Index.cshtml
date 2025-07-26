@@ -1,101 +1,416 @@
-﻿@{  
-    ViewData["Title"] = "Welcome to DreamAquascape";  
-}  
+﻿@{
+    ViewData["Title"] = "DreamAquascape - Aquascaping Contests & Community";
+}
 
-<style>  
-    .aquascape-hero {  
-        background: linear-gradient(135deg, #e0f7fa 0%, #b2dfdb 100%);  
-        border-radius: 2rem;  
-        box-shadow: 0 8px 32px rgba(0, 105, 92, 0.10);  
-        padding: 3rem 2rem 3rem 2rem;  
-        margin-top: 2.5rem;  
-        margin-bottom: 2.5rem;  
-        text-align: center;  
-        position: relative;  
-        overflow: hidden;  
-    }  
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #e0f7fa 0%, #b2dfdb 100%);
+        border-radius: 2rem;
+        box-shadow: 0 8px 32px rgba(0, 105, 92, 0.10);
+        padding: 3rem 2rem;
+        margin: 2rem 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
 
-    .aquascape-hero h1 {  
-        font-weight: 800;  
-        color: #009688;  
-        letter-spacing: 1px;  
-        margin-bottom: 1rem;  
-    }  
+        .hero-section h1 {
+            font-weight: 800;
+            color: #009688;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+        }
 
-    .aquascape-hero p {  
-        color: #00695c;  
-        font-size: 1.25rem;  
-        margin-bottom: 2.5rem;  
-    }  
+        .hero-section .subtitle {
+            color: #00695c;
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
 
-    .aquascape-hero .hero-buttons .btn {  
-        min-width: 200px;  
-        font-size: 1.15rem;  
-        font-weight: 600;  
-        margin: 0 1rem;  
-        border-radius: 2rem;  
-        padding: 0.75rem 2rem;  
-        box-shadow: 0 2px 8px rgba(0, 105, 92, 0.08);  
-        transition: transform 0.15s, box-shadow 0.15s;  
-    }  
+    .hero-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
 
-    .aquascape-hero .btn-primary {  
-        background: linear-gradient(90deg, #26a69a 0%, #009688 100%);  
-        border: none;  
-    }  
+    .btn-hero {
+        min-width: 200px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 2rem;
+        padding: 0.75rem 2rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-    .aquascape-hero .btn-primary:hover {  
-        background: linear-gradient(90deg, #009688 0%, #26a69a 100%);  
-        transform: translateY(-2px) scale(1.04);  
-        box-shadow: 0 4px 16px rgba(0, 105, 92, 0.16);  
-    }  
+        .btn-hero.primary {
+            background: linear-gradient(90deg, #26a69a 0%, #009688 100%);
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 105, 92, 0.2);
+        }
 
-    .aquascape-hero .btn-outline-info {  
-        color: #009688;  
-        border-color: #009688;  
-        background: #fff;  
-    }  
+            .btn-hero.primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(0, 105, 92, 0.3);
+                color: #fff;
+            }
 
-    .aquascape-hero .btn-outline-info:hover {  
-        background: #b2dfdb;  
-        color: #004d40;  
-        border-color: #26a69a;  
-        transform: translateY(-2px) scale(1.04);  
-        box-shadow: 0 4px 16px rgba(0, 105, 92, 0.10);  
-    }  
+        .btn-hero.secondary {
+            background: #fff;
+            color: #009688;
+            border: 2px solid #009688;
+            box-shadow: 0 2px 10px rgba(0, 105, 92, 0.1);
+        }
 
-    .aquascape-hero .hero-buttons .btn {  
-        margin: 0.5rem 0;  
-        width: 100%;  
-    }  
+            .btn-hero.secondary:hover {
+                background: #f0fdfc;
+                color: #00695c;
+                transform: translateY(-1px);
+            }
 
-    .aquascape-hero .hero-bg-svg {  
-        position: absolute;  
-        bottom: -40px;  
-        left: 0;  
-        width: 100%;  
-        opacity: 0.15;  
-        z-index: 0;  
-    }  
-</style>  
+    .stats-row {
+        background: #fff;
+        border-radius: 1.5rem;
+        padding: 2rem;
+        margin: 2rem 0;
+        box-shadow: 0 4px 20px rgba(0, 105, 92, 0.08);
+    }
 
-<div class="container">  
-    <div class="aquascape-hero">  
-        <h1>  
-            <img src="https://img.icons8.com/color/48/000000/aquarium.png" alt="DreamAquascape Logo" style="height:48px;vertical-align:middle;margin-right:10px;">  
-            Welcome to DreamAquascape  
-        </h1>  
-        <p>  
-            Dive into the world of aquascaping! Shop premium accessories for your aquarium or join our vibrant contests to showcase your creativity and win exciting prizes.  
-        </p>  
-        <div class="hero-buttons d-flex flex-column flex-md-row justify-content-center align-items-center mb-3" style="z-index:1; position:relative;">  
-            <a class="btn btn-primary mb-3 mb-md-0" asp-controller="Accessories" asp-action="Index">  
-                🛒 Shop Accessories  
-            </a>  
-            <a class="btn btn-outline-info" asp-controller="Contests" asp-action="Index">  
-                🏆 Aquascaping Contests  
-            </a>  
-        </div>  
-        <svg class="hero-bg-svg" viewBox="0 0 1440 320"><path fill="#009688" fill-opacity="1" d="M0,224L60,197.3C120,171,240,117,360,117.3C480,117,600,171,720,197.3C840,224,960,224,1080,197.3C1200,171,1320,117,1380,90.7L1440,64L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"></path></svg>  
-    </div>  
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #009688;
+        display: block;
+    }
+
+    .stat-label {
+        color: #00695c;
+        font-size: 1rem;
+        font-weight: 500;
+        margin-top: 0.5rem;
+    }
+
+    .contests-section h2 {
+        color: #009688;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .contest-card {
+        background: #fff;
+        border-radius: 1.5rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 105, 92, 0.08);
+        border-left: 5px solid #009688;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .contest-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 105, 92, 0.15);
+        }
+
+    .contest-status {
+        display: inline-block;
+        padding: 0.3rem 1rem;
+        border-radius: 1rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .status-active {
+        background: #c8f7c5;
+        color: #2e7d32;
+    }
+
+    .status-voting {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-upcoming {
+        background: #cce5ff;
+        color: #004085;
+    }
+
+    .status-ended {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .contest-title {
+        color: #009688;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        font-size: 1.3rem;
+    }
+
+    .contest-meta {
+        color: #666;
+        margin-bottom: 1rem;
+        line-height: 1.6;
+    }
+
+    .contest-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-sm-custom {
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin: 3rem 0;
+    }
+
+    .feature-card {
+        background: #fff;
+        border-radius: 1.5rem;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0, 105, 92, 0.08);
+        transition: transform 0.3s ease;
+    }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+    .feature-icon {
+        font-size: 3rem;
+        color: #009688;
+        margin-bottom: 1rem;
+    }
+
+    .feature-title {
+        color: #009688;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .feature-description {
+        color: #666;
+        line-height: 1.6;
+    }
+</style>
+
+<div class="container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1>
+            <i class="bi bi-droplet-fill text-primary me-3"></i>
+            DreamAquascape
+        </h1>
+        <p class="subtitle">Join the ultimate aquascaping community. Compete, vote, and showcase your underwater masterpieces.</p>
+
+        <div class="hero-actions">
+            <a asp-controller="Contests" asp-action="Index" class="btn-hero primary">
+                <i class="bi bi-trophy me-2"></i>Browse Contests
+            </a>
+            <a asp-controller="Account" asp-action="Register" class="btn-hero secondary">
+                <i class="bi bi-person-plus me-2"></i>Join Community
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Row -->
+    <div class="stats-row">
+        <div class="row">
+            <div class="col-md-3 stat-item">
+                <span class="stat-number">24</span>
+                <div class="stat-label">Active Contests</div>
+            </div>
+            <div class="col-md-3 stat-item">
+                <span class="stat-number">1,247</span>
+                <div class="stat-label">Community Members</div>
+            </div>
+            <div class="col-md-3 stat-item">
+                <span class="stat-number">3,892</span>
+                <div class="stat-label">Aquascapes Submitted</div>
+            </div>
+            <div class="col-md-3 stat-item">
+                <span class="stat-number">18,650</span>
+                <div class="stat-label">Votes Cast</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Contests Section -->
+    <div class="contests-section">
+        <h2><i class="bi bi-stars me-2"></i>Featured Contests</h2>
+
+        <div class="row">
+            <!-- Active Contest -->
+            <div class="col-lg-6">
+                <div class="contest-card">
+                    <div class="contest-status status-active">🔥 Submissions Open</div>
+                    <h3 class="contest-title">Nano Tank Masterclass</h3>
+                    <div class="contest-meta">
+                        <i class="bi bi-calendar-event me-1"></i> Ends: August 15, 2025<br>
+                        <i class="bi bi-people me-1"></i> 67 entries • <i class="bi bi-trophy me-1"></i> $150 Prize Pool<br>
+                        <i class="bi bi-tag me-1"></i> Category: Nano Tanks (under 20L)
+                    </div>
+                    <div class="contest-actions">
+                        <a asp-controller="Contests" asp-action="Details" asp-route-id="1" class="btn btn-primary btn-sm-custom">
+                            <i class="bi bi-eye me-1"></i>View Details
+                        </a>
+                        <a asp-controller="ContestEntries" asp-action="Create" asp-route-contestId="1" class="btn btn-success btn-sm-custom">
+                            <i class="bi bi-upload me-1"></i>Submit Entry
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Voting Contest -->
+            <div class="col-lg-6">
+                <div class="contest-card">
+                    <div class="contest-status status-voting">🗳️ Voting Phase</div>
+                    <h3 class="contest-title">Dutch Style Championship</h3>
+                    <div class="contest-meta">
+                        <i class="bi bi-clock me-1"></i> Voting ends: July 30, 2025<br>
+                        <i class="bi bi-people me-1"></i> 89 entries • <i class="bi bi-heart me-1"></i> 2,341 votes<br>
+                        <i class="bi bi-award me-1"></i> Winner gets featured article
+                    </div>
+                    <div class="contest-actions">
+                        <a asp-controller="Contests" asp-action="Details" asp-route-id="2" class="btn btn-primary btn-sm-custom">
+                            <i class="bi bi-eye me-1"></i>View Entries
+                        </a>
+                        <a asp-controller="Contests" asp-action="Vote" asp-route-id="2" class="btn btn-warning btn-sm-custom">
+                            <i class="bi bi-heart me-1"></i>Vote Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Upcoming Contest -->
+            <div class="col-lg-6">
+                <div class="contest-card">
+                    <div class="contest-status status-upcoming">⏰ Starting Soon</div>
+                    <h3 class="contest-title">Biotope Adventure</h3>
+                    <div class="contest-meta">
+                        <i class="bi bi-calendar-plus me-1"></i> Starts: August 1, 2025<br>
+                        <i class="bi bi-globe me-1"></i> Theme: Natural Biotopes<br>
+                        <i class="bi bi-gift me-1"></i> Premium aquascaping tools prize
+                    </div>
+                    <div class="contest-actions">
+                        <a asp-controller="Contests" asp-action="Details" asp-route-id="3" class="btn btn-outline-primary btn-sm-custom">
+                            <i class="bi bi-bell me-1"></i>Get Notified
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recently Ended -->
+            <div class="col-lg-6">
+                <div class="contest-card">
+                    <div class="contest-status status-ended">🏆 Recently Finished</div>
+                    <h3 class="contest-title">Iwagumi Excellence</h3>
+                    <div class="contest-meta">
+                        <i class="bi bi-check-circle me-1"></i> Completed: July 20, 2025<br>
+                        <i class="bi bi-star me-1"></i> Winner: Bobsan <br>
+                        <i class="bi bi-people me-1"></i> 156 participants
+                    </div>
+                    <div class="contest-actions">
+                        <a asp-controller="Contests" asp-action="Results" asp-route-id="4" class="btn btn-outline-success btn-sm-custom">
+                            <i class="bi bi-trophy me-1"></i>View Results
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a asp-controller="Contests" asp-action="Index" class="btn btn-outline-primary btn-lg">
+                <i class="bi bi-grid me-2"></i>View All Contests
+            </a>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="bi bi-trophy"></i>
+            </div>
+            <h4 class="feature-title">Compete & Win</h4>
+            <p class="feature-description">
+                Join exciting contests across multiple categories. From nano tanks to large displays,
+                showcase your aquascaping skills and win amazing prizes.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="bi bi-heart"></i>
+            </div>
+            <h4 class="feature-title">Vote & Discover</h4>
+            <p class="feature-description">
+                Explore stunning aquascapes from our community. Cast your votes for favorites
+                and discover new techniques and inspiration.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="bi bi-graph-up"></i>
+            </div>
+            <h4 class="feature-title">Track Progress</h4>
+            <p class="feature-description">
+                Monitor your contest performance, view detailed statistics, and track your
+                journey as you grow in the aquascaping community.
+            </p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="bi bi-people"></i>
+            </div>
+            <h4 class="feature-title">Join Community</h4>
+            <p class="feature-description">
+                Connect with fellow aquascapers worldwide. Share knowledge, get feedback,
+                and be part of the most passionate aquascaping community.
+            </p>
+        </div>
+    </div>
+
+    <!-- Call to Action Section -->
+    <div class="hero-section" style="margin-top: 4rem;">
+        <h2>Ready to showcase your aquascaping talent?</h2>
+        <p class="subtitle">Join thousands of aquascapers in our vibrant community</p>
+        <div class="hero-actions">
+            <a asp-controller="Dashboard" asp-action="Index" class="btn-hero primary">
+                <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
+            </a>
+            <a asp-controller="Contests" asp-action="Index" class="btn-hero secondary">
+                <i class="bi bi-search me-2"></i>Explore Contests
+            </a>
+        </div>
+    </div>
 </div>
