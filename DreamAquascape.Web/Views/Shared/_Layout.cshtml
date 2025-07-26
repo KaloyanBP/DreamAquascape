@@ -75,10 +75,7 @@
                         <li class="nav-item">
                             <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Contests" ? "active" : "")" asp-area="" asp-controller="Contests" asp-action="Index">Contests</a>
                         </li>
-@*                         <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Admin" ? "active" : "")" asp-area="" asp-controller="Admin" asp-action="Index">Admin Dashboard</a>
-                        </li>
- *@                    </ul>
+                   </ul>
                     <partial name="_LoginPartial" />
                 </div>
             </div>
