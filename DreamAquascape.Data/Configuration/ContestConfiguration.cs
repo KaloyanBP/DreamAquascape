@@ -97,17 +97,17 @@ namespace DreamAquascape.Data.Configuration
             entity.HasMany(c => c.Categories)
                 .WithOne(cc => cc.Contest)
                 .HasForeignKey(cc => cc.ContestId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasMany(c => c.Votes)
                 .WithOne(v => v.Contest)
                 .HasForeignKey(v => v.ContestId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasOne(c => c.WinnerEntry)
-                .WithMany() // ContestEntry doesn't need navigation back to Contest as winner
-                .HasForeignKey(c => c.WinnerEntryId)
-                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasMany(c => c.Winners)
+                .WithOne(cw => cw.Contest)
+                .HasForeignKey(cw => cw.ContestId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

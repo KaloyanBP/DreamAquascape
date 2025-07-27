@@ -41,6 +41,8 @@
 
         public virtual DbSet<Prize> Prizes { get; set; } = null!;
 
+        public virtual DbSet<ContestWinner> ContestWinners { get; set; } = null!;
+
         public virtual DbSet<UserContestParticipation> UserContestParticipations { get; set; } = null!;
 
         public virtual DbSet<ContestCategory> ContestCategories { get; set; } = null!;

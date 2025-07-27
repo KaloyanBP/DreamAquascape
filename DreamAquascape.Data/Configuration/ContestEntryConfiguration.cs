@@ -52,6 +52,12 @@ namespace DreamAquascape.Data.Configuration
                 .HasForeignKey(ce => ce.ParticipantId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            entity.HasOne(ce => ce.Winner)
+                .WithOne(cw => cw.ContestEntry)
+                .HasForeignKey<ContestWinner>(cw => cw.ContestEntryId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
             entity.HasMany(ce => ce.EntryImages)
                 .WithOne(ei => ei.ContestEntry)
                 .HasForeignKey(ei => ei.ContestEntryId)

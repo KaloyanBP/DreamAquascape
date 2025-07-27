@@ -24,7 +24,7 @@ namespace DreamAquascape.Data.Configuration
             entity.HasMany(cc => cc.Contests)
                 .WithOne(cr => cr.Category)
                 .HasForeignKey(cr => cr.CategoryId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             entity.ToTable("ContestCategories");
         }

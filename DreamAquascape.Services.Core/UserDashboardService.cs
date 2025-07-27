@@ -38,8 +38,8 @@ namespace DreamAquascape.Services.Core
                 .Where(v => v.ContestEntry.ParticipantId == userId)
                 .CountAsync();
 
-            var contestsWon = await _context.Contests
-                .Where(c => c.WinnerEntry != null && c.WinnerEntry.ParticipantId == userId)
+            var contestsWon = await _context.ContestWinners
+                .Where(cw => cw.ContestEntry.ParticipantId == userId)
                 .CountAsync();
 
             // Current activity

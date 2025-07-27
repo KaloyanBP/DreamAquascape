@@ -44,7 +44,7 @@ namespace DreamAquascape.Data.Configuration
             entity.HasOne(ucp => ucp.Contest)
                 .WithMany(c => c.Participants)
                 .HasForeignKey(ucp => ucp.ContestId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(ucp => ucp.User)
                 .WithMany() // IdentityUser doesn't need navigation back to participations

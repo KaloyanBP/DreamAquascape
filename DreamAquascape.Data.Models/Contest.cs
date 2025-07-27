@@ -35,7 +35,8 @@ namespace DreamAquascape.Data.Models
         public virtual Prize? Prize { get; set; }
 
         public int? WinnerEntryId { get; set; }
-        public virtual ContestEntry? WinnerEntry { get; set; }
+
+        public virtual ICollection<ContestWinner> Winners { get; set; } = new HashSet<ContestWinner>();
 
         public virtual ICollection<ContestEntry> Entries { get; set; } = new HashSet<ContestEntry>();
 

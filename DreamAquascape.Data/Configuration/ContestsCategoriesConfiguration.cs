@@ -14,12 +14,12 @@ namespace DreamAquascape.Data.Configuration
             entity.HasOne(cc => cc.Contest)
                 .WithMany(c => c.Categories)
                 .HasForeignKey(cc => cc.ContestId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
             
             entity.HasOne(cc => cc.Category)
                 .WithMany(c => c.Contests)
                 .HasForeignKey(cc => cc.CategoryId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasQueryFilter(cc => !cc.Contest.IsDeleted);
         }
