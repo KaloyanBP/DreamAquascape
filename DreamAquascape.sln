@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36212.18 d17.14
+VisualStudioVersion = 17.14.36212.18
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DreamAquascape.Web", "DreamAquascape.Web\DreamAquascape.Web.csproj", "{92AC3126-4599-4E42-9573-9016F78C21EC}"
 EndProject
@@ -26,6 +26,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DreamAquascape.Services.Core", "DreamAquascape.Services.Core\DreamAquascape.Services.Core.csproj", "{EB8B4596-8E97-4915-ABC8-AE047E2274F0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4FA948AA-5D00-480A-9A4E-E82645F4BA14}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DreamAquascape.Web.Infrastructure", "DreamAquascape.Web.Infrastructure\DreamAquascape.Web.Infrastructure.csproj", "{39EAFE37-B1C5-42AD-949D-9BC7026B6D66}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,6 +67,10 @@ Global
 		{EB8B4596-8E97-4915-ABC8-AE047E2274F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB8B4596-8E97-4915-ABC8-AE047E2274F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB8B4596-8E97-4915-ABC8-AE047E2274F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39EAFE37-B1C5-42AD-949D-9BC7026B6D66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39EAFE37-B1C5-42AD-949D-9BC7026B6D66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39EAFE37-B1C5-42AD-949D-9BC7026B6D66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39EAFE37-B1C5-42AD-949D-9BC7026B6D66}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -77,6 +83,7 @@ Global
 		{C1DEC064-6699-9CF9-C448-E5B7819D3058} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{7CB0561B-0301-4B10-BA91-3509AEC1FA6B} = {C522D703-7A66-4A03-8CE8-FB1CBA54319B}
 		{EB8B4596-8E97-4915-ABC8-AE047E2274F0} = {C522D703-7A66-4A03-8CE8-FB1CBA54319B}
+		{39EAFE37-B1C5-42AD-949D-9BC7026B6D66} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8C0A72DC-6561-4386-95AB-90B4F696C771}

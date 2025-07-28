@@ -4,7 +4,7 @@ using DreamAquascape.Web.ViewModels.AdminDashboard;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace AquascapingContest.AdminDashboard.Services
+namespace DreamAquascape.Services.Core.AdminDashboard
 {
     public class AdminDashboardService : IAdminDashboardService
     {

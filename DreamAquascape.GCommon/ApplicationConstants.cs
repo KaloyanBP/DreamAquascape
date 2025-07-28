@@ -2,6 +2,8 @@
 {
     public static class ApplicationConstants
     {
+        public const string AdminRoleName = "Admin";
+        public const string UserRoleName = "User";
         public const string ApplicationName = "Dream Aquascape";
         public const string ApplicationVersion = "1.0.0";
         public const string ApplicationDescription = "An application for aquascaping enthusiasts to share and discover beautiful aquascapes.";

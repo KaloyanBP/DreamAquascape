@@ -1,7 +1,10 @@
-using AquascapingContest.AdminDashboard.Services;
+using DreamAquascape.Web.Infrastructure.Extensions;
 using DreamAquascape.Data;
+using DreamAquascape.Data.Seeding;
+using DreamAquascape.Data.Seeding.Interfaces;
 using DreamAquascape.Services.Core;
 using DreamAquascape.Services.Core.Interfaces;
+using DreamAquascape.Services.Core.AdminDashboard;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,6 +23,7 @@ namespace DreamAquascape.Web
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddControllersWithViews();
 
@@ -32,6 +36,8 @@ namespace DreamAquascape.Web
             builder.Services.AddScoped<IContestService, ContestService>();
             builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
             builder.Services.AddScoped<IUserDashboardService, UserDashboardService>();
+
+            builder.Services.AddTransient<IIdentitySeeder, IdentitySeeder>();
 
             var app = builder.Build();
 
@@ -51,6 +57,8 @@ namespace DreamAquascape.Web
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.SeedDefaultIdentity();
 
             app.UseAuthorization();
 

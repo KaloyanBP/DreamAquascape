@@ -19,6 +19,7 @@
     <ProjectReference Include="..\DreamAquascape.Data\DreamAquascape.Data.csproj" />
     <ProjectReference Include="..\DreamAquascape.GCommon\DreamAquascape.GCommon.csproj" />
     <ProjectReference Include="..\DreamAquascape.Services.Core\DreamAquascape.Services.Core.csproj" />
+    <ProjectReference Include="..\DreamAquascape.Web.Infrastructure\DreamAquascape.Web.Infrastructure.csproj" />
     <ProjectReference Include="..\DreamAquascape.Web.ViewModels\DreamAquascape.Web.ViewModels.csproj" />
   </ItemGroup>
 
