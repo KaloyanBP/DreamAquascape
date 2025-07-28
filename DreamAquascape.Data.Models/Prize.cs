@@ -9,6 +9,8 @@ namespace DreamAquascape.Data.Models
 
         public int ContestId { get; set; }
 
+        public int Place { get; set; } // 1 = first place, 2 = second place, etc.
+
         public string Name { get; set; } = string.Empty;
 
         public string? Description { get; set; }

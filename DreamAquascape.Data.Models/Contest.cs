@@ -32,19 +32,22 @@ namespace DreamAquascape.Data.Models
         public bool IsDeleted { get; set; } = false;
 
         // Navigation properties
-        public virtual Prize? Prize { get; set; }
-
-        public int? WinnerEntryId { get; set; }
+        public virtual ICollection<Prize> Prizes { get; set; } = new HashSet<Prize>();
 
         public virtual ICollection<ContestWinner> Winners { get; set; } = new HashSet<ContestWinner>();
 
         public virtual ICollection<ContestEntry> Entries { get; set; } = new HashSet<ContestEntry>();
 
-        public virtual ICollection<Vote> Votes { get; set; } = new List<Vote>();
+        public virtual ICollection<Vote> Votes { get; set; } = new HashSet<Vote>();
         
-        public virtual ICollection<UserContestParticipation> Participants { get; set; } = new List<UserContestParticipation>();
+        public virtual ICollection<UserContestParticipation> Participants { get; set; } = new HashSet<UserContestParticipation>();
 
         // Many-to-many relationships
         public virtual ICollection<ContestsCategories> Categories { get; set; } = new HashSet<ContestsCategories>();
+
+        // Helpers
+        public ContestWinner? PrimaryWinner => Winners.FirstOrDefault(w => w.Position == 1);
+
+        public Prize? PrimaryPrize => Prizes.FirstOrDefault(p => p.Place == 1);
     }
 }

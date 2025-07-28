@@ -40,8 +40,23 @@ namespace DreamAquascape.Data.Migrations
                 table: "Votes");
 
             migrationBuilder.DropIndex(
+                name: "IX_Prizes_ContestId",
+                table: "Prizes");
+
+            migrationBuilder.DropIndex(
                 name: "IX_Contests_WinnerEntryId",
                 table: "Contests");
+
+            migrationBuilder.DropColumn(
+                name: "WinnerEntryId",
+                table: "Contests");
+
+            migrationBuilder.AddColumn<int>(
+                name: "Place",
+                table: "Prizes",
+                type: "int",
+                nullable: false,
+                defaultValue: 0);
 
             migrationBuilder.AlterColumn<DateTime>(
                 name: "CreatedDate",
@@ -91,6 +106,12 @@ namespace DreamAquascape.Data.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Prize_ContestId_Place_Unique",
+                table: "Prizes",
+                columns: new[] { "ContestId", "Place" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ContestWinner_Contest_Position_Unique",
@@ -183,6 +204,14 @@ namespace DreamAquascape.Data.Migrations
             migrationBuilder.DropTable(
                 name: "ContestWinners");
 
+            migrationBuilder.DropIndex(
+                name: "IX_Prize_ContestId_Place_Unique",
+                table: "Prizes");
+
+            migrationBuilder.DropColumn(
+                name: "Place",
+                table: "Prizes");
+
             migrationBuilder.AlterColumn<DateTime>(
                 name: "CreatedDate",
                 table: "Contests",
@@ -193,6 +222,12 @@ namespace DreamAquascape.Data.Migrations
                 oldType: "datetime2",
                 oldDefaultValueSql: "GETUTCDATE()");
 
+            migrationBuilder.AddColumn<int>(
+                name: "WinnerEntryId",
+                table: "Contests",
+                type: "int",
+                nullable: true);
+
             migrationBuilder.AlterColumn<DateTime>(
                 name: "SubmittedAt",
                 table: "ContestEntries",
@@ -202,6 +237,12 @@ namespace DreamAquascape.Data.Migrations
                 oldClrType: typeof(DateTime),
                 oldType: "datetime2",
                 oldDefaultValueSql: "GETUTCDATE()");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Prizes_ContestId",
+                table: "Prizes",
+                column: "ContestId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Contests_WinnerEntryId",

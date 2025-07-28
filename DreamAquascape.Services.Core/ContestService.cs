@@ -53,7 +53,7 @@ namespace DreamAquascape.Services.Core
                     .ThenInclude(e => e.Votes)
                 .Include(c => c.Entries)
                     .ThenInclude(e => e.EntryImages)
-                .Include(c => c.Prize)
+                .Include(c => c.Prizes)
                 .Include(c => c.Participants)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Id == contestId && c.IsActive && !c.IsDeleted);
@@ -87,10 +87,10 @@ namespace DreamAquascape.Services.Core
                          now <= contest.VotingEndDate &&
                          (userParticipation?.HasVoted != true),
 
-                Prize = contest.Prize != null ? new PrizeViewModel
+                Prize = contest.PrimaryPrize != null ? new PrizeViewModel
                 {
-                    Name = contest.Prize.Name,
-                    Description = contest.Prize.Description,
+                    Name = contest.PrimaryPrize.Name,
+                    Description = contest.PrimaryPrize.Description,
                 } : null,
 
                 Entries = contest.Entries
@@ -113,7 +113,7 @@ namespace DreamAquascape.Services.Core
                                      (userParticipation?.HasVoted != true),
 
                         HasUserVoted = userParticipation?.VotedForEntryId == e.Id,
-                        IsWinner = contest.WinnerEntryId == e.Id,
+                        IsWinner = contest.PrimaryWinner?.ContestEntryId == e.Id,
                         IsOwnEntry = e.ParticipantId == currentUserId,
                         VoteCount = e.Votes.Count(),
                         SubmittedAt = e.SubmittedAt
@@ -122,7 +122,7 @@ namespace DreamAquascape.Services.Core
                     .ThenBy(e => e.SubmittedAt)
                     .ToList(),
 
-                WinnerEntryId = contest.WinnerEntryId,
+                WinnerEntryId = contest.PrimaryWinner?.ContestEntryId,
                 UserHasSubmittedEntry = userParticipation?.HasSubmittedEntry ?? false,
                 UserHasVoted = userParticipation?.HasVoted ?? false,
                 UserVotedForEntryId = userParticipation?.VotedForEntryId,
@@ -141,6 +141,13 @@ namespace DreamAquascape.Services.Core
                 if (dto.VotingStartDate <= dto.SubmissionStartDate || dto.VotingEndDate <= dto.VotingStartDate)
                     throw new InvalidOperationException("Start voting date must be after submission start date and before voting end date");
                 // Create the contest
+                var primaryPrize = new Prize
+                {
+                    Name = prizeDto.Name,
+                    Description = prizeDto.Description,
+                    ImageUrl = prizeDto.ImageUrl,
+                    Place = 1
+                };
                 var contest = new Contest
                 {
                     Title = dto.Title,
@@ -154,12 +161,7 @@ namespace DreamAquascape.Services.Core
                     CreatedBy = createdBy,
                     IsActive = true,
                     IsDeleted = false,
-                    Prize = new Prize
-                    {
-                        Name = prizeDto.Name,
-                        Description = prizeDto.Description,
-                        ImageUrl = prizeDto.ImageUrl
-                    }
+                    Prizes = new List<Prize> { primaryPrize },
                 };
                 await _context.Contests.AddAsync(contest);
                 await _context.SaveChangesAsync(); // Save to get the contest ID

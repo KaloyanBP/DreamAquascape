@@ -11,7 +11,14 @@ namespace DreamAquascape.Data.Configuration
         {
             entity
                 .HasKey(p => p.Id);
-            
+
+            entity.Property(p => p.ContestId)
+                .IsRequired();
+
+            entity
+                .Property(p => p.Place)
+                .IsRequired();
+                
             entity
                 .Property(p => p.Name)
                 .IsRequired()
@@ -37,9 +44,22 @@ namespace DreamAquascape.Data.Configuration
                 .Property(p => p.SponsorName)
                 .HasMaxLength(SponsorNameMaxLength);
 
-            // Global query filter to exclude soft deleted prizes
+            // Relationships
+            entity
+                .HasOne(p => p.Contest)
+                .WithMany(c => c.Prizes)
+                .HasForeignKey(p => p.ContestId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Soft delete filter
             entity
                 .HasQueryFilter(p => !p.IsDeleted);
+
+            // Unique constraints
+            entity
+                .HasIndex(p => new { p.ContestId, p.Place })
+                .IsUnique()
+                .HasDatabaseName("IX_Prize_ContestId_Place_Unique");
         }
     }
 }

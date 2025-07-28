@@ -78,9 +78,6 @@ namespace DreamAquascape.Data.Migrations
                     b.Property<DateTime>("VotingStartDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("WinnerEntryId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.ToTable("Contests");
@@ -286,14 +283,18 @@ namespace DreamAquascape.Data.Migrations
                         .HasMaxLength(2048)
                         .HasColumnType("nvarchar(2048)");
 
+                    b.Property<int>("Place")
+                        .HasColumnType("int");
+
                     b.Property<string>("SponsorName")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ContestId")
-                        .IsUnique();
+                    b.HasIndex("ContestId", "Place")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Prize_ContestId_Place_Unique");
 
                     b.ToTable("Prizes");
                 });
@@ -666,8 +667,8 @@ namespace DreamAquascape.Data.Migrations
             modelBuilder.Entity("DreamAquascape.Data.Models.Prize", b =>
                 {
                     b.HasOne("DreamAquascape.Data.Models.Contest", "Contest")
-                        .WithOne("Prize")
-                        .HasForeignKey("DreamAquascape.Data.Models.Prize", "ContestId")
+                        .WithMany("Prizes")
+                        .HasForeignKey("ContestId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -793,7 +794,7 @@ namespace DreamAquascape.Data.Migrations
 
                     b.Navigation("Participants");
 
-                    b.Navigation("Prize");
+                    b.Navigation("Prizes");
 
                     b.Navigation("Votes");
 

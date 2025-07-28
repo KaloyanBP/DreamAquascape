@@ -82,9 +82,10 @@ namespace DreamAquascape.Data.Configuration
                 .HasQueryFilter(c => !c.IsDeleted);
 
             // One-to-zero-or-one relationship
-            entity.HasOne(c => c.Prize)
+            entity
+                .HasMany(c => c.Prizes)
                 .WithOne(p => p.Contest)
-                .HasForeignKey<Prize>(p => p.ContestId)
+                .HasForeignKey(p => p.ContestId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Configure one-to-many relationship

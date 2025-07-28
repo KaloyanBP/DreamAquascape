@@ -11,18 +11,6 @@ namespace DreamAquascape.Data.Configuration
             // Composite Primary Key (all three fields)
             entity.HasKey(cw => new { cw.ContestId, cw.ContestEntryId, cw.Position });
 
-            // Unique constraints
-
-            // Ensure only one winner per position per contest
-            entity.HasIndex(cw => new { cw.ContestId, cw.Position })
-                .IsUnique()
-                .HasDatabaseName("IX_ContestWinner_Contest_Position_Unique");
-
-            // Ensure one entry can only win once
-            entity.HasIndex(cw => cw.ContestEntryId)
-                .IsUnique()
-                .HasDatabaseName("IX_ContestWinner_Entry_Unique");
-
             // Properties
             entity.Property(cw => cw.Position)
                 .IsRequired();
@@ -46,7 +34,21 @@ namespace DreamAquascape.Data.Configuration
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Soft delete filter
-            entity.HasQueryFilter(cw => !cw.IsDeleted);
+            entity.HasQueryFilter(cw => !cw.IsDeleted &&
+                 !cw.Contest.IsDeleted && 
+                 !cw.ContestEntry.IsDeleted);
+
+            // Unique constraints
+
+            // Ensure only one winner per position per contest
+            entity.HasIndex(cw => new { cw.ContestId, cw.Position })
+                .IsUnique()
+                .HasDatabaseName("IX_ContestWinner_Contest_Position_Unique");
+
+            // Ensure one entry can only win once
+            entity.HasIndex(cw => cw.ContestEntryId)
+                .IsUnique()
+                .HasDatabaseName("IX_ContestWinner_Entry_Unique");
         }
     }
 }

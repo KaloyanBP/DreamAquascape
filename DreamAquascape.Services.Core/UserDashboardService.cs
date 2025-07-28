@@ -88,7 +88,7 @@ namespace DreamAquascape.Services.Core
                 .Where(c => c.IsActive && !c.IsDeleted &&
                            c.SubmissionStartDate <= now && c.VotingEndDate >= now)
                 .Include(c => c.Categories)
-                .Include(c => c.Prize)
+                .Include(c => c.Prizes)
                 .Include(c => c.Entries.Where(e => !e.IsDeleted))
                 .Include(c => c.Votes)
                 .ToListAsync();
@@ -145,8 +145,8 @@ namespace DreamAquascape.Services.Core
                     UserEntryId = userEntry?.Id,
                     TotalEntries = contest.Entries.Count,
                     TotalVotes = contest.Votes.Count,
-                    PrizeName = contest.Prize?.Name,
-                    PrizeValue = contest.Prize?.MonetaryValue,
+                    PrizeName = contest.PrimaryPrize?.Name,
+                    PrizeValue = contest.PrimaryPrize?.MonetaryValue,
                     Categories = contest.Categories.Select(c => c.Category.Name).ToList(),
                 });
             }
@@ -190,7 +190,7 @@ namespace DreamAquascape.Services.Core
                     .Select((e, index) => new { Entry = e, Rank = index + 1 })
                     .FirstOrDefault(x => x.Entry.Id == entry.Id)?.Rank ?? contestEntries.Count;
 
-                var isWinner = contest.WinnerEntryId == entry.Id;
+                var isWinner = contest.PrimaryWinner?.ContestEntryId == entry.Id;
 
                 // Determine status
                 var now = DateTime.UtcNow;
@@ -282,7 +282,7 @@ namespace DreamAquascape.Services.Core
 
                 if (contest.VotingEndDate < now)
                 {
-                    entryWon = contest.WinnerEntryId == entry.Id;
+                    entryWon = contest.PrimaryWinner?.ContestEntryId == entry.Id;
 
                     // Calculate final ranking
                     var contestEntries = await _context.ContestEntries
