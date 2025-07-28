@@ -7,6 +7,7 @@
         public const string ApplicationDescription = "An application for aquascaping enthusiasts to share and discover beautiful aquascapes.";
         public const string DefaultImageUrl = "/images/default-aquascape.jpg";
         public const string DefaultNavigationUrl = "/home";
+        public const string IsDeletedPropertyName = "IsDeleted";
 
         public const string UploadPath = "uploads";
         public const string EntryImageUploadPath = "entries";
