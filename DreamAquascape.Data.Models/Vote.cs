@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace DreamAquascape.Data.Models
 {
@@ -6,20 +8,20 @@ namespace DreamAquascape.Data.Models
     {
         public int Id { get; set; }
 
-        public int ContestId { get; set; }
-
         public int ContestEntryId { get; set; }
 
+        [Comment("Foreign key to the referenced AspNetUser.")]
         public string UserId { get; set; } = string.Empty;
-
-        public virtual IdentityUser User { get; set; } = null!;
 
         public DateTime VotedAt { get; set; }
 
-        public string? IpAddress { get; set; } // For additional fraud prevention
+        public string? IpAddress { get; set; }
 
-        public virtual Contest Contest { get; set; } = null!;
-
+        // Navigation properties
+        public virtual IdentityUser User { get; set; } = null!;
         public virtual ContestEntry ContestEntry { get; set; } = null!;
+
+        // Computed property to access contest through entry
+        public Contest Contest => ContestEntry?.Contest!;
     }
 }

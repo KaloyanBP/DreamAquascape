@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace DreamAquascape.Data.Models
-{    
+{
     public class ContestEntry
     {
         public int Id { get; set; }
@@ -30,7 +31,11 @@ namespace DreamAquascape.Data.Models
         public virtual Contest Contest { get; set; } = null!;
 
         public virtual ICollection<EntryImage> EntryImages { get; set; } = new HashSet<EntryImage>();
-        
+
         public virtual ICollection<Vote> Votes { get; set; } = new HashSet<Vote>();
+
+        // Computed properties for performance
+        public int VoteCount => Votes?.Count ?? 0;
+        public bool HasImages => EntryImages?.Any() == true;
     }
 }

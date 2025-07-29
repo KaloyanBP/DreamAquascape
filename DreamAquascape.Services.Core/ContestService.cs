@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DreamAquascape.Services.Core
 {
-    public class ContestService: IContestService
+    public class ContestService : IContestService
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<ContestService> _logger;
@@ -54,17 +54,25 @@ namespace DreamAquascape.Services.Core
                 .Include(c => c.Entries)
                     .ThenInclude(e => e.EntryImages)
                 .Include(c => c.Prizes)
-                .Include(c => c.Participants)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Id == contestId && c.IsActive && !c.IsDeleted);
 
             if (contest == null)
                 return null;
 
-            // Find user participation if user is authenticated
-            var userParticipation = !string.IsNullOrEmpty(currentUserId)
-                ? contest.Participants.FirstOrDefault(p => p.UserId == currentUserId)
-                : null;
+            // Get user participation data if user is authenticated
+            ContestEntry? userEntry = null;
+            Vote? userVote = null;
+
+            if (!string.IsNullOrEmpty(currentUserId))
+            {
+                userEntry = await _context.ContestEntries
+                    .FirstOrDefaultAsync(e => e.ContestId == contestId && e.ParticipantId == currentUserId && !e.IsDeleted);
+
+                userVote = await _context.Votes
+                    .Include(v => v.ContestEntry)
+                    .FirstOrDefaultAsync(v => v.UserId == currentUserId && v.ContestEntry.ContestId == contestId);
+            }
 
             var now = DateTime.UtcNow;
 
@@ -80,12 +88,12 @@ namespace DreamAquascape.Services.Core
                 CanSubmitEntry = !string.IsNullOrEmpty(currentUserId) &&
                                now >= contest.SubmissionStartDate &&
                                now <= contest.SubmissionEndDate &&
-                               (userParticipation?.HasSubmittedEntry != true),
+                               userEntry == null,
 
                 CanVote = !string.IsNullOrEmpty(currentUserId) &&
                          now >= contest.VotingStartDate &&
                          now <= contest.VotingEndDate &&
-                         (userParticipation?.HasVoted != true),
+                         userVote == null,
 
                 Prize = contest.PrimaryPrize != null ? new PrizeViewModel
                 {
@@ -99,7 +107,6 @@ namespace DreamAquascape.Services.Core
                     {
                         Id = e.Id,
                         Title = e.Title,
-                        //UserName = e.UserName,
                         Description = e.Description,
                         EntryImages = e.EntryImages
                             .OrderBy(img => img.DisplayOrder)
@@ -110,9 +117,9 @@ namespace DreamAquascape.Services.Core
                                      now >= contest.VotingStartDate &&
                                      now <= contest.VotingEndDate &&
                                      e.ParticipantId != currentUserId &&
-                                     (userParticipation?.HasVoted != true),
+                                     userVote == null,
 
-                        HasUserVoted = userParticipation?.VotedForEntryId == e.Id,
+                        HasUserVoted = userVote?.ContestEntryId == e.Id,
                         IsWinner = contest.PrimaryWinner?.ContestEntryId == e.Id,
                         IsOwnEntry = e.ParticipantId == currentUserId,
                         VoteCount = e.Votes.Count(),
@@ -123,10 +130,10 @@ namespace DreamAquascape.Services.Core
                     .ToList(),
 
                 WinnerEntryId = contest.PrimaryWinner?.ContestEntryId,
-                UserHasSubmittedEntry = userParticipation?.HasSubmittedEntry ?? false,
-                UserHasVoted = userParticipation?.HasVoted ?? false,
-                UserVotedForEntryId = userParticipation?.VotedForEntryId,
-                UserSubmittedEntryId = userParticipation?.SubmittedEntryId
+                UserHasSubmittedEntry = userEntry != null,
+                UserHasVoted = userVote != null,
+                UserVotedForEntryId = userVote?.ContestEntryId,
+                UserSubmittedEntryId = userEntry?.Id
             };
         }
 
@@ -215,32 +222,6 @@ namespace DreamAquascape.Services.Core
                 await _context.ContestEntries.AddAsync(entry);
                 await _context.SaveChangesAsync(); // Save to get the entry ID
 
-                // Update or create participation record
-                var participation = await _context.UserContestParticipations
-                    .FirstOrDefaultAsync(p => p.ContestId == dto.ContestId && p.UserId == userId);
-
-                if (participation == null)
-                {
-                    participation = new UserContestParticipation
-                    {
-                        ContestId = dto.ContestId,
-                        UserId = userId,
-                        ParticipationDate = DateTime.UtcNow,
-                        HasSubmittedEntry = true,
-                        SubmittedEntryId = entry.Id,
-                        EntrySubmittedAt = DateTime.UtcNow,
-                        HasVoted = false
-                    };
-                    await _context.UserContestParticipations.AddAsync(participation);
-                }
-                else
-                {
-                    participation.HasSubmittedEntry = true;
-                    participation.SubmittedEntryId = entry.Id;
-                    participation.EntrySubmittedAt = DateTime.UtcNow;
-                }
-
-                await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
                 _logger.LogInformation("Entry {EntryId} submitted by user {UserId} for contest {ContestId}",
@@ -285,7 +266,8 @@ namespace DreamAquascape.Services.Core
 
                 // Check if user already voted in this contest
                 var existingVote = await _context.Votes
-                    .FirstOrDefaultAsync(v => v.ContestId == contestId && v.UserId == userId);
+                    .Include(v => v.ContestEntry)
+                    .FirstOrDefaultAsync(v => v.UserId == userId && v.ContestEntry.ContestId == contestId);
 
                 if (existingVote != null)
                     throw new InvalidOperationException("User has already voted in this contest");
@@ -293,7 +275,6 @@ namespace DreamAquascape.Services.Core
                 // Create the vote
                 var vote = new Vote
                 {
-                    ContestId = contestId,
                     ContestEntryId = entryId,
                     UserId = userId,
                     VotedAt = DateTime.UtcNow,
@@ -301,32 +282,6 @@ namespace DreamAquascape.Services.Core
                 };
 
                 await _context.Votes.AddAsync(vote);
-
-                // Update or create participation record
-                var participation = await _context.UserContestParticipations
-                    .FirstOrDefaultAsync(p => p.ContestId == contestId && p.UserId == userId);
-
-                if (participation == null)
-                {
-                    participation = new UserContestParticipation
-                    {
-                        ContestId = contestId,
-                        UserId = userId,
-                        ParticipationDate = DateTime.UtcNow,
-                        HasVoted = true,
-                        VotedForEntryId = entryId,
-                        VotedAt = DateTime.UtcNow,
-                        HasSubmittedEntry = false
-                    };
-                    await _context.UserContestParticipations.AddAsync(participation);
-                }
-                else
-                {
-                    participation.HasVoted = true;
-                    participation.VotedForEntryId = entryId;
-                    participation.VotedAt = DateTime.UtcNow;
-                }
-
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
@@ -361,7 +316,8 @@ namespace DreamAquascape.Services.Core
 
                 // Get existing vote
                 var existingVote = await _context.Votes
-                    .FirstOrDefaultAsync(v => v.ContestId == contestId && v.UserId == userId);
+                    .Include(v => v.ContestEntry)
+                    .FirstOrDefaultAsync(v => v.UserId == userId && v.ContestEntry.ContestId == contestId);
 
                 if (existingVote == null)
                     throw new NotFoundException("No existing vote found for this user");
@@ -379,16 +335,6 @@ namespace DreamAquascape.Services.Core
                 // Update the vote
                 existingVote.ContestEntryId = newEntryId;
                 existingVote.VotedAt = DateTime.UtcNow;
-
-                // Update participation record
-                var participation = await _context.UserContestParticipations
-                    .FirstOrDefaultAsync(p => p.ContestId == contestId && p.UserId == userId);
-
-                if (participation != null)
-                {
-                    participation.VotedForEntryId = newEntryId;
-                    participation.VotedAt = DateTime.UtcNow;
-                }
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -428,7 +374,8 @@ namespace DreamAquascape.Services.Core
 
                 // Get existing vote
                 var existingVote = await _context.Votes
-                    .FirstOrDefaultAsync(v => v.ContestId == contestId && v.UserId == userId);
+                    .Include(v => v.ContestEntry)
+                    .FirstOrDefaultAsync(v => v.UserId == userId && v.ContestEntry.ContestId == contestId);
 
                 if (existingVote == null)
                 {
@@ -437,17 +384,6 @@ namespace DreamAquascape.Services.Core
 
                 // Remove the vote
                 _context.Votes.Remove(existingVote);
-
-                // Update participation record
-                var participation = await _context.UserContestParticipations
-                    .FirstOrDefaultAsync(p => p.ContestId == contestId && p.UserId == userId);
-
-                if (participation != null)
-                {
-                    participation.HasVoted = false;
-                    participation.VotedForEntryId = null;
-                    participation.VotedAt = null;
-                }
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();

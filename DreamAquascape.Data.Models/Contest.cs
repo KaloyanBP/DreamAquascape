@@ -38,12 +38,14 @@ namespace DreamAquascape.Data.Models
 
         public virtual ICollection<ContestEntry> Entries { get; set; } = new HashSet<ContestEntry>();
 
-        public virtual ICollection<Vote> Votes { get; set; } = new HashSet<Vote>();
-        
-        public virtual ICollection<UserContestParticipation> Participants { get; set; } = new HashSet<UserContestParticipation>();
-
         // Many-to-many relationships
         public virtual ICollection<ContestsCategories> Categories { get; set; } = new HashSet<ContestsCategories>();
+
+        // Computed properties for quick access
+        public int TotalEntries => Entries?.Count ?? 0;
+        public int TotalVotes => Entries?.SelectMany(e => e.Votes).Count() ?? 0;
+        public bool IsSubmissionOpen => DateTime.UtcNow >= SubmissionStartDate && DateTime.UtcNow <= SubmissionEndDate;
+        public bool IsVotingOpen => DateTime.UtcNow >= VotingStartDate && DateTime.UtcNow <= VotingEndDate;
 
         // Helpers
         public ContestWinner? PrimaryWinner => Winners.FirstOrDefault(w => w.Position == 1);

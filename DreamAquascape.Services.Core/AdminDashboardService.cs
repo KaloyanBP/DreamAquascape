@@ -31,11 +31,7 @@ namespace DreamAquascape.Services.Core.AdminDashboard
             var totalEntries = await _context.ContestEntries.CountAsync(e => !e.IsDeleted);
             var totalVotes = await _context.Votes.CountAsync();
 
-            // User participation (assuming you have user tracking)
-            var totalUsers = await _context.UserContestParticipations
-                .Select(p => p.UserId)
-                .Distinct()
-                .CountAsync();
+            var totalUsers = await GetTotalUniqueParticipantsAsync();
 
             var pendingEntries = await _context.ContestEntries.CountAsync(e =>
                 !e.IsDeleted && e.IsActive &&
@@ -68,13 +64,7 @@ namespace DreamAquascape.Services.Core.AdminDashboard
                 ? entriesWithVotes.Average(e => e.VoteCount)
                 : 0;
 
-            var userEngagementRate = totalUsers > 0
-                ? (double)await _context.UserContestParticipations
-                    .Where(p => p.ParticipationDate >= thirtyDaysAgo)
-                    .Select(p => p.UserId)
-                    .Distinct()
-                    .CountAsync() / totalUsers * 100
-                : 0;
+            var userEngagementRate = await GetUserEngagementRateAsync(thirtyDaysAgo);
 
             return new DashboardStatsViewModel
             {
@@ -90,6 +80,44 @@ namespace DreamAquascape.Services.Core.AdminDashboard
                 AverageVotesPerEntry = averageVotesPerEntry,
                 UserEngagementRate = userEngagementRate,
             };
+        }
+
+        private async Task<int> GetTotalUniqueParticipantsAsync()
+        {
+            // Get all unique user IDs who have either submitted entries or cast votes
+            var totalUsers = await (
+                _context.ContestEntries
+                    .Select(e => e.ParticipantId)
+                    .Union(
+                        _context.Votes.Select(v => v.UserId)
+                    )
+                ).Distinct().CountAsync();
+
+            return totalUsers;
+        }
+
+        private async Task<double> GetUserEngagementRateAsync(DateTime fromDate)
+        {
+            var totalUsers = await GetTotalUniqueParticipantsAsync();
+
+            if (totalUsers == 0)
+                return 0;
+
+            // Get unique users who participated since the specified date
+            var activeUsers = await (
+                _context.ContestEntries
+                    .Where(e => e.SubmittedAt >= fromDate)
+                    .Select(e => e.ParticipantId)
+                    .Union(
+                        _context.Votes
+                            .Where(v => v.VotedAt >= fromDate)
+                            .Select(v => v.UserId)
+                    )
+                ).Distinct().CountAsync();
+
+            var engagementRate = (double)activeUsers / totalUsers * 100;
+
+            return engagementRate;
         }
     }
 }
