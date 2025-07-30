@@ -23,6 +23,8 @@
             backdrop-filter: blur(8px);
             border-radius: 1.5rem;
             margin-top: 1.5rem;
+            position: relative;
+            z-index: 1050; /* Bootstrap uses 1050+ for navbars/modals */
         }
 
         .navbar-brand {
@@ -75,9 +77,8 @@
                         <li class="nav-item">
                             <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Contests" ? "active" : "")" asp-area="" asp-controller="Contests" asp-action="Index">Contests</a>
                         </li>
-                   </ul>
+                        </ul>
                     <partial name="_LoginPartial" />
-                </div>
             </div>
         </nav>
     </header>
