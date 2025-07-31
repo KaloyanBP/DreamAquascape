@@ -232,7 +232,7 @@
             <a asp-controller="Contests" asp-action="Index" class="btn-hero primary">
                 <i class="bi bi-trophy me-2"></i>Browse Contests
             </a>
-            <a asp-controller="Account" asp-action="Register" class="btn-hero secondary">
+            <a asp-area="Identity" asp-page="/Account/Register" class="btn-hero secondary">
                 <i class="bi bi-person-plus me-2"></i>Join Community
             </a>
         </div>
@@ -405,7 +405,7 @@
         <h2>Ready to showcase your aquascaping talent?</h2>
         <p class="subtitle">Join thousands of aquascapers in our vibrant community</p>
         <div class="hero-actions">
-            <a asp-controller="Dashboard" asp-action="Index" class="btn-hero primary">
+            <a asp-controller="User" asp-action="Dashboard" class="btn-hero primary">
                 <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
             </a>
             <a asp-controller="Contests" asp-action="Index" class="btn-hero secondary">
