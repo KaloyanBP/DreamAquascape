@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace DreamAquascape.Data.Models
+﻿namespace DreamAquascape.Data.Models
 {
     public class Contest
     {

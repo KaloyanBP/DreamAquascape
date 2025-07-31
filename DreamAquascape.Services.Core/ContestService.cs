@@ -1,5 +1,6 @@
 ﻿using DreamAquascape.Data;
 using DreamAquascape.Data.Models;
+using DreamAquascape.Data.Repository.Interfaces;
 using DreamAquascape.Services.Common.Exceptions;
 using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels.Contest;
@@ -11,20 +12,22 @@ namespace DreamAquascape.Services.Core
 {
     public class ContestService : IContestService
     {
-        private readonly ApplicationDbContext _context;
         private readonly ILogger<ContestService> _logger;
+        private readonly IContestRepository _contestRepository;
+        private readonly ApplicationDbContext _context;
 
-        public ContestService(ApplicationDbContext context, ILogger<ContestService> logger)
+        public ContestService(ApplicationDbContext context, IContestRepository contestRepository, ILogger<ContestService> logger)
         {
-            _context = context;
             _logger = logger;
+            _contestRepository = contestRepository;
+            _context = context;
         }
 
         public async Task<IEnumerable<ContestItemViewModel>> GetActiveContestsAsync()
         {
-            return await _context.Contests
-                .Where(c => c.IsActive && !c.IsDeleted && c.SubmissionStartDate <= DateTime.UtcNow && c.SubmissionEndDate >= DateTime.UtcNow)
-                .OrderByDescending(c => c.SubmissionStartDate)
+            var activeContests = await _contestRepository.GetActiveContestsAsync();
+
+            return activeContests
                 .Select(c => new ContestItemViewModel
                 {
                     Id = c.Id,
@@ -32,30 +35,15 @@ namespace DreamAquascape.Services.Core
                     ImageUrl = c.ImageFileUrl ?? "",
                     StartDate = c.SubmissionStartDate,
                     EndDate = c.VotingEndDate,
-                    //Description = c.Description,
-                    //ImageFileUrl = c.ImageFileUrl,
-                    //SubmissionStartDate = c.SubmissionStartDate,
-                    //SubmissionEndDate = c.SubmissionEndDate,
-                    //VotingStartDate = c.VotingStartDate,
-                    //VotingEndDate = c.VotingEndDate,
-                    //ResultDate = c.ResultDate,
-                    //CreatedBy = c.CreatedBy,
                     IsActive = c.IsActive,
                 })
-                .ToListAsync();
+                .ToList();
         }
 
         public async Task<ContestDetailsViewModel?> GetContestWithEntriesAsync(int contestId, string? currentUserId = null)
         {
             // First, get the contest with all related data using Include
-            var contest = await _context.Contests
-                .Include(c => c.Entries)
-                    .ThenInclude(e => e.Votes)
-                .Include(c => c.Entries)
-                    .ThenInclude(e => e.EntryImages)
-                .Include(c => c.Prizes)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(c => c.Id == contestId && c.IsActive && !c.IsDeleted);
+            Contest? contest = await _contestRepository.GetContestDetailsAsync(contestId);
 
             if (contest == null)
                 return null;
@@ -66,12 +54,11 @@ namespace DreamAquascape.Services.Core
 
             if (!string.IsNullOrEmpty(currentUserId))
             {
-                userEntry = await _context.ContestEntries
-                    .FirstOrDefaultAsync(e => e.ContestId == contestId && e.ParticipantId == currentUserId && !e.IsDeleted);
+                userEntry = contest.Entries
+                    .FirstOrDefault(e => e.ContestId == contestId && e.ParticipantId == currentUserId && !e.IsDeleted);
 
-                userVote = await _context.Votes
-                    .Include(v => v.ContestEntry)
-                    .FirstOrDefaultAsync(v => v.UserId == currentUserId && v.ContestEntry.ContestId == contestId);
+                userVote = contest.Entries?.SelectMany(e => e.Votes)
+                    .FirstOrDefault(v => v.UserId == currentUserId && v.ContestEntry.ContestId == contestId);
             }
 
             var now = DateTime.UtcNow;

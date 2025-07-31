@@ -8,6 +8,7 @@ using DreamAquascape.Services.Core.AdminDashboard;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using DreamAquascape.Data.Models;
+using DreamAquascape.Data.Repository.Interfaces;
 
 namespace DreamAquascape.Web
 {
@@ -26,6 +27,9 @@ namespace DreamAquascape.Web
             builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            builder.Services.AddRepositories(typeof(IContestRepository).Assembly);
+
             builder.Services.AddControllersWithViews();
 
             builder.Services.AddTransient<IFileUploadService>(provider =>
