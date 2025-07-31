@@ -18,7 +18,7 @@ namespace DreamAquascape.Data.Models
         public string? IpAddress { get; set; }
 
         // Navigation properties
-        public virtual IdentityUser User { get; set; } = null!;
+        public virtual ApplicationUser User { get; set; } = null!;
         public virtual ContestEntry ContestEntry { get; set; } = null!;
 
         // Computed property to access contest through entry

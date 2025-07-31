@@ -13,7 +13,7 @@ namespace DreamAquascape.Data.Models
         [Comment("Foreign key to the referenced AspNetUser.")]
         public string ParticipantId { get; set; } = null!;
 
-        public virtual IdentityUser Participant { get; set; } = null!;
+        public virtual ApplicationUser Participant { get; set; } = null!;
 
         public virtual ContestWinner? Winner { get; set; }
 

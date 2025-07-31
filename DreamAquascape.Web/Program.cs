@@ -7,6 +7,7 @@ using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Services.Core.AdminDashboard;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using DreamAquascape.Data.Models;
 
 namespace DreamAquascape.Web
 {
@@ -22,7 +23,7 @@ namespace DreamAquascape.Web
                 options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+            builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddControllersWithViews();

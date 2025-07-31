@@ -14,13 +14,13 @@
             = { AdminRoleName, UserRoleName };
 
         private readonly RoleManager<IdentityRole> roleManager;
-        private readonly UserManager<IdentityUser> userManager;
-        private readonly IUserStore<IdentityUser> userStore;
-        private readonly IUserEmailStore<IdentityUser> emailStore;
+        private readonly UserManager<ApplicationUser> userManager;
+        private readonly IUserStore<ApplicationUser> userStore;
+        private readonly IUserEmailStore<ApplicationUser> emailStore;
         private readonly IConfiguration configuration;
 
-        public IdentitySeeder(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager,
-            IUserStore<IdentityUser> userStore, IConfiguration configuration)
+        public IdentitySeeder(RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager,
+            IUserStore<ApplicationUser> userStore, IConfiguration configuration)
         {
             this.roleManager = roleManager;
             this.userManager = userManager;
@@ -69,8 +69,8 @@
                 throw new Exception($"There was an exception while obtaining the {nameof(testUserEmail)}, {nameof(testUserPassword)}, {nameof(adminUserEmail)} and {nameof(adminUserPassword)} from the app configuration!");
             }
 
-            IdentityUser testUser = new IdentityUser();
-            IdentityUser? testUserSeeded = await this.userStore.FindByNameAsync(testUserEmail, CancellationToken.None);
+            ApplicationUser testUser = new ApplicationUser();
+            ApplicationUser? testUserSeeded = await this.userStore.FindByNameAsync(testUserEmail, CancellationToken.None);
             if (testUserSeeded == null)
             {
                 await this.userStore.SetUserNameAsync(testUser, testUserEmail, CancellationToken.None);
@@ -90,8 +90,8 @@
                 }
             }
 
-            IdentityUser adminUser = new IdentityUser();
-            IdentityUser? adminUserSeeded = await this.userStore.FindByNameAsync(adminUserEmail, CancellationToken.None);
+            ApplicationUser adminUser = new ApplicationUser();
+            ApplicationUser? adminUserSeeded = await this.userStore.FindByNameAsync(adminUserEmail, CancellationToken.None);
             if (adminUserSeeded == null)
             {
                 await this.userStore.SetUserNameAsync(adminUser, adminUserEmail, CancellationToken.None);
@@ -112,14 +112,14 @@
             }
         }
 
-        private IUserEmailStore<IdentityUser> GetEmailStore()
+        private IUserEmailStore<ApplicationUser> GetEmailStore()
         {
             if (!userManager.SupportsUserEmail)
             {
                 throw new NotSupportedException("The default UI requires a user store with email support.");
             }
 
-            return (IUserEmailStore<IdentityUser>)userStore;
+            return (IUserEmailStore<ApplicationUser>)userStore;
         }
     }
 }
