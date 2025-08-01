@@ -1,0 +1,379 @@
+﻿@model List<DreamAquascape.Web.ViewModels.UserDashboard.UserVotingHistoryViewModel>
+@{
+    ViewData["Title"] = "My Votes";
+}
+
+<div class="user-votes-container">
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="page-title">
+                    <i class="bi bi-hand-thumbs-up me-2 text-primary"></i>
+                    My Voting History
+                </h1>
+                <p class="page-subtitle text-muted">Track all the contest entries you've voted for</p>
+            </div>
+            <div class="col-auto">
+                <div class="btn-group" role="group">
+                    <a href="/contests?filter=voting" class="btn btn-primary">
+                        <i class="bi bi-search me-2"></i>Find More Contests to Vote
+                    </a>
+                    <a href="/user/dashboard" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voting Statistics Summary -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="stats-icon bg-primary mx-auto mb-2">
+                        <i class="bi bi-hand-thumbs-up"></i>
+                    </div>
+                    <h3 class="fw-bold text-primary">@Model.Count</h3>
+                    <p class="text-muted mb-0">Total Votes Cast</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="stats-icon bg-success mx-auto mb-2">
+                        <i class="bi bi-trophy"></i>
+                    </div>
+                    <h3 class="fw-bold text-success">@Model.Count(v => v.EntryWon == true)</h3>
+                    <p class="text-muted mb-0">Winners You Picked</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="stats-icon bg-info mx-auto mb-2">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <h3 class="fw-bold text-info">@Model.Count(v => v.ContestStatus == "Voting")</h3>
+                    <p class="text-muted mb-0">Active Contests</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voting History List -->
+    @if (Model.Any())
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-list me-2"></i>
+                    Voting History
+                </h5>
+            </div>
+            <div class="card-body">
+                @foreach (var vote in Model)
+                {
+                    <div class="vote-item mb-4 pb-4 border-bottom">
+                        <div class="row">
+                            <!-- Entry Image -->
+                            <div class="col-md-3 col-lg-2">
+                                @if (!string.IsNullOrEmpty(vote.EntryImageUrl))
+                                {
+                                    <img src="@vote.EntryImageUrl"
+                                         alt="@vote.EntryTitle"
+                                         class="entry-image rounded">
+                                }
+                                else
+                                {
+                                    <div class="entry-image-placeholder rounded">
+                                        <i class="bi bi-image fa-2x text-muted"></i>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Vote Details -->
+                            <div class="col-md-9 col-lg-10">
+                                <div class="vote-details">
+                                    <!-- Header with Contest and Entry Info -->
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6 class="vote-entry-title mb-1">
+                                                <strong>@vote.EntryTitle</strong>
+                                            </h6>
+                                            <p class="vote-contest-info text-muted mb-1">
+                                                <i class="bi bi-trophy me-1"></i>
+                                                Contest: <strong>@vote.ContestTitle</strong>
+                                                <span class="ms-2">by @vote.EntryOwner</span>
+                                            </p>
+                                        </div>
+                                        <div class="vote-status-badges">
+                                            <!-- Contest Status Badge -->
+                                            <span class="badge @GetContestStatusBadgeClass(vote.ContestStatus) me-2">
+                                                @vote.ContestStatus
+                                            </span>
+
+                                            <!-- Result Badge (if contest ended) -->
+                                            @if (vote.EntryWon.HasValue)
+                                            {
+                                                @if (vote.EntryWon.Value)
+                                                {
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-crown me-1"></i>Winner!
+                                                    </span>
+                                                }
+                                                else if (vote.EntryFinalRanking.HasValue)
+                                                {
+                                                    <span class="badge bg-secondary">
+                                                        #@vote.EntryFinalRanking
+                                                    </span>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <!-- Entry Description (if available) -->
+                                    @if (!string.IsNullOrEmpty(vote.EntryDescription))
+                                    {
+                                        <p class="vote-entry-description text-muted small mb-2">
+                                            @(vote.EntryDescription.Length > 150 ? vote.EntryDescription.Substring(0, 150) + "..." : vote.EntryDescription)
+                                        </p>
+                                    }
+
+                                    <!-- Vote Metadata -->
+                                    <div class="vote-metadata">
+                                        <div class="row text-muted small">
+                                            <div class="col-md-6">
+                                                <i class="bi bi-calendar me-1"></i>
+                                                Voted on: @vote.VotedAt.ToString("MMM dd, yyyy 'at' HH:mm")
+                                            </div>
+                                            @if (vote.VotingEndDate.HasValue)
+                                            {
+                                                <div class="col-md-6">
+                                                    <i class="bi bi-clock me-1"></i>
+                                                    @if (vote.VotingEndDate.Value > DateTime.UtcNow)
+                                                    {
+                                                        <span class="text-info">
+                                                            Voting ends: @vote.VotingEndDate.Value.ToString("MMM dd, yyyy")
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>
+                                                            Voting ended: @vote.VotingEndDate.Value.ToString("MMM dd, yyyy")
+                                                        </span>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <!-- Action Buttons -->
+                                    <div class="vote-actions mt-3">
+                                        <div class="btn-group" role="group" aria-label="Vote actions">
+                                            <!-- View Entry Details -->
+                                            <a asp-controller="ContestEntries"
+                                               asp-action="Details"
+                                               asp-route-contestId="@vote.ContestId"
+                                               asp-route-entryId="@vote.EntryId"
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="bi bi-eye me-1"></i>
+                                                View Entry
+                                            </a>
+
+                                            <!-- View Contest -->
+                                            <a asp-controller="Contests"
+                                               asp-action="Details"
+                                               asp-route-id="@vote.ContestId"
+                                               class="btn btn-outline-info btn-sm">
+                                                <i class="bi bi-trophy me-1"></i>
+                                                View Contest
+                                            </a>
+
+                                            <!-- Change Vote (if allowed) -->
+                                            @if (vote.CanChangeVote)
+                                            {
+                                                <a asp-controller="Contests"
+                                                   asp-action="Details"
+                                                   asp-route-id="@vote.ContestId"
+                                                   asp-fragment="voting-section"
+                                                   class="btn btn-outline-warning btn-sm">
+                                                    <i class="bi bi-arrow-repeat me-1"></i>
+                                                    Change Vote
+                                                </a>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Load More (if implementing pagination) -->
+        @* 
+        <div class="text-center mt-4">
+            <button class="btn btn-outline-primary" id="load-more-votes">
+                <i class="bi bi-arrow-down-circle me-2"></i>
+                Load More Votes
+            </button>
+        </div>
+        *@
+    }
+    else
+    {
+        <!-- Empty State -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <div class="empty-state">
+                    <div class="empty-state-icon mb-3">
+                        <i class="bi bi-hand-thumbs-up fa-4x text-muted"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">No Votes Yet</h4>
+                    <p class="text-muted mb-4">
+                        You haven't cast any votes in contests yet. Start participating in contests to build your voting history!
+                    </p>
+                    <div class="empty-state-actions">
+                        <a href="/contests?filter=voting" class="btn btn-primary">
+                            <i class="bi bi-search me-2"></i>
+                            Find Contests to Vote In
+                        </a>
+                        <a href="/contests" class="btn btn-outline-secondary ms-2">
+                            <i class="bi bi-trophy me-2"></i>
+                            Browse All Contests
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@functions {
+    string GetContestStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Voting" => "badge bg-success",
+            "Ended" => "badge bg-secondary",
+            "Upcoming" => "badge bg-warning",
+            _ => "badge bg-info"
+        };
+    }
+}
+
+@section Styles {
+    <style>
+        .user-votes-container {
+            padding: 0 15px;
+        }
+
+        .stats-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .entry-image {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border: 2px solid #e9ecef;
+        }
+
+        .entry-image-placeholder {
+            width: 100%;
+            height: 120px;
+            background-color: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .vote-item {
+            transition: all 0.2s ease-in-out;
+        }
+
+            .vote-item:hover {
+                background-color: #f8f9fa;
+                border-radius: 8px;
+                padding: 15px;
+                margin: -15px;
+            }
+
+        .vote-entry-title {
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .vote-contest-info {
+            font-size: 0.9rem;
+        }
+
+        .vote-entry-description {
+            line-height: 1.4;
+        }
+
+        .vote-metadata {
+            border-top: 1px solid #e9ecef;
+            padding-top: 10px;
+        }
+
+        .vote-status-badges .badge {
+            font-size: 0.75rem;
+        }
+
+        .empty-state-icon {
+            opacity: 0.5;
+        }
+
+        @@media (max-width: 768px) {
+            .vote-status-badges
+
+        {
+            margin-top: 10px;
+        }
+
+        .vote-actions .btn-group {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .vote-actions .btn {
+            margin-bottom: 5px;
+        }
+
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Add smooth scrolling for anchor links
+            $('a[href*="#"]').on('click', function(e) {
+                var target = $(this.getAttribute('href'));
+                if (target.length) {
+                    e.preventDefault();
+                    $('html, body').stop().animate({
+                        scrollTop: target.offset().top - 100
+                    }, 1000);
+                }
+            });
+
+            // Add tooltips to action buttons
+            $('[data-bs-toggle="tooltip"]').tooltip();
+        });
+    </script>
+}

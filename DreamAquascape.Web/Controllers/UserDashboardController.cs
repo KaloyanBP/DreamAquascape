@@ -32,5 +32,17 @@ namespace DreamAquascape.Web.Controllers
             return View(model);
         }
 
+        [Route("votes")]
+        public async Task<IActionResult> Votes(int page = 1, int pageSize = 20)
+        {
+            var userId = GetUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var votingHistory = await _userDashboardService.GetUserVotingHistoryAsync(userId, page, pageSize);
+            return View(votingHistory);
+        }
     }
 }
