@@ -17,5 +17,9 @@ namespace DreamAquascape.Services.Core.Interfaces
         Task<ContestEntry> SubmitEntryAsync(CreateContestEntryViewModel dto, string userId, string userName);
         Task<Vote> CastVoteAsync(int contestId, int entryId, string userId, string userName, string? ipAddress = null);
         Task RemoveVoteAsync(int contestId, string userId);
+
+        // Winner determination methods
+        Task<ContestWinner?> DetermineAndSetWinnerAsync(int contestId);
+        Task<List<ContestWinner>> ProcessEndedContestsAsync();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels.Contest;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -9,7 +10,7 @@ namespace DreamAquascape.Web.Controllers
     /// Handles listing, viewing, creating, editing, and archiving aquascaping contests. Manages contest lifecycle and displays contest details.
     /// </summary>
     [Route("Contests")]
-    public class ContestsController : Controller
+    public class ContestsController : BaseController
     {
         private readonly IFileUploadService _fileUploadService;
         private readonly IContestService _contestService;
@@ -47,6 +48,7 @@ namespace DreamAquascape.Web.Controllers
         }
 
         [HttpGet("Create")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             try

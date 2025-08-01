@@ -1,14 +1,14 @@
-using DreamAquascape.Web.Infrastructure.Extensions;
 using DreamAquascape.Data;
+using DreamAquascape.Data.Models;
+using DreamAquascape.Data.Repository.Interfaces;
 using DreamAquascape.Data.Seeding;
 using DreamAquascape.Data.Seeding.Interfaces;
 using DreamAquascape.Services.Core;
-using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Services.Core.AdminDashboard;
+using DreamAquascape.Services.Core.Interfaces;
+using DreamAquascape.Web.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using DreamAquascape.Data.Models;
-using DreamAquascape.Data.Repository.Interfaces;
 
 namespace DreamAquascape.Web
 {
@@ -41,6 +41,9 @@ namespace DreamAquascape.Web
             builder.Services.AddScoped<IContestService, ContestService>();
             builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
             builder.Services.AddScoped<IUserDashboardService, UserDashboardService>();
+
+            // Add background service for automatic winner determination
+            builder.Services.AddHostedService<WinnerDeterminationService>();
 
             builder.Services.AddTransient<IIdentitySeeder, IdentitySeeder>();
 

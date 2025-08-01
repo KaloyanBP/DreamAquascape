@@ -49,6 +49,24 @@ namespace DreamAquascape.Services.Core
             if (contest == null)
                 return null;
 
+            // Check if contest has just ended and needs winner determination
+            var now = DateTime.UtcNow;
+            if (now > contest.VotingEndDate && contest.PrimaryWinner == null && contest.Entries.Any())
+            {
+                try
+                {
+                    // Automatically determine winner when contest is viewed after voting ends
+                    await DetermineAndSetWinnerAsync(contestId);
+                    // Refresh contest data to get the new winner
+                    contest = await _contestRepository.GetContestDetailsAsync(contestId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error auto-determining winner for contest {ContestId} during view", contestId);
+                    // Continue with existing data even if winner determination fails
+                }
+            }
+
             // Get user participation data if user is authenticated
             ContestEntry? userEntry = null;
             Vote? userVote = null;
@@ -61,8 +79,6 @@ namespace DreamAquascape.Services.Core
                 userVote = contest.Entries?.SelectMany(e => e.Votes)
                     .FirstOrDefault(v => v.UserId == currentUserId && v.ContestEntry.ContestId == contestId);
             }
-
-            var now = DateTime.UtcNow;
 
             return new ContestDetailsViewModel
             {
@@ -548,6 +564,116 @@ namespace DreamAquascape.Services.Core
             }
 
             return entryImages;
+        }
+
+        /// <summary>
+        /// Automatically determines and sets the winner for a contest when voting ends.
+        /// Winner is determined by highest vote count, with ties broken by earliest submission.
+        /// </summary>
+        /// <param name="contestId">The contest ID to determine winner for</param>
+        /// <returns>The contest winner, or null if no entries or winner already exists</returns>
+        public async Task<ContestWinner?> DetermineAndSetWinnerAsync(int contestId)
+        {
+            var contest = await _context.Contests
+                .Include(c => c.Entries)
+                    .ThenInclude(e => e.Votes)
+                .Include(c => c.Winners)
+                .FirstOrDefaultAsync(c => c.Id == contestId);
+
+            if (contest == null)
+            {
+                _logger.LogWarning("Contest with ID {ContestId} not found for winner determination", contestId);
+                return null;
+            }
+
+            // Check if voting has ended
+            if (contest.IsVotingOpen)
+            {
+                _logger.LogInformation("Contest {ContestId} voting is still open, cannot determine winner yet", contestId);
+                return null;
+            }
+
+            // Check if winner already exists
+            if (contest.PrimaryWinner != null)
+            {
+                _logger.LogInformation("Contest {ContestId} already has a winner: Entry {EntryId}",
+                    contestId, contest.PrimaryWinner.ContestEntryId);
+                return contest.PrimaryWinner;
+            }
+
+            // Check if there are any entries
+            if (!contest.Entries.Any())
+            {
+                _logger.LogInformation("Contest {ContestId} has no entries, cannot determine winner", contestId);
+                return null;
+            }
+
+            // Find winner: highest vote count, then earliest submission for ties
+            var winnerEntry = contest.Entries
+                .OrderByDescending(e => e.Votes.Count)
+                .ThenBy(e => e.SubmittedAt)
+                .First();
+
+            var winner = new ContestWinner
+            {
+                ContestId = contestId,
+                ContestEntryId = winnerEntry.Id,
+                Position = 1,
+                WonAt = DateTime.UtcNow,
+                AwardTitle = "Contest Winner",
+                Notes = $"Won with {winnerEntry.Votes.Count} votes"
+            };
+
+            _context.ContestWinners.Add(winner);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Winner determined for contest {ContestId}: Entry {EntryId} with {VoteCount} votes",
+                contestId, winnerEntry.Id, winnerEntry.Votes.Count);
+
+            return winner;
+        }
+
+        /// <summary>
+        /// Checks all contests where voting has recently ended and determines winners automatically.
+        /// </summary>
+        /// <returns>List of newly determined winners</returns>
+        public async Task<List<ContestWinner>> ProcessEndedContestsAsync()
+        {
+            var newWinners = new List<ContestWinner>();
+
+            // Find contests where voting ended recently but no winner has been determined
+            var endedContests = await _context.Contests
+                .Include(c => c.Entries)
+                    .ThenInclude(e => e.Votes)
+                .Include(c => c.Winners)
+                .Where(c => c.VotingEndDate <= DateTime.UtcNow &&
+                           !c.Winners.Any(w => w.Position == 1) &&
+                           c.Entries.Any())
+                .ToListAsync();
+
+            foreach (var contest in endedContests)
+            {
+                try
+                {
+                    var winner = await DetermineAndSetWinnerAsync(contest.Id);
+                    if (winner != null)
+                    {
+                        newWinners.Add(winner);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error determining winner for contest {ContestId}", contest.Id);
+                }
+            }
+
+            if (newWinners.Any())
+            {
+                _logger.LogInformation("Processed {Count} ended contests and determined {WinnerCount} new winners",
+                    endedContests.Count, newWinners.Count);
+            }
+
+            return newWinners;
         }
     }
 }
