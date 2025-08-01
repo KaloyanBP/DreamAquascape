@@ -1,0 +1,522 @@
+﻿@model List<DreamAquascape.Web.ViewModels.UserDashboard.UserSubmissionViewModel>
+@{
+    ViewData["Title"] = "My Entries";
+}
+
+<div class="user-entries-container">
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="page-title">
+                    <i class="bi bi-images me-2 text-primary"></i>
+                    My Contest Entries
+                </h1>
+                <p class="page-subtitle text-muted">View and manage all your aquascaping contest submissions</p>
+            </div>
+            <div class="col-auto">
+                <div class="btn-group" role="group">
+                    <a href="/contests?filter=submission" class="btn btn-primary">
+                        <i class="bi bi-plus me-2"></i>Submit New Entry
+                    </a>
+                    <a href="/user/dashboard" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Entry Statistics Summary -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="stats-icon bg-primary mx-auto mb-2">
+                        <i class="bi bi-images"></i>
+                    </div>
+                    <h3 class="fw-bold text-primary">@Model.Count</h3>
+                    <p class="text-muted mb-0">Total Entries</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="stats-icon bg-success mx-auto mb-2">
+                        <i class="bi bi-trophy"></i>
+                    </div>
+                    <h3 class="fw-bold text-success">@Model.Count(e => e.IsWinner)</h3>
+                    <p class="text-muted mb-0">Winning Entries</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="stats-icon bg-info mx-auto mb-2">
+                        <i class="bi bi-hand-thumbs-up"></i>
+                    </div>
+                    <h3 class="fw-bold text-info">@Model.Sum(e => e.VotesReceived)</h3>
+                    <p class="text-muted mb-0">Total Votes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="stats-icon bg-warning mx-auto mb-2">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <h3 class="fw-bold text-warning">@Model.Count(e => e.Status == "Active")</h3>
+                    <p class="text-muted mb-0">Active Entries</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Entries List -->
+    @if (Model.Any())
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-list me-2"></i>
+                            My Submissions
+                        </h5>
+                    </div>
+                    <div class="col-auto">
+                        <!-- Filter/Sort Options -->
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-funnel me-1"></i>Filter
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="?status=all">All Entries</a></li>
+                                <li><a class="dropdown-item" href="?status=active">Active Only</a></li>
+                                <li><a class="dropdown-item" href="?status=winner">Winners Only</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="?sort=newest">Newest First</a></li>
+                                <li><a class="dropdown-item" href="?sort=votes">Most Votes</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                @foreach (var entry in Model)
+                {
+                    <div class="entry-item mb-4 pb-4 border-bottom">
+                        <div class="row">
+                            <!-- Entry Images -->
+                            <div class="col-md-4 col-lg-3">
+                                @if (entry.Images.Any())
+                                {
+                                    @if (entry.Images.Count == 1)
+                                    {
+                                        <img src="@entry.Images.First().ImageUrl"
+                                             alt="@entry.EntryTitle"
+                                             class="entry-thumbnail rounded">
+                                    }
+                                    else
+                                    {
+                                        <!-- Mini Image Gallery -->
+                                        <div class="entry-image-gallery">
+                                            <div class="main-image">
+                                                <img src="@entry.Images.First().ImageUrl"
+                                                     alt="@entry.EntryTitle"
+                                                     class="entry-thumbnail rounded">
+                                                <div class="image-count-badge">
+                                                    <i class="bi bi-images me-1"></i>@entry.Images.Count
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="entry-thumbnail-placeholder rounded">
+                                        <i class="bi bi-image fa-2x text-muted"></i>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Entry Details -->
+                            <div class="col-md-8 col-lg-9">
+                                <div class="entry-details">
+                                    <!-- Header with Title and Status -->
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h5 class="entry-title mb-1">
+                                                <a asp-controller="ContestEntries"
+                                                   asp-action="Details"
+                                                   asp-route-contestId="@entry.ContestId"
+                                                   asp-route-entryId="@entry.EntryId"
+                                                   class="text-decoration-none">
+                                                    @entry.EntryTitle
+                                                </a>
+                                                @if (entry.IsWinner)
+                                                {
+                                                    <span class="badge bg-warning text-dark ms-2">
+                                                        <i class="bi bi-crown me-1"></i>Winner
+                                                    </span>
+                                                }
+                                            </h5>
+                                            <p class="entry-contest-info text-muted mb-1">
+                                                <i class="bi bi-trophy me-1"></i>
+                                                Contest: <a asp-controller="Contests"
+                                                            asp-action="Details"
+                                                            asp-route-id="@entry.ContestId"
+                                                            class="text-decoration-none">
+                                                    <strong>@entry.ContestTitle</strong>
+                                                </a>
+                                            </p>
+                                        </div>
+                                        <div class="entry-status-badges">
+                                            <span class="badge @GetStatusBadgeClass(entry.Status) fs-6">
+                                                @entry.Status
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Entry Description -->
+                                    @if (!string.IsNullOrEmpty(entry.Description))
+                                    {
+                                        <p class="entry-description text-muted small mb-2">
+                                            @(entry.Description.Length > 200 ? entry.Description.Substring(0, 200) + "..." : entry.Description)
+                                        </p>
+                                    }
+
+                                    <!-- Entry Metadata -->
+                                    <div class="entry-metadata mb-3">
+                                        <div class="row text-muted small">
+                                            <div class="col-md-6">
+                                                <i class="bi bi-calendar me-1"></i>
+                                                Submitted: @entry.SubmittedAt.ToString("MMM dd, yyyy 'at' HH:mm")
+                                            </div>
+                                            <div class="col-md-6">
+                                                @if (entry.ContestEndDate > DateTime.UtcNow)
+                                                {
+                                                    <i class="bi bi-clock me-1"></i>
+                                                    <span class="text-warning">
+                                                        Contest ends: @entry.ContestEndDate?.ToString("MMM dd, yyyy")
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi bi-flag-checkered me-1"></i>
+                                                    <span class="text-secondary">
+                                                        Contest ended: @entry.ContestEndDate?.ToString("MMM dd, yyyy")
+                                                    </span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Entry Statistics -->
+                                    <div class="entry-stats mb-3">
+                                        <div class="row">
+                                            <div class="col-6 col-md-3">
+                                                <div class="stat-item text-center">
+                                                    <div class="fw-bold text-primary">@entry.VotesReceived</div>
+                                                    <div class="small text-muted">Votes</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-6 col-md-3">
+                                                <div class="stat-item text-center">
+                                                    <div class="fw-bold text-info">#@entry.Ranking</div>
+                                                    <div class="small text-muted">Rank</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-6 col-md-3">
+                                                <div class="stat-item text-center">
+                                                    <div class="fw-bold text-success">@entry.VotePercentage.ToString("F1")%</div>
+                                                    <div class="small text-muted">Vote Share</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-6 col-md-3">
+                                                <div class="stat-item text-center">
+                                                    <div class="fw-bold text-warning">@entry.TotalContestVotes</div>
+                                                    <div class="small text-muted">Total Contest Votes</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Action Buttons -->
+                                    <div class="entry-actions">
+                                        <div class="btn-group" role="group" aria-label="Entry actions">
+                                            <!-- View Entry Details -->
+                                            <a asp-controller="ContestEntries"
+                                               asp-action="Details"
+                                               asp-route-contestId="@entry.ContestId"
+                                               asp-route-entryId="@entry.EntryId"
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="bi bi-eye me-1"></i>
+                                                View Details
+                                            </a>
+
+                                            <!-- View Contest -->
+                                            <a asp-controller="Contests"
+                                               asp-action="Details"
+                                               asp-route-id="@entry.ContestId"
+                                               class="btn btn-outline-info btn-sm">
+                                                <i class="bi bi-trophy me-1"></i>
+                                                View Contest
+                                            </a>
+
+                                            <!-- Edit Entry (if allowed) -->
+                                            @if (entry.CanEdit)
+                                            {
+                                                <a asp-controller="ContestEntries"
+                                                   asp-action="Edit"
+                                                   asp-route-contestId="@entry.ContestId"
+                                                   asp-route-entryId="@entry.EntryId"
+                                                   class="btn btn-outline-warning btn-sm">
+                                                    <i class="bi bi-pencil me-1"></i>
+                                                    Edit
+                                                </a>
+                                            }
+
+                                            <!-- Share Entry -->
+                                            <button class="btn btn-outline-secondary btn-sm"
+                                                    onclick="shareEntry('@entry.EntryId', '@entry.EntryTitle')">
+                                                <i class="bi bi-share me-1"></i>
+                                                Share
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Load More (if implementing pagination) -->
+        @* 
+        <div class="text-center mt-4">
+            <button class="btn btn-outline-primary" id="load-more-entries">
+                <i class="bi bi-arrow-down-circle me-2"></i>
+                Load More Entries
+            </button>
+        </div>
+        *@
+    }
+    else
+    {
+        <!-- Empty State -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <div class="empty-state">
+                    <div class="empty-state-icon mb-3">
+                        <i class="bi bi-images fa-4x text-muted"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">No Entries Yet</h4>
+                    <p class="text-muted mb-4">
+                        You haven't submitted any contest entries yet. Start participating in contests to showcase your aquascaping skills!
+                    </p>
+                    <div class="empty-state-actions">
+                        <a href="/contests?filter=submission" class="btn btn-primary">
+                            <i class="bi bi-plus me-2"></i>
+                            Submit Your First Entry
+                        </a>
+                        <a href="/contests" class="btn btn-outline-secondary ms-2">
+                            <i class="bi bi-trophy me-2"></i>
+                            Browse All Contests
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@functions {
+    string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Active" => "bg-success",
+            "Contest Ended" => "bg-secondary",
+            "Winner" => "bg-warning text-dark",
+            _ => "bg-info"
+        };
+    }
+}
+
+@section Styles {
+    <style>
+        .user-entries-container {
+            padding: 0 15px;
+        }
+
+        .stats-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .entry-thumbnail {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border: 2px solid #e9ecef;
+        }
+
+        .entry-thumbnail-placeholder {
+            width: 100%;
+            height: 200px;
+            background-color: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .entry-image-gallery {
+            position: relative;
+        }
+
+        .image-count-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+
+        .entry-item {
+            transition: all 0.2s ease-in-out;
+        }
+
+            .entry-item:hover {
+                background-color: #f8f9fa;
+                border-radius: 8px;
+                padding: 15px;
+                margin: -15px;
+            }
+
+        .entry-title a {
+            color: #495057;
+            font-weight: 600;
+        }
+
+            .entry-title a:hover {
+                color: #0d6efd;
+            }
+
+        .entry-contest-info {
+            font-size: 0.9rem;
+        }
+
+        .entry-description {
+            line-height: 1.4;
+        }
+
+        .entry-metadata {
+            border-top: 1px solid #e9ecef;
+            padding-top: 10px;
+        }
+
+        .entry-stats {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .stat-item {
+            padding: 8px 0;
+        }
+
+        .entry-status-badges .badge {
+            font-size: 0.75rem;
+        }
+
+        .empty-state-icon {
+            opacity: 0.5;
+        }
+
+        @@media (max-width: 768px) {
+        .entry-thumbnail {
+            height: 150px;
+        }
+
+        .entry-status-badges {
+            margin-top: 10px;
+        }
+
+        .entry-actions .btn-group {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .entry-actions .btn {
+            margin-bottom: 5px;
+        }
+
+        .entry-stats .row > div {
+            margin-bottom: 10px;
+        }
+
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function shareEntry(entryId, entryTitle) {
+            const entryUrl = `${window.location.origin}/Contests/Entries/${entryId}`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: entryTitle,
+                    text: `Check out my aquascaping contest entry: "${entryTitle}"`,
+                    url: entryUrl
+                });
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(entryUrl).then(function() {
+                    showToast('Entry URL copied to clipboard!', 'success');
+                });
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            // Simple toast implementation
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type} position-fixed`;
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            toast.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <span>${message}</span>
+                    <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+                </div>
+            `;
+            document.body.appendChild(toast);
+
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 3000);
+        }
+
+        // Initialize Bootstrap tooltips
+        $(document).ready(function() {
+            $('[data-bs-toggle="tooltip"]').tooltip();
+        });
+    </script>
+}

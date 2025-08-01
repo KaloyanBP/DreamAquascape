@@ -5,6 +5,7 @@ using DreamAquascape.Services.Common.Exceptions;
 using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels.Contest;
 using DreamAquascape.Web.ViewModels.ContestEntry;
+using DreamAquascape.Web.ViewModels.UserDashboard;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -385,6 +386,149 @@ namespace DreamAquascape.Services.Core
                     userId, contestId);
                 throw;
             }
+        }
+        public async Task<ContestEntryDetailsViewModel?> GetContestEntryDetailsAsync(int contestId, int entryId, string? currentUserId = null)
+        {
+            var entry = await _context.ContestEntries
+                .Include(e => e.Contest)
+                    .ThenInclude(c => c.Winners)
+                .Include(e => e.Participant)
+                .Include(e => e.EntryImages)
+                .Include(e => e.Votes)
+                    .ThenInclude(v => v.User)
+                .Include(e => e.Winner)
+                .FirstOrDefaultAsync(e => e.Id == entryId && e.ContestId == contestId && !e.IsDeleted);
+
+            if (entry == null)
+                return null;
+
+            var contest = entry.Contest;
+            var now = DateTime.UtcNow;
+
+            // Get all entries in this contest for ranking calculation
+            var allContestEntries = await _context.ContestEntries
+                .Where(e => e.ContestId == contestId && !e.IsDeleted)
+                .Include(e => e.Votes)
+                .Include(e => e.Participant)
+                .Include(e => e.EntryImages)
+                .ToListAsync();
+
+            // Calculate ranking
+            var rankedEntries = allContestEntries
+                .OrderByDescending(e => e.Votes.Count)
+                .ThenBy(e => e.SubmittedAt)
+                .ToList();
+
+            var entryRanking = rankedEntries.FindIndex(e => e.Id == entryId) + 1;
+            var totalVotesInContest = allContestEntries.Sum(e => e.Votes.Count);
+            var votePercentage = totalVotesInContest > 0 ? (double)entry.Votes.Count / totalVotesInContest * 100 : 0;
+
+            // Check if user has voted for this entry
+            var userVote = !string.IsNullOrEmpty(currentUserId) ?
+                await _context.Votes.FirstOrDefaultAsync(v => v.UserId == currentUserId && v.ContestEntryId == entryId) :
+                null;
+
+            // Determine contest phase
+            string contestPhase;
+            if (now < contest.SubmissionEndDate)
+                contestPhase = "Submission";
+            else if (now < contest.VotingEndDate)
+                contestPhase = "Voting";
+            else
+                contestPhase = "Results";
+
+            // Check user permissions
+            bool isOwnEntry = !string.IsNullOrEmpty(currentUserId) && entry.ParticipantId == currentUserId;
+            bool canUserVote = !string.IsNullOrEmpty(currentUserId) &&
+                              now >= contest.VotingStartDate &&
+                              now <= contest.VotingEndDate &&
+                              !isOwnEntry &&
+                              userVote == null;
+            bool canEdit = isOwnEntry && now <= contest.SubmissionEndDate && contest.IsActive;
+
+            // Check if entry is winner
+            bool isWinner = contest.Winners.Any(w => w.ContestEntryId == entryId);
+            int? winnerPosition = contest.Winners.FirstOrDefault(w => w.ContestEntryId == entryId)?.Position;
+
+            return new ContestEntryDetailsViewModel
+            {
+                // Entry Information
+                Id = entry.Id,
+                Title = entry.Title,
+                Description = entry.Description,
+                SubmittedAt = entry.SubmittedAt,
+                IsActive = entry.IsActive,
+
+                // Participant Information
+                ParticipantId = entry.ParticipantId,
+                ParticipantName = entry.Participant.UserName ?? "Unknown",
+
+                // Contest Information
+                ContestId = contest.Id,
+                ContestTitle = contest.Title,
+                ContestDescription = contest.Description,
+                ContestSubmissionStartDate = contest.SubmissionStartDate,
+                ContestSubmissionEndDate = contest.SubmissionEndDate,
+                ContestVotingStartDate = contest.VotingStartDate,
+                ContestVotingEndDate = contest.VotingEndDate,
+                ContestPhase = contestPhase,
+                IsContestActive = contest.IsActive,
+
+                // Entry Images
+                Images = entry.EntryImages
+                    .OrderBy(img => img.DisplayOrder)
+                    .Select(img => new EntryImageViewModel
+                    {
+                        Id = img.Id,
+                        ImageUrl = img.ImageUrl,
+                        Caption = img.Caption,
+                        DisplayOrder = img.DisplayOrder,
+                        UploadedAt = img.UploadedAt
+                    }).ToList(),
+
+                // Voting Information
+                VoteCount = entry.Votes.Count,
+                Votes = entry.Votes
+                    .OrderByDescending(v => v.VotedAt)
+                    .Select(v => new VoteDetailViewModel
+                    {
+                        Id = v.Id,
+                        VoterName = v.User.UserName ?? "Anonymous",
+                        VotedAt = v.VotedAt,
+                        IsAnonymous = true // Keep voter names private by default
+                    }).ToList(),
+
+                // User Context
+                IsOwnEntry = isOwnEntry,
+                CanUserVote = canUserVote,
+                HasUserVoted = userVote != null,
+                CanEdit = canEdit,
+
+                // Competition Information
+                EntryRanking = entryRanking,
+                TotalEntriesInContest = allContestEntries.Count,
+                VotePercentage = votePercentage,
+                IsWinner = isWinner,
+                WinnerPosition = winnerPosition,
+
+                // Statistics
+                LastVoteDate = entry.Votes.Any() ? entry.Votes.Max(v => v.VotedAt) : null,
+                FirstVoteDate = entry.Votes.Any() ? entry.Votes.Min(v => v.VotedAt) : null,
+
+                // Related Entries (top 5 other entries from same contest)
+                RelatedEntries = rankedEntries
+                    .Where(e => e.Id != entryId)
+                    .Take(5)
+                    .Select(e => new RelatedEntryViewModel
+                    {
+                        Id = e.Id,
+                        Title = e.Title,
+                        ParticipantName = e.Participant.UserName ?? "Unknown",
+                        ThumbnailImageUrl = e.EntryImages.OrderBy(img => img.DisplayOrder).FirstOrDefault()?.ImageUrl,
+                        VoteCount = e.Votes.Count,
+                        IsWinner = contest.Winners.Any(w => w.ContestEntryId == e.Id)
+                    }).ToList()
+            };
         }
 
         private ICollection<EntryImage> GetEntryImages(List<string> imageUrls)

@@ -29,9 +29,17 @@ namespace DreamAquascape.Web.Controllers
         }
 
         [HttpGet("{entryId:int}")]
-        public IActionResult Details()
+        public async Task<IActionResult> Details(int contestId, int entryId)
         {
-            return View();
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var entryDetails = await _contestService.GetContestEntryDetailsAsync(contestId, entryId, currentUserId);
+
+            if (entryDetails == null)
+            {
+                return NotFound("Contest entry not found.");
+            }
+
+            return View(entryDetails);
         }
 
         [HttpGet("Create")]
