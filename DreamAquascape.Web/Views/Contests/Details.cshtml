@@ -22,6 +22,68 @@
                     <strong>Prize:</strong> @Model.Prize.Name - @Model.Prize.Description
                 </div>
             }
+
+            <!-- Winner Announcement Section -->
+            @if (Model.WinnerEntryId.HasValue)
+            {
+                var winnerEntry = Model.Entries.FirstOrDefault(e => e.Id == Model.WinnerEntryId.Value);
+                if (winnerEntry != null)
+                {
+                    <div class="alert alert-success mt-3 winner-announcement">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="winner-trophy-icon">
+                                    <i class="bi bi-trophy-fill fa-3x text-warning"></i>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <h4 class="alert-heading mb-2">
+                                    <i class="bi bi-award me-2"></i>Contest Winner!
+                                </h4>
+                                <p class="mb-1">
+                                    <strong>@winnerEntry.UserName</strong> won with <strong>@winnerEntry.VoteCount votes</strong>
+                                </p>
+                                <p class="mb-0 text-muted">
+                                    Entry: "@winnerEntry.Title"
+                                </p>
+                            </div>
+                            <div class="col-auto">
+                                <a href="#winner-entry-@winnerEntry.Id" class="btn btn-warning btn-sm">
+                                    <i class="bi bi-eye me-1"></i>View Winning Entry
+                                </a>
+                            </div>
+                        </div>
+                        <!-- Contest Statistics -->
+                        <hr class="my-3">
+                        <div class="row text-center">
+                            <div class="col-6 col-md-3">
+                                <div class="contest-stat">
+                                    <div class="stat-number">@Model.Entries.Count</div>
+                                    <div class="stat-label">Total Entries</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="contest-stat">
+                                    <div class="stat-number">@Model.Entries.Sum(e => e.VoteCount)</div>
+                                    <div class="stat-label">Total Votes</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="contest-stat">
+                                    <div class="stat-number">@Math.Round((double)winnerEntry.VoteCount / Model.Entries.Sum(e => e.VoteCount) * 100, 1)%</div>
+                                    <div class="stat-label">Winner Share</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="contest-stat">
+                                    <div class="stat-number">@(Model.Entries.Count(e => e.VoteCount > 0))</div>
+                                    <div class="stat-label">Entries with Votes</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
         </div>
     </div>
 
@@ -41,7 +103,22 @@
             @foreach (var entry in Model.Entries)
             {
                 <div class="col">
-                    <div class="card h-100 shadow-sm  @(entry.IsOwnEntry ? "border-primary" : "")">
+                    <div id="@(entry.Id == Model.WinnerEntryId ? "winner-entry-" + entry.Id : "")"
+                         class="card h-100 shadow-sm @(entry.IsOwnEntry ? "border-primary" : "") @(entry.Id == Model.WinnerEntryId ? "winner-card border-warning border-3" : "")">
+
+                        @if (entry.Id == Model.WinnerEntryId)
+                        {
+                            <!-- Winner Crown Overlay -->
+                            <div class="winner-crown-overlay">
+                                <div class="winner-crown">
+                                    <i class="bi bi-award-fill"></i>
+                                </div>
+                            </div>
+                            <!-- Winner Ribbon -->
+                            <div class="winner-ribbon">
+                                <span>WINNER</span>
+                            </div>
+                        }
 
                         <!-- Carousel for multiple images -->
                         <div id="carouselEntry@(entry.Id)" class="carousel slide" data-bs-ride="carousel">
@@ -67,17 +144,42 @@
                             }
                         </div>
                         <div class="card-body">
-                            <h5 class="card-title">@entry.UserName</h5>
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-0">
+                                    @entry.UserName
+                                    @if (entry.Id == Model.WinnerEntryId)
+                                    {
+                                        <span class="badge bg-warning text-dark ms-2">
+                                            <i class="bi bi-trophy me-1"></i>WINNER
+                                        </span>
+                                    }
+                                </h5>
+                                @if (entry.Id == Model.WinnerEntryId)
+                                {
+                                    <div class="winner-votes-highlight">
+                                        <span class="badge bg-success fs-6">
+                                            <i class="bi bi-hand-thumbs-up me-1"></i>@entry.VoteCount votes
+                                        </span>
+                                    </div>
+                                }
+                            </div>
+                            @if (!string.IsNullOrEmpty(entry.Title))
+                            {
+                                <h6 class="text-muted mb-2">@entry.Title</h6>
+                            }
                             <p class="card-text">@entry.Description</p>
                         </div>
                         <div class="card-footer d-flex justify-content-between align-items-center">
                             <div>
-                                <span class="badge bg-primary">
-                                    <i class="bi bi-hand-thumbs-up"></i> @entry.VoteCount votes
-                                </span>
+                                @if (entry.Id != Model.WinnerEntryId)
+                                {
+                                    <span class="badge bg-primary">
+                                        <i class="bi bi-hand-thumbs-up"></i> @entry.VoteCount votes
+                                    </span>
+                                }
                                 @if (entry.IsOwnEntry)
                                 {
-                                    <span class="badge bg-primary">Your Entry</span>
+                                    <span class="badge bg-info">Your Entry</span>
                                 }
                             </div>
                             <div class="entry-actions">
@@ -130,13 +232,6 @@
                                         <i class="bi bi-box-arrow-in-right"></i> Login to Vote
                                     </a>
                                 }
-
-                                @if (Model.WinnerEntryId == entry.Id)
-                                {
-                                    <span class="badge bg-warning text-dark ms-2">
-                                        <i class="bi bi-trophy"></i> Winner
-                                    </span>
-                                }
                             </div>
                         </div>
                     </div>
@@ -155,3 +250,204 @@
         </a>
     </div>
 </div>
+
+@section Styles {
+    <style>
+        /* Winner Announcement Styles */
+        .winner-announcement {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border: 2px solid #ffc107;
+            animation: winnerGlow 2s ease-in-out infinite alternate;
+        }
+
+        @@keyframes winnerGlow {
+        from {
+            box-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
+        }
+
+        to {
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.8);
+        }
+
+        }
+
+        .winner-trophy-icon {
+            text-align: center;
+            animation: trophyBounce 2s ease-in-out infinite;
+        }
+
+        @@keyframes trophyBounce {
+        0%, 20%, 60%, 100% {
+            transform: translateY(0);
+        }
+
+        40% {
+            transform: translateY(-10px);
+        }
+
+        80% {
+            transform: translateY(-5px);
+        }
+
+        }
+
+        /* Winner Card Styles */
+        .winner-card {
+            position: relative;
+            background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(255, 193, 7, 0.3) !important;
+            animation: winnerPulse 3s ease-in-out infinite;
+        }
+
+        @@keyframes winnerPulse {
+        0%, 100% {
+            transform: scale(1.02);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+
+        }
+
+        /* Winner Crown Overlay */
+        .winner-crown-overlay {
+            position: absolute;
+            top: -15px;
+            right: 15px;
+            z-index: 10;
+        }
+
+        .winner-crown {
+            background: #ffc107;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+            border: 3px solid #fff;
+            font-size: 20px;
+            color: #fff;
+            animation: crownRotate 4s linear infinite;
+        }
+
+        .winner-crown i {
+            color: #fff !important;
+            font-size: 20px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        @@keyframes crownRotate {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        25% {
+            transform: rotate(-5deg);
+        }
+
+        75% {
+            transform: rotate(5deg);
+        }
+
+        100% {
+            transform: rotate(0deg);
+        }
+
+        }
+
+        /* Winner Ribbon */
+        .winner-ribbon {
+            position: absolute;
+            top: 20px;
+            left: -10px;
+            background: #dc3545;
+            color: white;
+            padding: 8px 15px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 5;
+            clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%);
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+        }
+
+        /* Winner Votes Highlight */
+        .winner-votes-highlight .badge {
+            font-size: 14px;
+            padding: 8px 12px;
+            animation: voteHighlight 2s ease-in-out infinite alternate;
+        }
+
+        @@keyframes voteHighlight {
+        from {
+            transform: scale(1);
+        }
+
+        to {
+            transform: scale(1.1);
+        }
+
+        }
+
+        /* Contest Statistics */
+        .contest-stat {
+            text-align: center;
+            padding: 10px;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Smooth scroll to winner entry */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Winner card hover effects */
+        .winner-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 35px rgba(255, 193, 7, 0.4) !important;
+        }
+
+        /* Contest status indicators */
+        .contest-status-ended {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        /* Responsive adjustments */
+        @@media (max-width: 768px) {
+            .winner-announcement .row
+
+        {
+            text-align: center;
+        }
+
+        .winner-announcement .col-auto {
+            margin-bottom: 10px;
+        }
+
+        .winner-card {
+            transform: scale(1);
+        }
+
+            .winner-card:hover {
+                transform: scale(1.02);
+            }
+
+        }
+    </style>
+}
+
