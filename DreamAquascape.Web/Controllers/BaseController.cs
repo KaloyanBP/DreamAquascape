@@ -29,5 +29,18 @@ namespace DreamAquascape.Web.Controllers
 
             return userId;
         }
+
+        protected string? GetUserName()
+        {
+            string? userName = null;
+            if (this.IsUserAuthenticated())
+            {
+                userName = this.User
+                    .FindFirstValue(ClaimTypes.Name);
+            }
+
+            return userName;
+        }
+
     }
 }

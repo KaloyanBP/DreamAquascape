@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels.UserDashboard;
-using DreamAquascape.Services.Core.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+using static DreamAquascape.Data.Common.EntityConstants;
 
 namespace DreamAquascape.Web.Controllers
 {
@@ -22,7 +23,7 @@ namespace DreamAquascape.Web.Controllers
         {
             var model = new UserDashboardViewModel
             {
-                UserName = "AquaFan",
+                UserName = GetUserName() ?? "AquaFan",
                 QuickStats = await _userDashboardService.GetUserQuickStatsAsync(GetUserId()!),
                 ActiveContests = await _userDashboardService.GetUserActiveContestsAsync(GetUserId()!),
                 MySubmissions = await _userDashboardService.GetUserSubmissionsAsync(GetUserId()!),
