@@ -15,5 +15,7 @@
         public DateTime UploadedAt { get; set; }
 
         public virtual ContestEntry ContestEntry { get; set; } = null!;
+
+        public bool IsDeleted { get; set; } = false;
     }
 }

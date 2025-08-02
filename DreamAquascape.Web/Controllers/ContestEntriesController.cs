@@ -11,15 +11,15 @@ namespace DreamAquascape.Web.Controllers
     /// Manages user submissions to contests, including uploading images and viewing entry details. Allows users to participate in active contests.
     /// </summary>
     [Route("Contests/{contestId:int}/Entries")]
-    public class ContestEntriesController : Controller
+    public class ContestEntriesController : BaseController
     {
         private readonly IFileUploadService _fileUploadService;
-        private readonly IContestService _contestService;
+        private readonly IContestEntryService _contestEntryService;
 
-        public ContestEntriesController(IFileUploadService fileUploadService, IContestService contestService)
-        { 
+        public ContestEntriesController(IFileUploadService fileUploadService, IContestEntryService contestEntryService)
+        {
             _fileUploadService = fileUploadService ?? throw new ArgumentNullException(nameof(fileUploadService));
-            _contestService = contestService ?? throw new ArgumentNullException(nameof(contestService));
+            _contestEntryService = contestEntryService ?? throw new ArgumentNullException(nameof(contestEntryService));
         }
 
         [HttpGet("")]
@@ -32,7 +32,7 @@ namespace DreamAquascape.Web.Controllers
         public async Task<IActionResult> Details(int contestId, int entryId)
         {
             var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var entryDetails = await _contestService.GetContestEntryDetailsAsync(contestId, entryId, currentUserId);
+            var entryDetails = await _contestEntryService.GetContestEntryDetailsAsync(contestId, entryId, currentUserId);
 
             if (entryDetails == null)
             {
@@ -60,14 +60,14 @@ namespace DreamAquascape.Web.Controllers
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 var userName = User.FindFirst(ClaimTypes.Name)?.Value;
 
-                var model = new CreateContestEntryViewModel 
-                { 
+                var model = new CreateContestEntryViewModel
+                {
                     ContestId = contestId,
                     Title = title,
                     Description = description,
                     EntryImages = imageUrls
                 };
-                var entry = await _contestService.SubmitEntryAsync(model, userId, userName);
+                var entry = await _contestEntryService.SubmitEntryAsync(model, userId, userName);
             }
             catch (InvalidOperationException ex)
             {
@@ -79,6 +79,92 @@ namespace DreamAquascape.Web.Controllers
             }
 
             return RedirectToAction("Index", "Contests");
+        }
+
+        [HttpGet("{entryId:int}/Edit")]
+        public async Task<IActionResult> Edit(int contestId, int entryId)
+        {
+            var currentUserId = GetUserId();
+            if (string.IsNullOrEmpty(currentUserId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var model = await _contestEntryService.GetContestEntryForEditAsync(contestId, entryId, currentUserId);
+            if (model == null)
+            {
+                return NotFound("Contest entry not found or you don't have permission to edit it.");
+            }
+
+            if (!model.CanEdit)
+            {
+                TempData["ErrorMessage"] = "This contest entry can no longer be edited. The submission period has ended.";
+                return RedirectToAction("Details", new { contestId, entryId });
+            }
+
+            return View(model);
+        }
+
+        [HttpPost("{entryId:int}/Edit")]
+        public async Task<IActionResult> Edit(int contestId, int entryId, EditContestEntryViewModel model, IFormFile[]? newImageFiles)
+        {
+            var currentUserId = GetUserId();
+            if (string.IsNullOrEmpty(currentUserId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                // Reload the model data if validation fails
+                var reloadedModel = await _contestEntryService.GetContestEntryForEditAsync(contestId, entryId, currentUserId);
+                if (reloadedModel != null)
+                {
+                    model.ExistingImages = reloadedModel.ExistingImages;
+                    model.ContestTitle = reloadedModel.ContestTitle;
+                    model.SubmissionEndDate = reloadedModel.SubmissionEndDate;
+                    model.CanEdit = reloadedModel.CanEdit;
+                }
+                return View(model);
+            }
+
+            try
+            {
+                // Handle new image uploads
+                if (newImageFiles?.Any() == true)
+                {
+                    var newImageUrls = await _fileUploadService.SaveMultipleEntryImagesAsync(newImageFiles);
+                    model.NewImages = newImageUrls.ToList();
+                }
+
+                var success = await _contestEntryService.UpdateContestEntryAsync(model, currentUserId);
+                if (success)
+                {
+                    TempData["SuccessMessage"] = "Your entry has been updated successfully!";
+                    return RedirectToAction("Details", new { contestId, entryId });
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Failed to update your entry. Please try again.";
+                    return RedirectToAction("Edit", new { contestId, entryId });
+                }
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "An error occurred while updating your entry. Please try again.");
+
+                // Reload the model data
+                var reloadedModel = await _contestEntryService.GetContestEntryForEditAsync(contestId, entryId, currentUserId);
+                if (reloadedModel != null)
+                {
+                    model.ExistingImages = reloadedModel.ExistingImages;
+                    model.ContestTitle = reloadedModel.ContestTitle;
+                    model.SubmissionEndDate = reloadedModel.SubmissionEndDate;
+                    model.CanEdit = reloadedModel.CanEdit;
+                }
+
+                return View(model);
+            }
         }
     }
 }

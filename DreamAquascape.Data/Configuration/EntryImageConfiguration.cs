@@ -37,13 +37,17 @@ namespace DreamAquascape.Data.Configuration
                 .IsRequired()
                 .HasDefaultValueSql("GETUTCDATE()");
 
+            entity.Property(ei => ei.IsDeleted)
+                .IsRequired()
+                .HasDefaultValue(false);
+
             // Foreign Key Relationship
             entity.HasOne(ei => ei.ContestEntry)
                 .WithMany(ce => ce.EntryImages)
                 .HasForeignKey(ei => ei.ContestEntryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasQueryFilter(ei => !ei.ContestEntry.IsDeleted);
+            entity.HasQueryFilter(ei => !ei.IsDeleted && !ei.ContestEntry.IsDeleted);
         }
     }
 }

@@ -39,6 +39,7 @@ namespace DreamAquascape.Web
                 return new FileUploadService(env.WebRootPath, logger);
             });
             builder.Services.AddScoped<IContestService, ContestService>();
+            builder.Services.AddScoped<IContestEntryService, ContestEntryService>();
             builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
             builder.Services.AddScoped<IUserDashboardService, UserDashboardService>();
 

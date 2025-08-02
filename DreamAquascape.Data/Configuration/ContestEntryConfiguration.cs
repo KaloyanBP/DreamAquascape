@@ -31,6 +31,11 @@ namespace DreamAquascape.Data.Configuration
                 .IsRequired()
                 .HasDefaultValueSql("GETUTCDATE()");
 
+            entity.
+                Property(ce => ce.UpdatedAt)
+                .IsRequired(false)
+                .HasDefaultValueSql("NULL");
+
             entity
                 .Property(ce => ce.IsActive)
                 .IsRequired()

@@ -1,0 +1,223 @@
+﻿@model DreamAquascape.Web.ViewModels.ContestEntry.EditContestEntryViewModel
+
+@{
+    ViewData["Title"] = "Edit Your Aquascape Entry";
+}
+
+<div class="container my-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-warning text-dark">
+            <h2 class="mb-0">
+                <i class="bi bi-pencil-square me-2"></i>
+                Edit Your Aquascape Entry
+            </h2>
+            <p class="mb-0 mt-2">
+                <small>Contest: <strong>@Model.ContestTitle</strong> | Submission deadline: <strong>@Model.SubmissionEndDate.ToString("MMM dd, yyyy HH:mm")</strong></small>
+            </p>
+        </div>
+        <div class="card-body">
+            @if (!Model.CanEdit)
+            {
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    The submission period for this contest has ended. You can no longer edit your entry.
+                </div>
+            }
+            else
+            {
+                <form asp-action="Edit" enctype="multipart/form-data" method="post" novalidate>
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <!-- Hidden fields -->
+                    <input type="hidden" asp-for="Id">
+                    <input type="hidden" asp-for="ContestId">
+                    <input type="hidden" asp-for="ContestTitle">
+                    <input type="hidden" asp-for="SubmissionEndDate">
+                    <input type="hidden" asp-for="CanEdit">
+
+                    <!-- Title -->
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label fw-bold">
+                            Entry Title <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="Title" class="form-control" required>
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label fw-bold">
+                            Description <span class="text-danger">*</span>
+                        </label>
+                        <textarea asp-for="Description" class="form-control" rows="4" required></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <!-- Existing Images -->
+                    @if (Model.ExistingImages.Any())
+                    {
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Current Images</label>
+                            <p class="form-text mb-2">Check the boxes below images you want to remove</p>
+                            <div class="row g-3" id="existingImagesContainer">
+                                @for (int i = 0; i < Model.ExistingImages.Count; i++)
+                                {
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <img src="@Model.ExistingImages[i].ImageUrl"
+                                                 class="card-img-top"
+                                                 style="height: 200px; object-fit: cover;"
+                                                 alt="Contest Entry Image">
+                                            <div class="card-body text-center">
+                                                <div class="form-check">
+                                                    <input class="form-check-input"
+                                                           type="checkbox"
+                                                           name="ImagesToRemove"
+                                                           value="@Model.ExistingImages[i].Id"
+                                                           id="remove-@Model.ExistingImages[i].Id">
+                                                    <label class="form-check-label text-danger" for="remove-@Model.ExistingImages[i].Id">
+                                                        <i class="bi bi-trash3 me-1"></i>Remove this image
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Keep the existing images data for the model -->
+                                        <input type="hidden" name="ExistingImages[@i].Id" value="@Model.ExistingImages[i].Id">
+                                        <input type="hidden" name="ExistingImages[@i].ImageUrl" value="@Model.ExistingImages[i].ImageUrl">
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Add New Images -->
+                    <div class="mb-3">
+                        <label for="newImageFiles" class="form-label fw-bold">
+                            Add New Photos
+                        </label>
+                        <input class="form-control" type="file" id="newImageFiles" name="newImageFiles" accept="image/*" multiple
+                               onchange="previewNewImages(event)">
+                        <div class="form-text">You can add up to 3 images total. Current images: @Model.ExistingImages.Count</div>
+                    </div>
+
+                    <!-- New Image Previews -->
+                    <div class="mb-4" id="newImagePreviewContainer" style="display:none;">
+                        <p class="fw-semibold mb-1">New Images Preview:</p>
+                        <div id="newImagePreviewList" class="d-flex gap-3 flex-wrap"></div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="row">
+                        <div class="col">
+                            <a class="btn btn-secondary btn-lg w-100" href="@Url.Action("Details", new { contestId = Model.ContestId, entryId = Model.Id })">
+                                <i class="bi bi-arrow-left me-2"></i>Cancel
+                            </a>
+                        </div>
+                        <div class="col">
+                            <button type="submit" class="btn btn-warning btn-lg w-100">
+                                <i class="bi bi-check-circle me-2"></i>Update Entry
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .card-header {
+            border-bottom: 3px solid #ffc107;
+        }
+
+        .form-check-input:checked + .form-check-label {
+            font-weight: bold;
+        }
+    </style>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Preview new images
+        function previewNewImages(event) {
+            const input = event.target;
+            const previewContainer = document.getElementById('newImagePreviewContainer');
+            const previewList = document.getElementById('newImagePreviewList');
+            previewList.innerHTML = '';
+
+            if (input.files && input.files.length > 0) {
+                // Count how many images will be removed
+                const imagesToRemoveCount = document.querySelectorAll('input[name="ImagesToRemove"]:checked').length;
+                const currentImageCount = @Model.ExistingImages.Count - imagesToRemoveCount;
+                const maxNewImages = Math.max(0, 3 - currentImageCount);
+
+                if (input.files.length > maxNewImages) {
+                    alert(`You can only add ${maxNewImages} more images. Total limit is 3 images.`);
+                    input.value = '';
+                    previewContainer.style.display = 'none';
+                    return;
+                }
+
+                const files = Array.from(input.files);
+                files.forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'img-fluid rounded border';
+                        img.style.maxHeight = '150px';
+                        img.style.objectFit = 'cover';
+                        previewList.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                });
+
+                previewContainer.style.display = 'block';
+            } else {
+                previewContainer.style.display = 'none';
+            }
+        }
+
+        // Form validation before submit
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const imagesToRemoveCount = document.querySelectorAll('input[name="ImagesToRemove"]:checked').length;
+            const currentImageCount = @Model.ExistingImages.Count - imagesToRemoveCount;
+            const newImageCount = document.getElementById('newImageFiles').files.length;
+            const totalImages = currentImageCount + newImageCount;
+
+            // Debug: Log what's being submitted
+            console.log('Submitting form with:');
+            console.log('- Current images:', @Model.ExistingImages.Count);
+            console.log('- Images to remove:', imagesToRemoveCount);
+            console.log('- New images:', newImageCount);
+            console.log('- Total after changes:', totalImages);
+
+            const checkedBoxes = document.querySelectorAll('input[name="ImagesToRemove"]:checked');
+            console.log('Images marked for removal:', Array.from(checkedBoxes).map(cb => cb.value));
+
+            if (totalImages === 0) {
+                e.preventDefault();
+                alert('You must have at least one image for your entry.');
+                return false;
+            }
+
+            if (totalImages > 3) {
+                e.preventDefault();
+                alert('You can have a maximum of 3 images for your entry.');
+                return false;
+            }
+        });
+
+        // Update image count display when checkboxes change
+        document.addEventListener('change', function(e) {
+            if (e.target.name === 'ImagesToRemove') {
+                const imagesToRemoveCount = document.querySelectorAll('input[name="ImagesToRemove"]:checked').length;
+                const remainingImages = @Model.ExistingImages.Count - imagesToRemoveCount;
+                console.log('Images marked for removal:', imagesToRemoveCount);
+                console.log('Remaining images:', remainingImages);
+            }
+        });
+    </script>
+}
