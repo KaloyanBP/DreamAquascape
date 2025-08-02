@@ -12,6 +12,7 @@ namespace DreamAquascape.Services.Core.Interfaces
     {
         Task<IEnumerable<ContestItemViewModel>> GetActiveContestsAsync();
         Task<ContestDetailsViewModel?> GetContestWithEntriesAsync(int contestId, string? currentUserId = null);
+        Task<ContestListViewModel> GetFilteredContestsAsync(ContestFilterViewModel filters);
         Task<ContestEntryDetailsViewModel?> GetContestEntryDetailsAsync(int contestId, int entryId, string? currentUserId = null);
         Task<Contest> SubmitContestAsync(CreateContestViewModel dto, PrizeViewModel prizeDto, string createdBy);
         Task<ContestEntry> SubmitEntryAsync(CreateContestEntryViewModel dto, string userId, string userName);

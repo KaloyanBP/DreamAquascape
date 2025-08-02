@@ -1,81 +1,493 @@
 ﻿@using DreamAquascape.Web.ViewModels.Contest
-@model IEnumerable<ContestItemViewModel>
+@model ContestListViewModel
 
-<h2 class="mb-4">Monthly Aquascaping Contests</h2>
-
-@* @if (User.IsInRole("Administrator"))
- *@
-@if (true)
-{
-    <a class="btn btn-success mb-4" href="@Url.Action("Create", "Contests")">
-        <i class="bi bi-plus-circle me-2 fs-5"></i>
-        Create New Contest
-    </a>
-}
-
-@if (Model == null)
-{
-    <p>Loading contests...</p>
-}
-else if (!Model.Any())
-{
-    <p>No contests found.</p>
-}
-else
-{
-    var activeContests = Model.Where(c => c.IsActive).ToList();
-
-    <h3>Active Contests</h3>
-    @if (!activeContests.Any())
-    {
-        <p>No active contests.</p>
-    }
-    else
-    {
-        <div class="row g-4">
-            @foreach (var contest in activeContests)
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row align-items-center mb-4">
+        <div class="col">
+            <h2 class="mb-0">
+                <i class="bi bi-trophy me-2 text-primary"></i>
+                Monthly Aquascaping Contests
+            </h2>
+            <p class="text-muted mb-0">Discover and participate in aquascaping competitions</p>
+        </div>
+        <div class="col-auto">
+            @if (true) // Replace with proper admin check
             {
-                <div class="col-12">
-                    <div class="card h-100 shadow-sm">
-                        @if (!string.IsNullOrEmpty(contest.ImageUrl))
-                        {
-                            <img src="@contest.ImageUrl" class="card-img-top" alt="@contest.Title" style="object-fit:cover; height:220px;">
-                        }
-                        else
-                        {
-                            <img src="https://via.placeholder.com/800x220?text=Aquascape" class="card-img-top" alt="No image" style="object-fit:cover; height:220px;">
-                        }
-                        <div class="card-body">
-                            <h5 class="card-title">@contest.Title</h5>
-                            <p class="card-text">
-                                <strong>Start:</strong> @contest.StartDate.ToShortDateString()<br>
-                                <strong>End:</strong> @contest.EndDate.ToShortDateString()<br>
-                                <span class="badge bg-success">Active</span>
-                            </p>
-                            <a class="btn btn-primary" href="@Url.Action("Details", "Contests", new { id = contest.Id })">Details</a>
+                <a class="btn btn-success" href="@Url.Action("Create", "Contests")">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Create New Contest
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Filter Form -->
+    <form method="get" action="@Url.Action("Index")" id="filterForm">
+        <!-- Filter and Search Section -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="Search" class="form-label">Search Contests</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" id="Search" name="Search"
+                                   value="@Model.Filters.Search" placeholder="Search by title or description...">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="Status" class="form-label">Status</label>
+                        <select class="form-select" id="Status" name="Status">
+                            <option value="@((int)ContestStatus.All)" selected="@(Model.Filters.Status == ContestStatus.All)">All Contests</option>
+                            <option value="@((int)ContestStatus.Active)" selected="@(Model.Filters.Status == ContestStatus.Active)">Active Only</option>
+                            <option value="@((int)ContestStatus.Submission)" selected="@(Model.Filters.Status == ContestStatus.Submission)">Accepting Submissions</option>
+                            <option value="@((int)ContestStatus.Voting)" selected="@(Model.Filters.Status == ContestStatus.Voting)">Voting Phase</option>
+                            <option value="@((int)ContestStatus.Ended)" selected="@(Model.Filters.Status == ContestStatus.Ended)">Ended</option>
+                            <option value="@((int)ContestStatus.Archived)" selected="@(Model.Filters.Status == ContestStatus.Archived)">Archived</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="SortBy" class="form-label">Sort By</label>
+                        <select class="form-select" id="SortBy" name="SortBy">
+                            <option value="@((int)ContestSortBy.Newest)" selected="@(Model.Filters.SortBy == ContestSortBy.Newest)">Newest First</option>
+                            <option value="@((int)ContestSortBy.Oldest)" selected="@(Model.Filters.SortBy == ContestSortBy.Oldest)">Oldest First</option>
+                            <option value="@((int)ContestSortBy.EndingSoon)" selected="@(Model.Filters.SortBy == ContestSortBy.EndingSoon)">Ending Soon</option>
+                            <option value="@((int)ContestSortBy.MostEntries)" selected="@(Model.Filters.SortBy == ContestSortBy.MostEntries)">Most Entries</option>
+                            <option value="@((int)ContestSortBy.Title)" selected="@(Model.Filters.SortBy == ContestSortBy.Title)">Title A-Z</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="d-grid">
+                            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Clear
+                            </a>
                         </div>
                     </div>
                 </div>
-            }
+            </div>
         </div>
-    }
 
-    <button class="btn btn-secondary mt-4" type="button" id="showArchiveBtn">
-        Show Archived Contests
-    </button>
-    <div id="archivedContests" style="display:none; margin-top:20px;"></div>
+        <!-- Quick Filter Tabs -->
+        <ul class="nav nav-pills mb-4" id="quickFilters">
+            <li class="nav-item">
+                <button type="button" class="nav-link @(Model.Filters.Status == ContestStatus.Active ? "active" : "")"
+                        onclick="setFilter('@((int)ContestStatus.Active)')">
+                    <i class="bi bi-play-circle me-1"></i>Active <span class="badge bg-success ms-1">@Model.Stats.ActiveContests</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button type="button" class="nav-link @(Model.Filters.Status == ContestStatus.Submission ? "active" : "")"
+                        onclick="setFilter('@((int)ContestStatus.Submission)')">
+                    <i class="bi bi-upload me-1"></i>Submission <span class="badge bg-primary ms-1">@Model.Stats.SubmissionPhase</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button type="button" class="nav-link @(Model.Filters.Status == ContestStatus.Voting ? "active" : "")"
+                        onclick="setFilter('@((int)ContestStatus.Voting)')">
+                    <i class="bi bi-hand-thumbs-up me-1"></i>Voting <span class="badge bg-info ms-1">@Model.Stats.VotingPhase</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button type="button" class="nav-link @(Model.Filters.Status == ContestStatus.Ended ? "active" : "")"
+                        onclick="setFilter('@((int)ContestStatus.Ended)')">
+                    <i class="bi bi-flag-checkered me-1"></i>Ended <span class="badge bg-warning ms-1">@Model.Stats.EndedContests</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button type="button" class="nav-link @(Model.Filters.Status == ContestStatus.All ? "active" : "")"
+                        onclick="setFilter('@((int)ContestStatus.All)')">
+                    <i class="bi bi-grid me-1"></i>All <span class="badge bg-secondary ms-1">@Model.Stats.TotalContests</span>
+                </button>
+            </li>
+        </ul>
+    </form>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="text-center py-5" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2 text-muted">Loading contests...</p>
+    </div>
+
+    <!-- Contest Grid -->
+    <div id="contestGrid">
+        @if (!Model.Contests.Any())
+        {
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="bi bi-trophy fa-3x text-muted"></i>
+                </div>
+                <h4 class="text-muted">No contests found</h4>
+                <p class="text-muted">
+                    @if (string.IsNullOrWhiteSpace(Model.Filters.Search) && Model.Filters.Status == ContestStatus.Active)
+                    {
+                        <span>Be the first to create an aquascaping contest!</span>
+                    }
+                    else
+                    {
+                        <span>Try adjusting your filters or search criteria</span>
+                    }
+                </p>
+                @if (true && string.IsNullOrWhiteSpace(Model.Filters.Search) && Model.Filters.Status == ContestStatus.Active) // Replace with proper admin check
+                {
+                    <a class="btn btn-primary" href="@Url.Action("Create", "Contests")">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Create First Contest
+                    </a>
+                }
+                else
+                {
+                    <a href="@Url.Action("Index")" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Reset Filters
+                    </a>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="row g-4" id="contestCards">
+                @foreach (var contest in Model.Contests)
+                {
+                    <div class="col-lg-6 col-xl-4">
+                        <div class="card h-100 shadow-sm hover-card">
+                            <!-- Contest Image -->
+                            <div class="position-relative">
+                                @if (!string.IsNullOrEmpty(contest.ImageUrl))
+                                {
+                                    <img src="@contest.ImageUrl" class="card-img-top contest-image" alt="@contest.Title">
+                                }
+                                else
+                                {
+                                    <div class="card-img-top contest-image-placeholder">
+                                        <i class="bi bi-image fa-2x text-muted"></i>
+                                        <p class="text-muted mb-0">No Image</p>
+                                    </div>
+                                }
+
+                                <!-- Status Badge -->
+                                <div class="position-absolute top-0 end-0 p-2">
+                                    @if (contest.IsActive)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-play-circle me-1"></i>Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-archive me-1"></i>Archived
+                                        </span>
+                                    }
+                                </div>
+
+                                <!-- Quick Action Overlay -->
+                                <div class="contest-overlay">
+                                    <div class="overlay-content">
+                                        <a href="@Url.Action("Details", "Contests", new { id = contest.Id })"
+                                           class="btn btn-light btn-sm">
+                                            <i class="bi bi-eye me-1"></i>View Details
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Contest Content -->
+                            <div class="card-body">
+                                <h5 class="card-title">@contest.Title</h5>
+
+                                <!-- Contest Dates -->
+                                <div class="contest-dates mb-3">
+                                    <div class="row text-muted small">
+                                        <div class="col-6">
+                                            <i class="bi bi-calendar-event me-1"></i>
+                                            <strong>Start:</strong><br>
+                                            @contest.StartDate.ToString("MMM dd, yyyy")
+                                        </div>
+                                        <div class="col-6">
+                                            <i class="bi bi-calendar-check me-1"></i>
+                                            <strong>End:</strong><br>
+                                            @contest.EndDate.ToString("MMM dd, yyyy")
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Contest Phase Indicator -->
+                                <div class="contest-phase mb-3">
+                                    @{
+                                        var now = DateTime.UtcNow;
+                                        var daysRemaining = (contest.EndDate - now).Days;
+                                        string phase = "Ended";
+                                        string phaseClass = "bg-secondary";
+                                        string phaseIcon = "bi-flag-checkered";
+
+                                        if (contest.IsActive)
+                                        {
+                                            if (now < contest.StartDate)
+                                            {
+                                                phase = "Coming Soon";
+                                                phaseClass = "bg-info";
+                                                phaseIcon = "bi-clock";
+                                            }
+                                            else if (now <= contest.EndDate)
+                                            {
+                                                phase = daysRemaining > 0 ? $"{daysRemaining} days left" : "Ending today";
+                                                phaseClass = daysRemaining <= 3 ? "bg-warning" : "bg-success";
+                                                phaseIcon = "bi-hourglass-split";
+                                            }
+                                        }
+                                    }
+
+                                    <div class="progress mb-2" style="height: 6px;">
+                                        @{
+                                            var totalDuration = (contest.EndDate - contest.StartDate).TotalDays;
+                                            var elapsed = (now - contest.StartDate).TotalDays;
+                                            var progressPercent = Math.Max(0, Math.Min(100, (elapsed / totalDuration) * 100));
+                                        }
+                                        <div class="progress-bar @phaseClass.Replace("bg-", "bg-opacity-75 bg-")"
+                                             style="width: @progressPercent%"></div>
+                                    </div>
+
+                                    <span class="badge @phaseClass">
+                                        <i class="@phaseIcon me-1"></i>@phase
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Contest Actions -->
+                            <div class="card-footer bg-transparent">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="contest-stats">
+                                        <small class="text-muted">
+                                            <i class="bi bi-people me-1"></i>@contest.EntryCount entries
+                                            <i class="bi bi-hand-thumbs-up ms-2 me-1"></i>@contest.VoteCount votes
+                                        </small>
+                                    </div>
+                                    <div class="contest-actions">
+                                        <a href="@Url.Action("Details", "Contests", new { id = contest.Id })"
+                                           class="btn btn-primary btn-sm">
+                                            <i class="bi bi-arrow-right me-1"></i>Enter Contest
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Pagination -->
+            @if (Model.Pagination.TotalPages > 1)
+            {
+                <nav aria-label="Contest pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        @if (Model.Pagination.HasPreviousPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@GetPageUrl(Model.Pagination.CurrentPage - 1)">
+                                    <i class="bi bi-chevron-left"></i> Previous
+                                </a>
+                            </li>
+                        }
+
+                        @for (int i = Math.Max(1, Model.Pagination.CurrentPage - 2);
+                                        i <= Math.Min(Model.Pagination.TotalPages, Model.Pagination.CurrentPage + 2);
+                                        i++)
+                        {
+                            <li class="page-item @(i == Model.Pagination.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="@GetPageUrl(i)">@i</a>
+                            </li>
+                        }
+
+                        @if (Model.Pagination.HasNextPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@GetPageUrl(Model.Pagination.CurrentPage + 1)">
+                                    Next <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+
+                <div class="text-center text-muted small">
+                    Showing @((Model.Pagination.CurrentPage - 1) * Model.Pagination.PageSize + 1) to
+                    @Math.Min(Model.Pagination.CurrentPage * Model.Pagination.PageSize, Model.Pagination.TotalItems)
+                    of @Model.Pagination.TotalItems contests
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@functions {
+    private string GetPageUrl(int page)
+    {
+        var routeValues = new RouteValueDictionary
+        {
+            ["page"] = page,
+            ["search"] = Model.Filters.Search,
+            ["status"] = (int)Model.Filters.Status,
+            ["sortBy"] = (int)Model.Filters.SortBy
+        };
+
+        return Url.Action("Index", routeValues) ?? "";
+    }
+}
+
+@section Styles {
+    <style>
+        .contest-image {
+            height: 220px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .contest-image-placeholder {
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .hover-card {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .hover-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+            }
+
+                .hover-card:hover .contest-image {
+                    transform: scale(1.05);
+                }
+
+        .contest-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .hover-card:hover .contest-overlay {
+            opacity: 1;
+        }
+
+        .contest-dates {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .contest-phase .progress {
+            background-color: #e9ecef;
+        }
+
+        .nav-pills .nav-link {
+            color: #6c757d;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+            .nav-pills .nav-link:hover,
+            .nav-pills .nav-link.active {
+                color: #fff;
+                background-color: #0d6efd;
+            }
+
+            .nav-pills .nav-link .badge {
+                transition: all 0.3s ease;
+            }
+
+        .contest-card {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+            .contest-card.filtered-out {
+                opacity: 0;
+                transform: scale(0.8);
+                pointer-events: none;
+            }
+
+        .contest-stats {
+            font-size: 0.875rem;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+        }
+
+        @@media (max-width: 768px) {
+            .contest-dates .row > div
+
+        {
+            margin-bottom: 8px;
+        }
+
+        .contest-actions .btn {
+            font-size: 0.875rem;
+            padding: 0.375rem 0.75rem;
+        }
+
+        }
+    </style>
 }
 
 @section Scripts {
     <script>
-        document.getElementById('showArchiveBtn')?.addEventListener('click', function () {
-            fetch('@Url.Action("Archive", "Contests")')
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById('archivedContests').innerHTML = html;
-                    document.getElementById('archivedContests').style.display = 'block';
-                    this.style.display = 'none';
-                });
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('Search');
+            const statusSelect = document.getElementById('Status');
+            const sortBySelect = document.getElementById('SortBy');
+            const filterForm = document.getElementById('filterForm');
+            let searchTimeout;
+
+            // Auto-submit form on input changes with debounce for search
+            searchInput?.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    filterForm.submit();
+                }, 500); // 500ms debounce for search
+            });
+
+            statusSelect?.addEventListener('change', function() {
+                filterForm.submit();
+            });
+
+            sortBySelect?.addEventListener('change', function() {
+                filterForm.submit();
+            });
+
+            // Quick filter functions
+            window.setFilter = function(status) {
+                statusSelect.value = status;
+                filterForm.submit();
+            };
+
+            // Show loading state during form submission
+            filterForm?.addEventListener('submit', function() {
+                const loadingState = document.getElementById('loadingState');
+                const contestGrid = document.getElementById('contestGrid');
+
+                if (loadingState && contestGrid) {
+                    loadingState.style.display = 'block';
+                    contestGrid.style.opacity = '0.5';
+                }
+            });
         });
     </script>
 }

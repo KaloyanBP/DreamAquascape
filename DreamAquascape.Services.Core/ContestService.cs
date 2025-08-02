@@ -41,6 +41,106 @@ namespace DreamAquascape.Services.Core
                 .ToList();
         }
 
+        public async Task<ContestListViewModel> GetFilteredContestsAsync(ContestFilterViewModel filters)
+        {
+            var now = DateTime.UtcNow;
+
+            // Start with all contests
+            var query = _context.Contests
+                .Include(c => c.Entries)
+                .Where(c => !c.IsDeleted);
+
+            // Apply search filter
+            if (!string.IsNullOrWhiteSpace(filters.Search))
+            {
+                var searchTerm = filters.Search.Trim().ToLower();
+                query = query.Where(c => c.Title.ToLower().Contains(searchTerm) ||
+                                       c.Description.ToLower().Contains(searchTerm));
+            }
+
+            // Apply status filter
+            switch (filters.Status)
+            {
+                case ContestStatus.Active:
+                    query = query.Where(c => c.IsActive && now <= c.VotingEndDate);
+                    break;
+                case ContestStatus.Submission:
+                    query = query.Where(c => c.IsActive && now >= c.SubmissionStartDate &&
+                                           now <= c.SubmissionEndDate);
+                    break;
+                case ContestStatus.Voting:
+                    query = query.Where(c => c.IsActive && now > c.SubmissionEndDate &&
+                                           now <= c.VotingEndDate);
+                    break;
+                case ContestStatus.Ended:
+                    query = query.Where(c => (c.IsActive && now > c.VotingEndDate) || !c.IsActive);
+                    break;
+                case ContestStatus.Archived:
+                    query = query.Where(c => !c.IsActive);
+                    break;
+                case ContestStatus.All:
+                default:
+                    // No additional filter
+                    break;
+            }
+
+            // Apply sorting
+            query = filters.SortBy switch
+            {
+                ContestSortBy.Oldest => query.OrderBy(c => c.SubmissionStartDate),
+                ContestSortBy.EndingSoon => query.OrderBy(c => c.VotingEndDate),
+                ContestSortBy.MostEntries => query.OrderByDescending(c => c.Entries.Count(e => !e.IsDeleted)),
+                ContestSortBy.Title => query.OrderBy(c => c.Title),
+                ContestSortBy.Newest or _ => query.OrderByDescending(c => c.SubmissionStartDate)
+            };
+
+            // Get total count before pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var contests = await query
+                .Skip((filters.Page - 1) * filters.PageSize)
+                .Take(filters.PageSize)
+                .Select(c => new ContestItemViewModel
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    ImageUrl = c.ImageFileUrl ?? "",
+                    StartDate = c.SubmissionStartDate,
+                    EndDate = c.VotingEndDate,
+                    IsActive = c.IsActive,
+                    EntryCount = c.Entries.Count(e => !e.IsDeleted),
+                    VoteCount = c.Entries.SelectMany(e => e.Votes).Count()
+                })
+                .ToListAsync();
+
+            // Calculate statistics
+            var allContests = await _context.Contests.Where(c => !c.IsDeleted).ToListAsync();
+            var stats = new ContestStatsViewModel
+            {
+                TotalContests = allContests.Count,
+                ActiveContests = allContests.Count(c => c.IsActive && now <= c.VotingEndDate),
+                SubmissionPhase = allContests.Count(c => c.IsActive && now >= c.SubmissionStartDate && now <= c.SubmissionEndDate),
+                VotingPhase = allContests.Count(c => c.IsActive && now > c.SubmissionEndDate && now <= c.VotingEndDate),
+                EndedContests = allContests.Count(c => (c.IsActive && now > c.VotingEndDate) || !c.IsActive),
+                ArchivedContests = allContests.Count(c => !c.IsActive)
+            };
+
+            return new ContestListViewModel
+            {
+                Contests = contests,
+                Filters = filters,
+                Stats = stats,
+                Pagination = new PaginationViewModel
+                {
+                    CurrentPage = filters.Page,
+                    PageSize = filters.PageSize,
+                    TotalItems = totalCount,
+                    TotalPages = (int)Math.Ceiling((double)totalCount / filters.PageSize)
+                }
+            };
+        }
+
         public async Task<ContestDetailsViewModel?> GetContestWithEntriesAsync(int contestId, string? currentUserId = null)
         {
             // First, get the contest with all related data using Include

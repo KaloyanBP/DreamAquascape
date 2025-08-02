@@ -22,15 +22,36 @@ namespace DreamAquascape.Web.Controllers
         }
 
         [HttpGet("")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index([FromQuery] ContestFilterViewModel? filters)
         {
-            // Return list of active contents
-            var contests = await _contestService.GetActiveContestsAsync();
-            if (contests == null || !contests.Any())
+            // Initialize filters if null
+            filters ??= new ContestFilterViewModel();
+
+            try
             {
-                return View("NoContests");
+                var result = await _contestService.GetFilteredContestsAsync(filters);
+
+                // For AJAX requests, return partial view
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return PartialView("_ContestGrid", result);
+                }
+
+                return View(result);
             }
-            return View(contests);
+            catch (Exception ex)
+            {
+                // Log error and return fallback
+                var emptyResult = new ContestListViewModel
+                {
+                    Contests = new List<ContestItemViewModel>(),
+                    Filters = filters,
+                    Stats = new ContestStatsViewModel(),
+                    Pagination = new PaginationViewModel()
+                };
+
+                return View(emptyResult);
+            }
         }
 
         [HttpGet("{id:int}")]
