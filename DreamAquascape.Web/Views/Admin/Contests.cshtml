@@ -130,7 +130,7 @@
                                     <td>
                                         <div>
                                             <h6 class="mb-1">
-                                                <a href="@Url.Action("Details", "Contest", new { id = contest.Id })"
+                                                <a href="@Url.Action("Details", "Contests", new { id = contest.Id })"
                                                    class="text-decoration-none">
                                                     @contest.Title
                                                 </a>
@@ -145,7 +145,7 @@
                                         @if (!contest.IsActive)
                                         {
                                             <br>
-                                
+
                                             <small class="text-muted">Disabled</small>
                                         }
                                     </td>
@@ -162,7 +162,7 @@
                                         @if (contest.TotalEntries > 0)
                                         {
                                             <br>
-                                
+
                                             <small class="text-muted">entries</small>
                                         }
                                     </td>
@@ -171,7 +171,7 @@
                                         @if (contest.TotalVotes > 0)
                                         {
                                             <br>
-                                
+
                                             <small class="text-muted">votes</small>
                                         }
                                     </td>
@@ -190,11 +190,11 @@
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
-                                            <a href="@Url.Action("Details", "Contest", new { id = contest.Id })"
+                                            <a href="@Url.Action("Details", "Contests", new { id = contest.Id })"
                                                class="btn btn-outline-info" title="View Details">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            <a href="@Url.Action("Edit", "Contest", new { id = contest.Id })"
+                                            <a href="@Url.Action("Edit", "Contests", new { id = contest.Id })"
                                                class="btn btn-outline-primary" title="Edit Contest">
                                                 <i class="bi bi-pencil"></i>
                                             </a>

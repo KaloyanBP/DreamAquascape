@@ -64,6 +64,9 @@ namespace DreamAquascape.Services.Core
                 case ContestStatus.Active:
                     query = query.Where(c => c.IsActive && now <= c.VotingEndDate);
                     break;
+                case ContestStatus.Inactive:
+                    query = query.Where(c => !c.IsActive);
+                    break;
                 case ContestStatus.Submission:
                     query = query.Where(c => c.IsActive && now >= c.SubmissionStartDate &&
                                            now <= c.SubmissionEndDate);
@@ -254,117 +257,6 @@ namespace DreamAquascape.Services.Core
             };
         }
 
-        //public async Task<EditContestEntryViewModel?> GetContestEntryForEditAsync(int contestId, int entryId, string currentUserId)
-        //{
-        //    var contest = await _context.Contests
-        //        .FirstOrDefaultAsync(c => c.Id == contestId && !c.IsDeleted);
-
-        //    if (contest == null) return null;
-
-        //    var entry = await _context.ContestEntries
-        //        .Include(e => e.EntryImages)
-        //        .FirstOrDefaultAsync(e => e.Id == entryId &&
-        //                                e.ContestId == contestId &&
-        //                                e.ParticipantId == currentUserId &&
-        //                                !e.IsDeleted);
-
-        //    if (entry == null) return null;
-
-        //    var now = DateTime.UtcNow;
-        //    var canEdit = contest.IsActive &&
-        //                 now >= contest.SubmissionStartDate &&
-        //                 now <= contest.SubmissionEndDate;
-
-        //    return new EditContestEntryViewModel
-        //    {
-        //        Id = entry.Id,
-        //        ContestId = contestId,
-        //        Title = entry.Title,
-        //        Description = entry.Description,
-        //        ContestTitle = contest.Title,
-        //        SubmissionEndDate = contest.SubmissionEndDate,
-        //        CanEdit = canEdit,
-        //        ExistingImages = entry.EntryImages
-        //            .Where(img => !img.IsDeleted)
-        //            .Select(img => new ExistingImageViewModel
-        //            {
-        //                Id = img.Id,
-        //                ImageUrl = img.ImageUrl
-        //            })
-        //            .ToList()
-        //    };
-        //}
-
-        //public async Task<bool> UpdateContestEntryAsync(EditContestEntryViewModel model, string currentUserId)
-        //{
-        //    var contest = await _context.Contests
-        //        .FirstOrDefaultAsync(c => c.Id == model.ContestId && !c.IsDeleted);
-
-        //    if (contest == null) return false;
-
-        //    var entry = await _context.ContestEntries
-        //        .Include(e => e.EntryImages)
-        //        .FirstOrDefaultAsync(e => e.Id == model.Id &&
-        //                                e.ContestId == model.ContestId &&
-        //                                e.ParticipantId == currentUserId &&
-        //                                !e.IsDeleted);
-
-        //    if (entry == null) return false;
-
-        //    // Check if editing is allowed
-        //    var now = DateTime.UtcNow;
-        //    var canEdit = contest.IsActive &&
-        //                 now >= contest.SubmissionStartDate &&
-        //                 now <= contest.SubmissionEndDate;
-
-        //    if (!canEdit) return false;
-
-        //    // Update entry details
-        //    entry.Title = model.Title;
-        //    entry.Description = model.Description;
-        //    entry.UpdatedAt = now;
-
-        //    // Handle image removals
-        //    if (model.ImagesToRemove?.Any() == true)
-        //    {
-        //        var imagesToRemove = entry.EntryImages
-        //            .Where(img => model.ImagesToRemove.Contains(img.Id))
-        //            .ToList();
-
-        //        foreach (var img in imagesToRemove)
-        //        {
-        //            img.IsDeleted = true;
-        //        }
-        //    }
-
-        //    // Add new images
-        //    if (model.NewImages?.Any() == true)
-        //    {
-        //        foreach (var imageUrl in model.NewImages)
-        //        {
-        //            var newImage = new Data.Models.EntryImage
-        //            {
-        //                ContestEntryId = entry.Id,
-        //                ImageUrl = imageUrl,
-        //                CreatedOn = now
-        //            };
-        //            _context.EntryImages.Add(newImage);
-        //        }
-        //    }
-
-        //    try
-        //    {
-        //        await _context.SaveChangesAsync();
-        //        _logger.LogInformation("Contest entry {EntryId} updated successfully by user {UserId}", model.Id, currentUserId);
-        //        return true;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error updating contest entry {EntryId} for user {UserId}", model.Id, currentUserId);
-        //        return false;
-        //    }
-        //}
-
         public async Task<Contest> SubmitContestAsync(CreateContestViewModel dto, PrizeViewModel prizeDto, string createdBy)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -411,60 +303,6 @@ namespace DreamAquascape.Services.Core
                 throw;
             }
         }
-
-        //public async Task<ContestEntry> SubmitEntryAsync(CreateContestEntryViewModel dto, string userId, string userName)
-        //{
-        //    using var transaction = await _context.Database.BeginTransactionAsync();
-        //    try
-        //    {
-        //        // Validate submission period
-        //        var contest = await _context.Contests
-        //            .FirstOrDefaultAsync(c => c.Id == dto.ContestId && c.IsActive && !c.IsDeleted);
-
-        //        if (contest == null)
-        //            throw new NotFoundException("Contest not found");
-
-        //        if (DateTime.UtcNow < contest.SubmissionStartDate || DateTime.UtcNow > contest.SubmissionEndDate)
-        //            throw new InvalidOperationException("Contest submission period is not active");
-
-        //        // Check if user already has an entry
-        //        var existingEntry = await _context.ContestEntries
-        //            .FirstOrDefaultAsync(e => e.ContestId == dto.ContestId && e.ParticipantId == userId && !e.IsDeleted);
-
-        //        if (existingEntry != null)
-        //            throw new InvalidOperationException("User already has an entry in this contest");
-
-        //        // Create the contest entry
-        //        var entry = new ContestEntry
-        //        {
-        //            ContestId = dto.ContestId,
-        //            ParticipantId = userId,
-        //            Title = dto.Title,
-        //            Description = dto.Description,
-        //            SubmittedAt = DateTime.UtcNow,
-        //            IsActive = true,
-        //            IsDeleted = false,
-        //            EntryImages = GetEntryImages(dto.EntryImages)
-        //        };
-
-        //        await _context.ContestEntries.AddAsync(entry);
-        //        await _context.SaveChangesAsync(); // Save to get the entry ID
-
-        //        await transaction.CommitAsync();
-
-        //        _logger.LogInformation("Entry {EntryId} submitted by user {UserId} for contest {ContestId}",
-        //            entry.Id, userId, dto.ContestId);
-
-        //        return entry;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        await transaction.RollbackAsync();
-        //        _logger.LogError(ex, "Failed to submit entry for user {UserId} in contest {ContestId}",
-        //            userId, dto.ContestId);
-        //        throw;
-        //    }
-        //}
 
         public async Task<Vote> CastVoteAsync(int contestId, int entryId, string userId, string userName, string? ipAddress = null)
         {
@@ -1061,6 +899,124 @@ namespace DreamAquascape.Services.Core
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting contest {ContestId}", contestId);
+                return false;
+            }
+        }
+
+        public async Task<EditContestViewModel?> GetContestForEditAsync(int contestId)
+        {
+            try
+            {
+                var contest = await _context.Contests
+                    .Include(c => c.Prizes)
+                    .FirstOrDefaultAsync(c => c.Id == contestId && !c.IsDeleted);
+
+                if (contest == null)
+                    return null;
+
+                var prize = contest.Prizes.FirstOrDefault();
+
+                return new EditContestViewModel
+                {
+                    Id = contest.Id,
+                    Title = contest.Title,
+                    Description = contest.Description,
+                    CurrentImageUrl = contest.ImageFileUrl,
+                    SubmissionStartDate = contest.SubmissionStartDate,
+                    SubmissionEndDate = contest.SubmissionEndDate,
+                    VotingStartDate = contest.VotingStartDate,
+                    VotingEndDate = contest.VotingEndDate,
+                    ResultDate = contest.ResultDate,
+                    IsActive = contest.IsActive,
+                    PrizeName = prize?.Name,
+                    PrizeDescription = prize?.Description,
+                    PrizeMonetaryValue = prize?.MonetaryValue,
+                    CurrentPrizeImageUrl = prize?.ImageUrl
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting contest for edit {ContestId}", contestId);
+                return null;
+            }
+        }
+
+        public async Task<bool> UpdateContestAsync(EditContestViewModel model, string? newImageUrl = null, string? newPrizeImageUrl = null)
+        {
+            try
+            {
+                var contest = await _context.Contests
+                    .Include(c => c.Prizes)
+                    .FirstOrDefaultAsync(c => c.Id == model.Id && !c.IsDeleted);
+
+                if (contest == null)
+                    return false;
+
+                // Update contest properties
+                contest.Title = model.Title;
+                contest.Description = model.Description;
+                contest.SubmissionStartDate = model.SubmissionStartDate;
+                contest.SubmissionEndDate = model.SubmissionEndDate;
+                contest.VotingStartDate = model.VotingStartDate;
+                contest.VotingEndDate = model.VotingEndDate;
+                contest.ResultDate = model.ResultDate;
+                contest.IsActive = model.IsActive;
+
+                // Update image - use NewImageUrl from model if provided, otherwise use parameter
+                if (!string.IsNullOrEmpty(model.NewImageUrl))
+                {
+                    contest.ImageFileUrl = model.NewImageUrl;
+                }
+                else if (!string.IsNullOrEmpty(newImageUrl))
+                {
+                    contest.ImageFileUrl = newImageUrl;
+                }
+
+                // Update prize if exists
+                var prize = contest.Prizes.FirstOrDefault();
+                if (prize != null)
+                {
+                    if (!string.IsNullOrEmpty(model.PrizeName))
+                    {
+                        prize.Name = model.PrizeName;
+                        prize.Description = model.PrizeDescription ?? "";
+                        prize.MonetaryValue = model.PrizeMonetaryValue;
+
+                        // Update prize image - use NewPrizeImageUrl from model if provided, otherwise use parameter
+                        if (!string.IsNullOrEmpty(model.NewPrizeImageUrl))
+                        {
+                            prize.ImageUrl = model.NewPrizeImageUrl;
+                        }
+                        else if (!string.IsNullOrEmpty(newPrizeImageUrl))
+                        {
+                            prize.ImageUrl = newPrizeImageUrl;
+                        }
+                    }
+                }
+                else if (!string.IsNullOrEmpty(model.PrizeName))
+                {
+                    // Create new prize if none exists but prize info provided
+                    var prizeImageUrl = !string.IsNullOrEmpty(model.NewPrizeImageUrl) ? model.NewPrizeImageUrl : newPrizeImageUrl;
+                    var newPrize = new Prize
+                    {
+                        Name = model.PrizeName,
+                        Description = model.PrizeDescription ?? "",
+                        MonetaryValue = model.PrizeMonetaryValue,
+                        ImageUrl = prizeImageUrl,
+                        ContestId = contest.Id
+                    };
+                    _context.Prizes.Add(newPrize);
+                }
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Contest {ContestId} updated successfully", model.Id);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating contest {ContestId}", model.Id);
                 return false;
             }
         }

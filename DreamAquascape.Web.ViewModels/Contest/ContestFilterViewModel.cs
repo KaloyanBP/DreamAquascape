@@ -24,10 +24,11 @@ namespace DreamAquascape.Web.ViewModels.Contest
     {
         All = 0,
         Active = 1,
-        Submission = 2,
-        Voting = 3,
-        Ended = 4,
-        Archived = 5
+        Inactive = 2,
+        Submission = 3,
+        Voting = 4,
+        Ended = 5,
+        Archived = 6
     }
 
     public enum ContestSortBy

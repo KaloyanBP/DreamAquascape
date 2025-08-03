@@ -19,8 +19,6 @@
         // User's participation status in this contest
         public bool HasSubmitted { get; set; }
         public bool HasVoted { get; set; }
-        public bool IsFollowing { get; set; }
-
         public int? UserEntryId { get; set; }
         public int TotalEntries { get; set; }
         public int TotalVotes { get; set; }

@@ -1,9 +1,5 @@
-using DreamAquascape.Data;
 using DreamAquascape.Data.Models;
-using DreamAquascape.Services.Common.Exceptions;
 using DreamAquascape.Web.ViewModels.Contest;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace DreamAquascape.Services.Core.Interfaces
 {
@@ -27,5 +23,7 @@ namespace DreamAquascape.Services.Core.Interfaces
         Task<ContestListViewModel> GetFilteredContestsAsync(string searchTerm = "", string status = "", int page = 1, int pageSize = 10);
         Task<bool> ToggleContestStatusAsync(int contestId);
         Task<bool> DeleteContestAsync(int contestId);
+        Task<EditContestViewModel?> GetContestForEditAsync(int contestId);
+        Task<bool> UpdateContestAsync(EditContestViewModel model, string? newImageUrl = null, string? newPrizeImageUrl = null);
     }
 }
