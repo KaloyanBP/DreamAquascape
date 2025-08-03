@@ -1,4 +1,5 @@
-﻿using DreamAquascape.Web.ViewModels.UserDashboard;
+﻿using DreamAquascape.Data.Models;
+using DreamAquascape.Web.ViewModels.UserDashboard;
 
 namespace DreamAquascape.Services.Core.Interfaces
 {
@@ -11,5 +12,7 @@ namespace DreamAquascape.Services.Core.Interfaces
         Task<List<UserSubmissionViewModel>> GetUserSubmissionsAsync(string userId, int page = 1, int pageSize = 10);
 
         Task<List<UserVotingHistoryViewModel>> GetUserVotingHistoryAsync(string userId, int page = 1, int pageSize = 10);
+    
+        Task<ApplicationUser?> GetUserDetails(string userId);
     }
 }

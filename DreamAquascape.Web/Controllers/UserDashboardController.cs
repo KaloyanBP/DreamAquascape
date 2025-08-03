@@ -21,9 +21,10 @@ namespace DreamAquascape.Web.Controllers
         [Route("dashboard")]
         public async Task<IActionResult> Index()
         {
+            var userData = await _userDashboardService.GetUserDetails(GetUserId()!);
             var model = new UserDashboardViewModel
             {
-                UserName = GetUserName() ?? "AquaFan",
+                DisplayName = userData?.DisplayName ?? GetUserName()!,
                 QuickStats = await _userDashboardService.GetUserQuickStatsAsync(GetUserId()!),
                 ActiveContests = await _userDashboardService.GetUserActiveContestsAsync(GetUserId()!),
                 MySubmissions = await _userDashboardService.GetUserSubmissionsAsync(GetUserId()!),

@@ -1,4 +1,5 @@
-﻿@{
+﻿@model DreamAquascape.Web.ViewModels.Home.HomeIndexViewModel
+@{
     ViewData["Title"] = "DreamAquascape - Aquascaping Contests & Community";
 }
 
@@ -242,19 +243,19 @@
     <div class="stats-row">
         <div class="row">
             <div class="col-md-3 stat-item">
-                <span class="stat-number">24</span>
+                <span class="stat-number">@Model.ActiveContests</span>
                 <div class="stat-label">Active Contests</div>
             </div>
             <div class="col-md-3 stat-item">
-                <span class="stat-number">1,247</span>
+                <span class="stat-number">@Model.TotalUsers</span>
                 <div class="stat-label">Community Members</div>
             </div>
             <div class="col-md-3 stat-item">
-                <span class="stat-number">3,892</span>
+                <span class="stat-number">@Model.TotalEntries</span>
                 <div class="stat-label">Aquascapes Submitted</div>
             </div>
             <div class="col-md-3 stat-item">
-                <span class="stat-number">18,650</span>
+                <span class="stat-number">@Model.TotalVotes</span>
                 <div class="stat-label">Votes Cast</div>
             </div>
         </div>

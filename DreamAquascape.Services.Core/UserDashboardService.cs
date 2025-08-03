@@ -1,4 +1,5 @@
 ﻿using DreamAquascape.Data;
+using DreamAquascape.Data.Models;
 using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels.UserDashboard;
 using Microsoft.EntityFrameworkCore;
@@ -337,6 +338,27 @@ namespace DreamAquascape.Services.Core
 
             return result;
         }
+
+        public async Task<ApplicationUser?> GetUserDetails(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                _logger.LogWarning("GetUserDetails called with null or empty userId");
+                return null;
+            }
+            var user = await _context.Users
+                .OfType<ApplicationUser>() // Ensure the query is filtered to ApplicationUser
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+            {
+                _logger.LogWarning("User not found: {UserId}", userId);
+                return null;
+            }
+
+            return user;
+        }
+
 
         // Helper methods
         private async Task<(bool hasEntry, bool hasVoted, int? entryId, int? votedEntryId)> GetUserParticipationAsync(string userId, int contestId)

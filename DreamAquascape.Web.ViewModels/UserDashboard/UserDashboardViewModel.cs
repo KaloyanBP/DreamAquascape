@@ -4,6 +4,7 @@
     {
         public string UserId { get; set; } = string.Empty;
         public string UserName { get; set; } = string.Empty;
+        public string DisplayName { get; set; } = string.Empty;
 
         // Active contests user is participating in
         public List<UserActiveContestViewModel> ActiveContests { get; set; } = new List<UserActiveContestViewModel>();

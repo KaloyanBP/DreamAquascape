@@ -1,21 +1,35 @@
-using System.Diagnostics;
+using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels;
+using DreamAquascape.Web.ViewModels.Home;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace DreamAquascape.Web.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IAdminDashboardService _dashboardService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(
+            IAdminDashboardService dashboardService,
+            ILogger<HomeController> logger)
         {
+            _dashboardService = dashboardService;
             _logger = logger;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var dashboardStat = await _dashboardService.GetDashboardStatsAsync();
+            var model = new HomeIndexViewModel
+            {
+                ActiveContests = dashboardStat.ActiveContests,
+                TotalEntries = dashboardStat.TotalEntries,
+                TotalUsers = dashboardStat.TotalUsers,
+                TotalVotes = dashboardStat.TotalVotes,
+            };
+            return View(model);
         }
 
         public IActionResult Privacy()
