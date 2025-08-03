@@ -1,0 +1,139 @@
+﻿@using DreamAquascape.Web.ViewModels.Contest
+@model DreamAquascape.Web.ViewModels.Contest.ContestFilterViewModel
+@{
+    var isAdmin = User.IsInRole("Admin");
+    var actionName = ViewContext.RouteData.Values["action"]?.ToString();
+    var controllerName = ViewContext.RouteData.Values["controller"]?.ToString();
+    var formAction = Url.Action(actionName, controllerName);
+    var showQuickFilters = ViewBag.ShowQuickFilters ?? false; // Disable quick filters for MVP
+    var stats = ViewBag.ContestStats as dynamic;
+    var resultCount = ViewBag.ResultCount as int? ?? 0;
+}
+
+<!-- Filter Form -->
+<form method="get" action="@formAction" id="contestFilterForm">
+    <!-- Filter and Search Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="Search" class="form-label">Search Contests</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" id="Search" name="Search"
+                               value="@Model.Search" placeholder="Search by title or description...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label for="Status" class="form-label">Status</label>
+                    <select class="form-select" id="Status" name="Status">
+                        <option value="@((int)ContestStatus.All)" selected="@(Model.Status == ContestStatus.All)">All Contests</option>
+                        <option value="@((int)ContestStatus.Active)" selected="@(Model.Status == ContestStatus.Active)">Active Only</option>
+                        <option value="@((int)ContestStatus.Submission)" selected="@(Model.Status == ContestStatus.Submission)">Accepting Submissions</option>
+                        <option value="@((int)ContestStatus.Voting)" selected="@(Model.Status == ContestStatus.Voting)">Voting Phase</option>
+                        <option value="@((int)ContestStatus.Ended)" selected="@(Model.Status == ContestStatus.Ended)">Ended</option>
+                        @if (!Model.ExcludeArchived)
+                        {
+                            <option value="@((int)ContestStatus.Archived)" selected="@(Model.Status == ContestStatus.Archived)">Archived</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="SortBy" class="form-label">Sort By</label>
+                    <select class="form-select" id="SortBy" name="SortBy">
+                        <option value="@((int)ContestSortBy.Newest)" selected="@(Model.SortBy == ContestSortBy.Newest)">Newest First</option>
+                        <option value="@((int)ContestSortBy.Oldest)" selected="@(Model.SortBy == ContestSortBy.Oldest)">Oldest First</option>
+                        <option value="@((int)ContestSortBy.EndingSoon)" selected="@(Model.SortBy == ContestSortBy.EndingSoon)">Ending Soon</option>
+                        <option value="@((int)ContestSortBy.MostEntries)" selected="@(Model.SortBy == ContestSortBy.MostEntries)">Most Entries</option>
+                        <option value="@((int)ContestSortBy.Title)" selected="@(Model.SortBy == ContestSortBy.Title)">Title A-Z</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <div class="d-grid">
+                        <a href="@formAction" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i>Clear
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Count Display -->
+            <div class="row mt-3">
+                <div class="col">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            @if (resultCount > 0)
+                            {
+                                <i class="bi bi-funnel me-1"></i>
+                                <span>Showing <strong>@resultCount</strong> contest@(resultCount != 1 ? "s" : "")</span>
+                                @if (!string.IsNullOrEmpty(Model.Search) || Model.Status != ContestStatus.All)
+                                {
+                                    <span class="text-primary ms-1">(filtered)</span>
+                                }
+                            }
+                            else
+                            {
+                                <span>No contests found</span>
+                                @if (!string.IsNullOrEmpty(Model.Search) || Model.Status != ContestStatus.All)
+                                {
+                                    <span class="text-muted ms-1">- try adjusting your filters</span>
+                                }
+                            }
+                        </small>
+                        @if (stats?.TotalContests != null && stats.TotalContests > 0)
+                        {
+                            <small class="text-muted">
+                                Total: <strong>@stats.TotalContests</strong> contests in system
+                            </small>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('Search');
+        const statusSelect = document.getElementById('Status');
+        const sortBySelect = document.getElementById('SortBy');
+        const filterForm = document.getElementById('contestFilterForm');
+        let searchTimeout;
+
+        // Auto-submit form on input changes with debounce for search
+        searchInput?.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                filterForm.submit();
+            }, 500); // 500ms debounce for search
+        });
+
+        statusSelect?.addEventListener('change', function() {
+            filterForm.submit();
+        });
+
+        sortBySelect?.addEventListener('change', function() {
+            filterForm.submit();
+        });
+
+        // Show loading state during form submission
+        filterForm?.addEventListener('submit', function() {
+            const loadingState = document.getElementById('loadingState');
+            const contestGrid = document.getElementById('contestGrid');
+            const contestTable = document.querySelector('.table-responsive');
+
+            if (loadingState) {
+                loadingState.style.display = 'block';
+            }
+
+            if (contestGrid) {
+                contestGrid.style.opacity = '0.5';
+            }
+
+            if (contestTable) {
+                contestTable.style.opacity = '0.5';
+            }
+        });
+    });
+</script>

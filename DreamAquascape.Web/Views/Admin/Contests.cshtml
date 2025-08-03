@@ -1,9 +1,6 @@
 ﻿@model DreamAquascape.Web.ViewModels.Contest.ContestListViewModel
 @{
     ViewData["Title"] = "Manage Contests";
-    var currentStatus = ViewBag.CurrentStatus as string ?? "";
-    var currentPage = ViewBag.CurrentPage ?? 1;
-    var pageSize = ViewBag.PageSize ?? 10;
 }
 
 <div class="container-fluid">
@@ -21,7 +18,7 @@
                     <i class="bi bi-arrow-left me-2"></i>
                     Back to Dashboard
                 </a>
-                <a href="@Url.Action("Create", "Contest")" class="btn btn-primary ms-2">
+                <a href="@Url.Action("Create", "Contests")" class="btn btn-primary ms-2">
                     <i class="bi bi-plus-circle me-2"></i>
                     Create New Contest
                 </a>
@@ -29,51 +26,15 @@
         </div>
     </div>
 
-    <!-- Filter Section -->
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body">
-            <form method="get" asp-action="Contests">
-                <div class="row align-items-end">
-                    <div class="col-md-4">
-                        <label for="status" class="form-label">Filter by Status</label>
-                        <select name="status" id="status" class="form-select">
-                            <option value="" selected="@(currentStatus == "")">All Contests</option>
-                            <option value="active" selected="@(currentStatus == "active")">Active Only</option>
-                            <option value="inactive" selected="@(currentStatus == "inactive")">Inactive Only</option>
-                            <option value="upcoming" selected="@(currentStatus == "upcoming")">Upcoming</option>
-                            <option value="ongoing" selected="@(currentStatus == "ongoing")">Ongoing</option>
-                            <option value="ended" selected="@(currentStatus == "ended")">Ended</option>
-                            <option value="ending-soon" selected="@(currentStatus == "ending-soon")">Ending Soon</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="pageSize" class="form-label">Items per Page</label>
-                        <select name="pageSize" id="pageSize" class="form-select">
-                            <option value="5" selected="@(pageSize == 5)">5</option>
-                            <option value="10" selected="@(pageSize == 10)">10</option>
-                            <option value="20" selected="@(pageSize == 20)">20</option>
-                            <option value="50" selected="@(pageSize == 50)">50</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-funnel me-2"></i>
-                            Apply Filters
-                        </button>
-                        <a href="@Url.Action("Contests")" class="btn btn-outline-secondary ms-2">
-                            <i class="bi bi-x-circle me-2"></i>
-                            Clear
-                        </a>
-                    </div>
-                    <div class="col-md-2 text-end">
-                        <small class="text-muted">
-                            Showing @Model.Contests.Count() of @Model.Pagination.TotalItems contests
-                        </small>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+    <!-- Filter Component -->
+    <partial name="_ContestFilters" model="@(new DreamAquascape.Web.ViewModels.Contest.ContestFilterViewModel 
+    { 
+        Search = ViewBag.Search as string ?? "", 
+        Status = (DreamAquascape.Web.ViewModels.Contest.ContestStatus)(ViewBag.Status ?? 0),
+        SortBy = (DreamAquascape.Web.ViewModels.Contest.ContestSortBy)(ViewBag.SortBy ?? 0),
+        Page = ViewBag.Page as int? ?? 1,
+        PageSize = ViewBag.PageSize as int? ?? 10
+    })" />
 
     <!-- Contests Table -->
     <div class="card border-0 shadow-sm">
@@ -238,7 +199,13 @@
                                 @if (Model.Pagination.CurrentPage > 1)
                                 {
                                     <li class="page-item">
-                                        <a class="page-link" href="@Url.Action("Contests", new { status = currentStatus, page = Model.Pagination.CurrentPage - 1, pageSize })">
+                                        <a class="page-link" href="@Url.Action("Contests", new { 
+                                            Search = ViewBag.Search, 
+                                            Status = ViewBag.Status, 
+                                            SortBy = ViewBag.SortBy,
+                                            page = Model.Pagination.CurrentPage - 1, 
+                                            pageSize = ViewBag.PageSize 
+                                        })">
                                             <i class="bi bi-chevron-left"></i>
                                         </a>
                                     </li>
@@ -247,14 +214,26 @@
                                 @for (int i = Math.Max(1, Model.Pagination.CurrentPage - 2); i <= Math.Min(Model.Pagination.TotalPages, Model.Pagination.CurrentPage + 2); i++)
                                 {
                                     <li class="page-item @(i == Model.Pagination.CurrentPage ? "active" : "")">
-                                        <a class="page-link" href="@Url.Action("Contests", new { status = currentStatus, page = i, pageSize })">@i</a>
+                                        <a class="page-link" href="@Url.Action("Contests", new { 
+                                            Search = ViewBag.Search, 
+                                            Status = ViewBag.Status, 
+                                            SortBy = ViewBag.SortBy,
+                                            page = i, 
+                                            pageSize = ViewBag.PageSize 
+                                        })">@i</a>
                                     </li>
                                 }
 
                                 @if (Model.Pagination.CurrentPage < Model.Pagination.TotalPages)
                                 {
                                     <li class="page-item">
-                                        <a class="page-link" href="@Url.Action("Contests", new { status = currentStatus, page = Model.Pagination.CurrentPage + 1, pageSize })">
+                                        <a class="page-link" href="@Url.Action("Contests", new { 
+                                            Search = ViewBag.Search, 
+                                            Status = ViewBag.Status, 
+                                            SortBy = ViewBag.SortBy,
+                                            page = Model.Pagination.CurrentPage + 1, 
+                                            pageSize = ViewBag.PageSize 
+                                        })">
                                             <i class="bi bi-chevron-right"></i>
                                         </a>
                                     </li>
@@ -276,16 +255,16 @@
                     <i class="bi bi-trophy text-muted" style="font-size: 3rem;"></i>
                     <h5 class="mt-3 text-muted">No contests found</h5>
                     <p class="text-muted">
-                        @if (!string.IsNullOrEmpty(currentStatus))
+                        @if (ViewBag.Search != null && !string.IsNullOrEmpty(ViewBag.Search.ToString()) || ViewBag.Status != null && (int)ViewBag.Status != 0)
                         {
-                            <span>No contests match the selected status filter.</span>
+                            <span>No contests match the current filters.</span>
                         }
                         else
                         {
                             <span>There are no contests in the system yet.</span>
                         }
                     </p>
-                    <a href="@Url.Action("Create", "Contests")" class="btn btn-primary">
+                            <a href="@Url.Action("Create", "Contests")" class="btn btn-primary">
                         <i class="bi bi-plus-circle me-2"></i>
                         Create First Contest
                     </a>
@@ -294,19 +273,3 @@
         </div>
     </div>
 </div>
-
-@section Styles {
-    <style>
-        .table-hover tbody tr:hover {
-            background-color: rgba(0, 123, 255, 0.05);
-        }
-
-        .btn-group-sm .btn {
-            padding: 0.25rem 0.5rem;
-        }
-
-        .badge {
-            font-size: 0.75em;
-        }
-    </style>
-}

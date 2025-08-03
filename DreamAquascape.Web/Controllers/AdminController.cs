@@ -68,31 +68,43 @@ namespace DreamAquascape.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Contests(string status = "", int page = 1, int pageSize = 10)
+        public async Task<IActionResult> Contests(ContestFilterViewModel filters)
         {
             try
             {
-                var filters = new ContestFilterViewModel
+                // Set defaults if not provided
+                if (filters == null)
                 {
-                    Search = "",
-                    Page = page,
-                    PageSize = pageSize
-                };
+                    filters = new ContestFilterViewModel();
+                }
 
-                // Convert status string to enum
-                if (!string.IsNullOrEmpty(status))
+                if (filters.Page <= 0)
                 {
-                    if (Enum.TryParse<ContestStatus>(status, true, out var statusEnum))
-                    {
-                        filters.Status = statusEnum;
-                    }
+                    filters.Page = 1;
+                }
+
+                if (filters.PageSize <= 0)
+                {
+                    filters.PageSize = 10;
                 }
 
                 var contests = await _contestService.GetFilteredContestsAsync(filters);
 
-                ViewBag.CurrentStatus = status;
-                ViewBag.CurrentPage = page;
-                ViewBag.PageSize = pageSize;
+                // Pass current filter values to ViewBag for pagination links
+                ViewBag.Search = filters.Search;
+                ViewBag.Status = (int)filters.Status;
+                ViewBag.SortBy = (int)filters.SortBy;
+                ViewBag.Page = filters.Page;
+                ViewBag.PageSize = filters.PageSize;
+
+                // Pass result count for the filter component
+                ViewBag.ResultCount = contests.Contests.Count();
+
+                // Pass the filters to the view for the partial (simplified for MVP)
+                ViewBag.ContestStats = new
+                {
+                    TotalContests = contests.Pagination.TotalItems
+                };
 
                 return View(contests);
             }

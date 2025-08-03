@@ -50,6 +50,11 @@ namespace DreamAquascape.Services.Core
                 .Include(c => c.Entries)
                 .Where(c => !c.IsDeleted);
 
+            if (filters.ExcludeArchived)
+            {
+                // Do not include archived contests (IsActive == false)
+                query = query.Where(c => c.IsActive == true);
+            }
             // Apply search filter
             if (!string.IsNullOrWhiteSpace(filters.Search))
             {
@@ -63,9 +68,6 @@ namespace DreamAquascape.Services.Core
             {
                 case ContestStatus.Active:
                     query = query.Where(c => c.IsActive && now <= c.VotingEndDate);
-                    break;
-                case ContestStatus.Inactive:
-                    query = query.Where(c => !c.IsActive);
                     break;
                 case ContestStatus.Submission:
                     query = query.Where(c => c.IsActive && now >= c.SubmissionStartDate &&
@@ -136,6 +138,7 @@ namespace DreamAquascape.Services.Core
             {
                 TotalContests = allContests.Count,
                 ActiveContests = allContests.Count(c => c.IsActive && now <= c.VotingEndDate),
+                InactiveContests = allContests.Count(c => !c.IsActive),
                 SubmissionPhase = allContests.Count(c => c.IsActive && now >= c.SubmissionStartDate && now <= c.SubmissionEndDate),
                 VotingPhase = allContests.Count(c => c.IsActive && now > c.SubmissionEndDate && now <= c.VotingEndDate),
                 EndedContests = allContests.Count(c => (c.IsActive && now > c.VotingEndDate) || !c.IsActive),
@@ -816,6 +819,7 @@ namespace DreamAquascape.Services.Core
             {
                 TotalContests = allContests.Count,
                 ActiveContests = allContests.Count(c => c.IsActive && now <= c.VotingEndDate),
+                InactiveContests = allContests.Count(c => !c.IsActive),
                 SubmissionPhase = allContests.Count(c => c.IsActive && now >= c.SubmissionStartDate && now <= c.SubmissionEndDate),
                 VotingPhase = allContests.Count(c => c.IsActive && now > c.SubmissionEndDate && now <= c.VotingEndDate),
                 EndedContests = allContests.Count(c => (c.IsActive && now > c.VotingEndDate) || !c.IsActive),

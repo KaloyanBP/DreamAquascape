@@ -13,86 +13,8 @@
         </div>
     </div>
 
-    <!-- Filter Form -->
-    <form method="get" action="@Url.Action("Index")" id="filterForm">
-        <!-- Filter and Search Section -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-4">
-                        <label for="Search" class="form-label">Search Contests</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control" id="Search" name="Search"
-                                   value="@Model.Filters.Search" placeholder="Search by title or description...">
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="Status" class="form-label">Status</label>
-                        <select class="form-select" id="Status" name="Status">
-                            <option value="@((int)ContestStatus.All)" selected="@(Model.Filters.Status == ContestStatus.All)">All Contests</option>
-                            <option value="@((int)ContestStatus.Active)" selected="@(Model.Filters.Status == ContestStatus.Active)">Active Only</option>
-                            <option value="@((int)ContestStatus.Submission)" selected="@(Model.Filters.Status == ContestStatus.Submission)">Accepting Submissions</option>
-                            <option value="@((int)ContestStatus.Voting)" selected="@(Model.Filters.Status == ContestStatus.Voting)">Voting Phase</option>
-                            <option value="@((int)ContestStatus.Ended)" selected="@(Model.Filters.Status == ContestStatus.Ended)">Ended</option>
-                            <option value="@((int)ContestStatus.Archived)" selected="@(Model.Filters.Status == ContestStatus.Archived)">Archived</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="SortBy" class="form-label">Sort By</label>
-                        <select class="form-select" id="SortBy" name="SortBy">
-                            <option value="@((int)ContestSortBy.Newest)" selected="@(Model.Filters.SortBy == ContestSortBy.Newest)">Newest First</option>
-                            <option value="@((int)ContestSortBy.Oldest)" selected="@(Model.Filters.SortBy == ContestSortBy.Oldest)">Oldest First</option>
-                            <option value="@((int)ContestSortBy.EndingSoon)" selected="@(Model.Filters.SortBy == ContestSortBy.EndingSoon)">Ending Soon</option>
-                            <option value="@((int)ContestSortBy.MostEntries)" selected="@(Model.Filters.SortBy == ContestSortBy.MostEntries)">Most Entries</option>
-                            <option value="@((int)ContestSortBy.Title)" selected="@(Model.Filters.SortBy == ContestSortBy.Title)">Title A-Z</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="d-grid">
-                            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
-                                <i class="bi bi-x-circle me-1"></i>Clear
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Filter Tabs -->
-        <ul class="nav nav-pills mb-4" id="quickFilters">
-            <li class="nav-item">
-                <button type="button" class="nav-link @(Model.Filters.Status == ContestStatus.Active ? "active" : "")"
-                        onclick="setFilter('@((int)ContestStatus.Active)')">
-                    <i class="bi bi-play-circle me-1"></i>Active <span class="badge bg-success ms-1">@Model.Stats.ActiveContests</span>
-                </button>
-            </li>
-            <li class="nav-item">
-                <button type="button" class="nav-link @(Model.Filters.Status == ContestStatus.Submission ? "active" : "")"
-                        onclick="setFilter('@((int)ContestStatus.Submission)')">
-                    <i class="bi bi-upload me-1"></i>Submission <span class="badge bg-primary ms-1">@Model.Stats.SubmissionPhase</span>
-                </button>
-            </li>
-            <li class="nav-item">
-                <button type="button" class="nav-link @(Model.Filters.Status == ContestStatus.Voting ? "active" : "")"
-                        onclick="setFilter('@((int)ContestStatus.Voting)')">
-                    <i class="bi bi-hand-thumbs-up me-1"></i>Voting <span class="badge bg-info ms-1">@Model.Stats.VotingPhase</span>
-                </button>
-            </li>
-            <li class="nav-item">
-                <button type="button" class="nav-link @(Model.Filters.Status == ContestStatus.Ended ? "active" : "")"
-                        onclick="setFilter('@((int)ContestStatus.Ended)')">
-                    <i class="bi bi-flag-checkered me-1"></i>Ended <span class="badge bg-warning ms-1">@Model.Stats.EndedContests</span>
-                </button>
-            </li>
-            <li class="nav-item">
-                <button type="button" class="nav-link @(Model.Filters.Status == ContestStatus.All ? "active" : "")"
-                        onclick="setFilter('@((int)ContestStatus.All)')">
-                    <i class="bi bi-grid me-1"></i>All <span class="badge bg-secondary ms-1">@Model.Stats.TotalContests</span>
-                </button>
-            </li>
-        </ul>
-    </form>
+    <!-- Filter Component -->
+    <partial name="_ContestFilters" model="@Model.Filters" />
 
     <!-- Loading State -->
     <div id="loadingState" class="text-center py-5" style="display: none;">
@@ -423,62 +345,15 @@
         }
 
         @@media (max-width: 768px) {
-            .contest-dates .row > div
+            .contest-dates .row > div {
+                margin-bottom: 8px;
+            }
 
-        {
-            margin-bottom: 8px;
-        }
-
-        .contest-actions .btn {
-            font-size: 0.875rem;
-            padding: 0.375rem 0.75rem;
-        }
-
+            .contest-actions .btn {
+                font-size: 0.875rem;
+                padding: 0.375rem 0.75rem;
+            }
         }
     </style>
 }
 
-@section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('Search');
-            const statusSelect = document.getElementById('Status');
-            const sortBySelect = document.getElementById('SortBy');
-            const filterForm = document.getElementById('filterForm');
-            let searchTimeout;
-
-            // Auto-submit form on input changes with debounce for search
-            searchInput?.addEventListener('input', function() {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    filterForm.submit();
-                }, 500); // 500ms debounce for search
-            });
-
-            statusSelect?.addEventListener('change', function() {
-                filterForm.submit();
-            });
-
-            sortBySelect?.addEventListener('change', function() {
-                filterForm.submit();
-            });
-
-            // Quick filter functions
-            window.setFilter = function(status) {
-                statusSelect.value = status;
-                filterForm.submit();
-            };
-
-            // Show loading state during form submission
-            filterForm?.addEventListener('submit', function() {
-                const loadingState = document.getElementById('loadingState');
-                const contestGrid = document.getElementById('contestGrid');
-
-                if (loadingState && contestGrid) {
-                    loadingState.style.display = 'block';
-                    contestGrid.style.opacity = '0.5';
-                }
-            });
-        });
-    </script>
-}

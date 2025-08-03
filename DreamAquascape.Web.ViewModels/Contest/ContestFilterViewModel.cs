@@ -18,17 +18,18 @@ namespace DreamAquascape.Web.ViewModels.Contest
 
         [Display(Name = "Page Size")]
         public int PageSize { get; set; } = 12;
+
+        public bool ExcludeArchived { get; set; } = false;
     }
 
     public enum ContestStatus
     {
         All = 0,
         Active = 1,
-        Inactive = 2,
-        Submission = 3,
-        Voting = 4,
-        Ended = 5,
-        Archived = 6
+        Submission = 2,
+        Voting = 3,
+        Ended = 4,
+        Archived = 5 // IsActive = true, IsDeleted = false
     }
 
     public enum ContestSortBy

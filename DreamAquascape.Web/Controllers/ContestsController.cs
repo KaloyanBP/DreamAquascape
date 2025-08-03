@@ -25,11 +25,19 @@ namespace DreamAquascape.Web.Controllers
         public async Task<IActionResult> Index([FromQuery] ContestFilterViewModel? filters)
         {
             // Initialize filters if null
-            filters ??= new ContestFilterViewModel();
+            filters ??= new ContestFilterViewModel() { };
+            filters.ExcludeArchived = true; // Always exclude archived contests by default
 
             try
             {
                 var result = await _contestService.GetFilteredContestsAsync(filters);
+
+                // Set up ViewBag for the partial filter component (simplified for MVP)
+                ViewBag.ResultCount = result.Contests.Count();
+                ViewBag.ContestStats = new
+                {
+                    TotalContests = result.Pagination.TotalItems
+                };
 
                 // For AJAX requests, return partial view
                 if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")

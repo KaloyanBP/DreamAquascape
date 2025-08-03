@@ -12,6 +12,7 @@
     {
         public int TotalContests { get; set; }
         public int ActiveContests { get; set; }
+        public int InactiveContests { get; set; }
         public int SubmissionPhase { get; set; }
         public int VotingPhase { get; set; }
         public int EndedContests { get; set; }
