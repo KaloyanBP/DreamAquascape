@@ -99,18 +99,31 @@ namespace DreamAquascape.Services.Core
 
             // Apply pagination
             var contests = await query
+                .Include(c => c.Prizes)
                 .Skip((filters.Page - 1) * filters.PageSize)
                 .Take(filters.PageSize)
                 .Select(c => new ContestItemViewModel
                 {
                     Id = c.Id,
                     Title = c.Title,
+                    Description = c.Description,
                     ImageUrl = c.ImageFileUrl ?? "",
                     StartDate = c.SubmissionStartDate,
                     EndDate = c.VotingEndDate,
+                    SubmissionStartDate = c.SubmissionStartDate,
+                    SubmissionEndDate = c.SubmissionEndDate,
+                    VotingStartDate = c.VotingStartDate,
+                    VotingEndDate = c.VotingEndDate,
                     IsActive = c.IsActive,
                     EntryCount = c.Entries.Count(e => !e.IsDeleted),
-                    VoteCount = c.Entries.SelectMany(e => e.Votes).Count()
+                    VoteCount = c.Entries.SelectMany(e => e.Votes).Count(),
+                    TotalEntries = c.Entries.Count(e => !e.IsDeleted),
+                    TotalVotes = c.Entries.SelectMany(e => e.Votes).Count(),
+                    Prizes = c.Prizes.Select(p => new PrizeViewModel
+                    {
+                        MonetaryValue = p.MonetaryValue,
+                        Description = p.Description
+                    }).ToList()
                 })
                 .ToListAsync();
 
@@ -885,6 +898,171 @@ namespace DreamAquascape.Services.Core
             }
 
             return newWinners;
+        }
+
+        // Admin management methods
+        public async Task<ContestListViewModel> GetFilteredContestsAsync(string searchTerm = "", string status = "", int page = 1, int pageSize = 10)
+        {
+            var now = DateTime.UtcNow;
+
+            var query = _context.Contests
+                .Include(c => c.Entries)
+                .Include(c => c.Prizes)
+                .Where(c => !c.IsDeleted);
+
+            // Apply search filter
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(c => c.Title.Contains(searchTerm) || c.Description.Contains(searchTerm));
+            }
+
+            // Apply status filter
+            switch (status?.ToLower())
+            {
+                case "active":
+                    query = query.Where(c => c.IsActive);
+                    break;
+                case "inactive":
+                    query = query.Where(c => !c.IsActive);
+                    break;
+                case "upcoming":
+                    query = query.Where(c => c.IsActive && now < c.SubmissionStartDate);
+                    break;
+                case "ongoing":
+                    query = query.Where(c => c.IsActive && now >= c.SubmissionStartDate && now <= c.VotingEndDate);
+                    break;
+                case "ended":
+                    query = query.Where(c => now > c.VotingEndDate);
+                    break;
+                case "ending-soon":
+                    var soonThreshold = now.AddDays(7);
+                    query = query.Where(c => c.IsActive && c.VotingEndDate > now && c.VotingEndDate <= soonThreshold);
+                    break;
+            }
+
+            var totalCount = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+            var contests = await query
+                .OrderByDescending(c => c.CreatedDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(c => new ContestItemViewModel
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    Description = c.Description,
+                    ImageUrl = c.ImageFileUrl ?? "",
+                    StartDate = c.SubmissionStartDate,
+                    EndDate = c.VotingEndDate,
+                    SubmissionStartDate = c.SubmissionStartDate,
+                    SubmissionEndDate = c.SubmissionEndDate,
+                    VotingStartDate = c.VotingStartDate,
+                    VotingEndDate = c.VotingEndDate,
+                    IsActive = c.IsActive,
+                    EntryCount = c.Entries.Count(e => !e.IsDeleted),
+                    VoteCount = c.Entries.Where(e => !e.IsDeleted).Sum(e => e.Votes.Count),
+                    TotalEntries = c.Entries.Count(e => !e.IsDeleted),
+                    TotalVotes = c.Entries.Where(e => !e.IsDeleted).Sum(e => e.Votes.Count),
+                    Prizes = c.Prizes.Select(p => new PrizeViewModel
+                    {
+                        MonetaryValue = p.MonetaryValue,
+                        Description = p.Description
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            // Calculate statistics
+            var allContests = await _context.Contests.Where(c => !c.IsDeleted).ToListAsync();
+            var stats = new ContestStatsViewModel
+            {
+                TotalContests = allContests.Count,
+                ActiveContests = allContests.Count(c => c.IsActive && now <= c.VotingEndDate),
+                SubmissionPhase = allContests.Count(c => c.IsActive && now >= c.SubmissionStartDate && now <= c.SubmissionEndDate),
+                VotingPhase = allContests.Count(c => c.IsActive && now > c.SubmissionEndDate && now <= c.VotingEndDate),
+                EndedContests = allContests.Count(c => (c.IsActive && now > c.VotingEndDate) || !c.IsActive),
+                ArchivedContests = allContests.Count(c => !c.IsActive)
+            };
+
+            return new ContestListViewModel
+            {
+                Contests = contests,
+                Filters = new ContestFilterViewModel
+                {
+                    Search = searchTerm,
+                    Page = page,
+                    PageSize = pageSize
+                },
+                Stats = stats,
+                Pagination = new PaginationViewModel
+                {
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    TotalItems = totalCount,
+                    TotalPages = totalPages
+                }
+            };
+        }
+
+        public async Task<bool> ToggleContestStatusAsync(int contestId)
+        {
+            try
+            {
+                var contest = await _context.Contests
+                    .FirstOrDefaultAsync(c => c.Id == contestId && !c.IsDeleted);
+
+                if (contest == null)
+                    return false;
+
+                contest.IsActive = !contest.IsActive;
+                //contest.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Contest {ContestId} status toggled to {Status}",
+                    contestId, contest.IsActive ? "Active" : "Inactive");
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error toggling contest status for contest {ContestId}", contestId);
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteContestAsync(int contestId)
+        {
+            try
+            {
+                var contest = await _context.Contests
+                    .Include(c => c.Entries)
+                    .FirstOrDefaultAsync(c => c.Id == contestId && !c.IsDeleted);
+
+                if (contest == null)
+                    return false;
+
+                // Only allow deletion if no entries exist
+                if (contest.Entries.Any(e => !e.IsDeleted))
+                {
+                    _logger.LogWarning("Cannot delete contest {ContestId} - has existing entries", contestId);
+                    return false;
+                }
+
+                contest.IsDeleted = true;
+                //contest.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Contest {ContestId} deleted successfully", contestId);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting contest {ContestId}", contestId);
+                return false;
+            }
         }
     }
 }

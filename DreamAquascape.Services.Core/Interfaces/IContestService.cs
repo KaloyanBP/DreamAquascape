@@ -22,5 +22,10 @@ namespace DreamAquascape.Services.Core.Interfaces
         // Winner determination
         Task<ContestWinner?> DetermineAndSetWinnerAsync(int contestId);
         Task<List<ContestWinner>> ProcessEndedContestsAsync();
+
+        // Admin management
+        Task<ContestListViewModel> GetFilteredContestsAsync(string searchTerm = "", string status = "", int page = 1, int pageSize = 10);
+        Task<bool> ToggleContestStatusAsync(int contestId);
+        Task<bool> DeleteContestAsync(int contestId);
     }
 }

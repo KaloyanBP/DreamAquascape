@@ -13,5 +13,6 @@ namespace DreamAquascape.Web.ViewModels.Contest
         public string? Description { get; set; }
         public string? NavigationUrl { get; set; }
         public string? ImageUrl { get; set; }
+        public decimal? MonetaryValue { get; set; }
     }
 }
