@@ -130,5 +130,46 @@ namespace DreamAquascape.Data.Repository
                 .Include(e => e.EntryImages)
                 .ToListAsync();
         }
+
+        public async Task<int> GetTotalEntryCountAsync()
+        {
+            return await DbSet.CountAsync(e => !e.IsDeleted);
+        }
+
+        public async Task<int> GetPendingEntriesCountAsync(DateTime now)
+        {
+            return await DbSet.CountAsync(e =>
+                !e.IsDeleted && e.IsActive &&
+                e.Contest.SubmissionStartDate <= now && e.Contest.SubmissionEndDate >= now);
+        }
+
+        public async Task<double> GetAverageVotesPerEntryAsync()
+        {
+            var entriesWithVotes = await DbSet
+                .Where(e => !e.IsDeleted)
+                .Select(e => new { e.Id, VoteCount = e.Votes.Count() })
+                .ToListAsync();
+
+            return entriesWithVotes.Any()
+                ? entriesWithVotes.Average(e => e.VoteCount)
+                : 0;
+        }
+
+        public async Task<IEnumerable<string>> GetAllParticipantIdsAsync()
+        {
+            return await DbSet
+                .Select(e => e.ParticipantId)
+                .Distinct()
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<string>> GetParticipantIdsSinceAsync(DateTime fromDate)
+        {
+            return await DbSet
+                .Where(e => e.SubmittedAt >= fromDate)
+                .Select(e => e.ParticipantId)
+                .Distinct()
+                .ToListAsync();
+        }
     }
 }

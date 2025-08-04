@@ -28,5 +28,27 @@ namespace DreamAquascape.Data.Repository
             return await DbSet
                 .FirstOrDefaultAsync(v => v.UserId == userId && v.ContestEntryId == entryId);
         }
+
+        public async Task<int> GetTotalVoteCountAsync()
+        {
+            return await DbSet.CountAsync();
+        }
+
+        public async Task<IEnumerable<string>> GetAllVoterIdsAsync()
+        {
+            return await DbSet
+                .Select(v => v.UserId)
+                .Distinct()
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<string>> GetVoterIdsSinceAsync(DateTime fromDate)
+        {
+            return await DbSet
+                .Where(v => v.VotedAt >= fromDate)
+                .Select(v => v.UserId)
+                .Distinct()
+                .ToListAsync();
+        }
     }
 }

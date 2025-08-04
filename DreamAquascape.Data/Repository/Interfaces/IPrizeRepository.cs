@@ -4,5 +4,7 @@ namespace DreamAquascape.Data.Repository.Interfaces
 {
     public interface IPrizeRepository : IRepository<Prize, int>, IAsyncRepository<Prize, int>
     {
+        // Dashboard statistics methods
+        Task<decimal> GetTotalActivePrizeValueAsync();
     }
 }

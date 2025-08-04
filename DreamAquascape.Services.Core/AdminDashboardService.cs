@@ -1,21 +1,33 @@
-﻿using DreamAquascape.Data;
-using DreamAquascape.Data.Models;
+﻿using DreamAquascape.Data.Repository.Interfaces;
 using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels.AdminDashboard;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace DreamAquascape.Services.Core.AdminDashboard
 {
     public class AdminDashboardService : IAdminDashboardService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IContestRepository _contestRepository;
+        private readonly IContestEntryRepository _contestEntryRepository;
+        private readonly IVoteRepository _voteRepository;
+        private readonly IPrizeRepository _prizeRepository;
+        private readonly IContestWinnerRepository _contestWinnerRepository;
         private readonly ILogger<AdminDashboardService> _logger;
 
-        public AdminDashboardService(ApplicationDbContext context, ILogger<AdminDashboardService> logger)
+        public AdminDashboardService(
+            IContestRepository contestRepository,
+            IContestEntryRepository contestEntryRepository,
+            IVoteRepository voteRepository,
+            IPrizeRepository prizeRepository,
+            IContestWinnerRepository contestWinnerRepository,
+            ILogger<AdminDashboardService> logger)
         {
-            _context = context;
-            _logger = logger;
+            _contestRepository = contestRepository ?? throw new ArgumentNullException(nameof(contestRepository));
+            _contestEntryRepository = contestEntryRepository ?? throw new ArgumentNullException(nameof(contestEntryRepository));
+            _voteRepository = voteRepository ?? throw new ArgumentNullException(nameof(voteRepository));
+            _prizeRepository = prizeRepository ?? throw new ArgumentNullException(nameof(prizeRepository));
+            _contestWinnerRepository = contestWinnerRepository ?? throw new ArgumentNullException(nameof(contestWinnerRepository));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<DashboardStatsViewModel> GetDashboardStatsAsync()
@@ -23,48 +35,20 @@ namespace DreamAquascape.Services.Core.AdminDashboard
             var now = DateTime.UtcNow;
             var thirtyDaysAgo = now.AddDays(-30);
 
-            // Basic counts
-            var totalContests = await _context.Contests.CountAsync(c => !c.IsDeleted);
-            var activeContests = await _context.Contests.CountAsync(c =>
-                c.IsActive && !c.IsDeleted &&
-                c.SubmissionStartDate <= now && c.VotingEndDate >= now);
-
-            var totalEntries = await _context.ContestEntries.CountAsync(e => !e.IsDeleted);
-            var totalVotes = await _context.Votes.CountAsync();
-
+            // Basic counts using repositories
+            var totalContests = await _contestRepository.GetTotalContestCountAsync();
+            var activeContests = await _contestRepository.GetActiveContestCountAsync();
+            var totalEntries = await _contestEntryRepository.GetTotalEntryCountAsync();
+            var totalVotes = await _voteRepository.GetTotalVoteCountAsync();
             var totalUsers = await GetTotalUniqueParticipantsAsync();
 
-            var pendingEntries = await _context.ContestEntries.CountAsync(e =>
-                !e.IsDeleted && e.IsActive &&
-                e.Contest.SubmissionStartDate <= now && e.Contest.SubmissionEndDate >= now);
-
-            var contestsEndingSoon = await _context.Contests.CountAsync(c =>
-                c.IsActive && !c.IsDeleted &&
-                c.VotingEndDate <= now.AddDays(7) && c.VotingEndDate >= now);
-
-            var totalPrizeValue = await _context.Prizes
-                .Where(p => p.Contest.IsActive && !p.Contest.IsDeleted)
-                .SumAsync(p => p.MonetaryValue ?? 0);
+            var pendingEntries = await _contestEntryRepository.GetPendingEntriesCountAsync(now);
+            var contestsEndingSoon = await _contestRepository.GetContestsEndingSoonCountAsync(now, now.AddDays(7));
+            var totalPrizeValue = await _prizeRepository.GetTotalActivePrizeValueAsync();
 
             // Performance metrics
-            var contestsWithEntries = await _context.Contests
-                .Where(c => !c.IsDeleted)
-                .Select(c => new { c.Id, EntryCount = c.Entries.Count(e => !e.IsDeleted) })
-                .ToListAsync();
-
-            var averageEntriesPerContest = contestsWithEntries.Any()
-                ? contestsWithEntries.Average(c => c.EntryCount)
-                : 0;
-
-            var entriesWithVotes = await _context.ContestEntries
-                .Where(e => !e.IsDeleted)
-                .Select(e => new { e.Id, VoteCount = e.Votes.Count() })
-                .ToListAsync();
-
-            var averageVotesPerEntry = entriesWithVotes.Any()
-                ? entriesWithVotes.Average(e => e.VoteCount)
-                : 0;
-
+            var averageEntriesPerContest = await _contestRepository.GetAverageEntriesPerContestAsync();
+            var averageVotesPerEntry = await _contestEntryRepository.GetAverageVotesPerEntryAsync();
             var userEngagementRate = await GetUserEngagementRateAsync(thirtyDaysAgo);
 
             return new DashboardStatsViewModel
@@ -86,14 +70,10 @@ namespace DreamAquascape.Services.Core.AdminDashboard
         private async Task<int> GetTotalUniqueParticipantsAsync()
         {
             // Get all unique user IDs who have either submitted entries or cast votes
-            var totalUsers = await (
-                _context.ContestEntries
-                    .Select(e => e.ParticipantId)
-                    .Union(
-                        _context.Votes.Select(v => v.UserId)
-                    )
-                ).Distinct().CountAsync();
+            var entryParticipants = await _contestEntryRepository.GetAllParticipantIdsAsync();
+            var voteParticipants = await _voteRepository.GetAllVoterIdsAsync();
 
+            var totalUsers = entryParticipants.Union(voteParticipants).Distinct().Count();
             return totalUsers;
         }
 
@@ -105,17 +85,10 @@ namespace DreamAquascape.Services.Core.AdminDashboard
                 return 0;
 
             // Get unique users who participated since the specified date
-            var activeUsers = await (
-                _context.ContestEntries
-                    .Where(e => e.SubmittedAt >= fromDate)
-                    .Select(e => e.ParticipantId)
-                    .Union(
-                        _context.Votes
-                            .Where(v => v.VotedAt >= fromDate)
-                            .Select(v => v.UserId)
-                    )
-                ).Distinct().CountAsync();
+            var activeEntryParticipants = await _contestEntryRepository.GetParticipantIdsSinceAsync(fromDate);
+            var activeVoteParticipants = await _voteRepository.GetVoterIdsSinceAsync(fromDate);
 
+            var activeUsers = activeEntryParticipants.Union(activeVoteParticipants).Distinct().Count();
             var engagementRate = (double)activeUsers / totalUsers * 100;
 
             return engagementRate;

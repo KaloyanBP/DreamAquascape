@@ -187,5 +187,37 @@ namespace DreamAquascape.Data.Repository
                 throw;
             }
         }
+
+        public async Task<int> GetTotalContestCountAsync()
+        {
+            return await DbSet.CountAsync(c => !c.IsDeleted);
+        }
+
+        public async Task<int> GetActiveContestCountAsync()
+        {
+            var now = DateTime.UtcNow;
+            return await DbSet.CountAsync(c =>
+                c.IsActive && !c.IsDeleted &&
+                c.SubmissionStartDate <= now && c.VotingEndDate >= now);
+        }
+
+        public async Task<int> GetContestsEndingSoonCountAsync(DateTime now, DateTime endDate)
+        {
+            return await DbSet.CountAsync(c =>
+                c.IsActive && !c.IsDeleted &&
+                c.VotingEndDate <= endDate && c.VotingEndDate >= now);
+        }
+
+        public async Task<double> GetAverageEntriesPerContestAsync()
+        {
+            var contestsWithEntries = await DbSet
+                .Where(c => !c.IsDeleted)
+                .Select(c => new { c.Id, EntryCount = c.Entries.Count(e => !e.IsDeleted) })
+                .ToListAsync();
+
+            return contestsWithEntries.Any()
+                ? contestsWithEntries.Average(c => c.EntryCount)
+                : 0;
+        }
     }
 }
