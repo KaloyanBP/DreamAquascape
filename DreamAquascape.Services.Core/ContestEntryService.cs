@@ -1,11 +1,9 @@
-﻿using DreamAquascape.Data;
-using DreamAquascape.Data.Models;
+﻿using DreamAquascape.Data.Models;
 using DreamAquascape.Data.Repository.Interfaces;
 using DreamAquascape.Services.Common.Exceptions;
 using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels.ContestEntry;
 using DreamAquascape.Web.ViewModels.UserDashboard;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace DreamAquascape.Services.Core
@@ -13,17 +11,23 @@ namespace DreamAquascape.Services.Core
     public class ContestEntryService : IContestEntryService
     {
         private readonly ILogger<ContestEntryService> _logger;
-        private readonly ApplicationDbContext _context;
         private readonly IContestEntryRepository _contestEntryRepository;
+        private readonly IContestRepository _contestRepository;
+        private readonly IVoteRepository _voteRepository;
+        private readonly IEntryImageRepository _entryImageRepository;
 
         public ContestEntryService(
-            ApplicationDbContext context,
             ILogger<ContestEntryService> logger,
-            IContestEntryRepository contestEntryRepository)
+            IContestEntryRepository contestEntryRepository,
+            IContestRepository contestRepository,
+            IVoteRepository voteRepository,
+            IEntryImageRepository entryImageRepository)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _contestEntryRepository = contestEntryRepository ?? throw new ArgumentNullException(nameof(contestEntryRepository));
+            _contestRepository = contestRepository ?? throw new ArgumentNullException(nameof(contestRepository));
+            _voteRepository = voteRepository ?? throw new ArgumentNullException(nameof(voteRepository));
+            _entryImageRepository = entryImageRepository ?? throw new ArgumentNullException(nameof(entryImageRepository));
         }
 
         public async Task<ContestEntryDetailsViewModel?> GetContestEntryDetailsAsync(int contestId, int entryId, string? currentUserId = null)
@@ -56,7 +60,7 @@ namespace DreamAquascape.Services.Core
 
             // Check if user has voted for this entry
             var userVote = !string.IsNullOrEmpty(currentUserId) ?
-                await _context.Votes.FirstOrDefaultAsync(v => v.UserId == currentUserId && v.ContestEntryId == entryId) :
+                await _voteRepository.GetUserVoteForEntryAsync(currentUserId, entryId) :
                 null;
 
             // Determine contest phase
@@ -198,14 +202,12 @@ namespace DreamAquascape.Services.Core
 
         public async Task<ContestEntry> SubmitEntryAsync(CreateContestEntryViewModel dto, string userId, string userName)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 // Validate submission period
-                var contest = await _context.Contests
-                    .FirstOrDefaultAsync(c => c.Id == dto.ContestId && c.IsActive && !c.IsDeleted);
+                var contest = await _contestRepository.GetByIdAsync(dto.ContestId);
 
-                if (contest == null)
+                if (contest == null || !contest.IsActive || contest.IsDeleted)
                     throw new NotFoundException("Contest not found");
 
                 if (DateTime.UtcNow < contest.SubmissionStartDate || DateTime.UtcNow > contest.SubmissionEndDate)
@@ -230,10 +232,7 @@ namespace DreamAquascape.Services.Core
                     EntryImages = GetEntryImages(dto.EntryImages)
                 };
 
-                await _context.ContestEntries.AddAsync(entry);
-                await _context.SaveChangesAsync(); // Save to get the entry ID
-
-                await transaction.CommitAsync();
+                await _contestEntryRepository.AddAsync(entry);
 
                 _logger.LogInformation("Entry {EntryId} submitted by user {UserId} for contest {ContestId}",
                     entry.Id, userId, dto.ContestId);
@@ -242,7 +241,6 @@ namespace DreamAquascape.Services.Core
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
                 _logger.LogError(ex, "Failed to submit entry for user {UserId} in contest {ContestId}",
                     userId, dto.ContestId);
                 throw;
@@ -251,17 +249,11 @@ namespace DreamAquascape.Services.Core
 
         public async Task<bool> UpdateContestEntryAsync(EditContestEntryViewModel model, string currentUserId)
         {
-            var contest = await _context.Contests
-                .FirstOrDefaultAsync(c => c.Id == model.ContestId && !c.IsDeleted);
+            var contest = await _contestRepository.GetByIdAsync(model.ContestId);
 
-            if (contest == null) return false;
+            if (contest == null || contest.IsDeleted) return false;
 
-            var entry = await _context.ContestEntries
-                .Include(e => e.EntryImages)
-                .FirstOrDefaultAsync(e => e.Id == model.Id &&
-                                        e.ContestId == model.ContestId &&
-                                        e.ParticipantId == currentUserId &&
-                                        !e.IsDeleted);
+            var entry = await _contestEntryRepository.GetEntryForEditAsync(model.ContestId, model.Id, currentUserId);
 
             if (entry == null) return false;
 
@@ -288,6 +280,7 @@ namespace DreamAquascape.Services.Core
                 foreach (var img in imagesToRemove)
                 {
                     img.IsDeleted = true;
+                    await _entryImageRepository.UpdateAsync(img);
                 }
             }
 
@@ -302,13 +295,13 @@ namespace DreamAquascape.Services.Core
                         ImageUrl = imageUrl,
                         UploadedAt = now
                     };
-                    _context.EntryImages.Add(newImage);
+                    await _entryImageRepository.AddAsync(newImage);
                 }
             }
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _contestEntryRepository.UpdateAsync(entry);
                 _logger.LogInformation("Contest entry {EntryId} updated successfully by user {UserId}", model.Id, currentUserId);
                 return true;
             }
@@ -321,16 +314,11 @@ namespace DreamAquascape.Services.Core
 
         public async Task<bool> DeleteEntryAsync(int contestId, int entryId, string currentUserId)
         {
-            var contest = await _context.Contests
-                .FirstOrDefaultAsync(c => c.Id == contestId && !c.IsDeleted);
+            var contest = await _contestRepository.GetByIdAsync(contestId);
 
-            if (contest == null) return false;
+            if (contest == null || contest.IsDeleted) return false;
 
-            var entry = await _context.ContestEntries
-                .FirstOrDefaultAsync(e => e.Id == entryId &&
-                                        e.ContestId == contestId &&
-                                        e.ParticipantId == currentUserId &&
-                                        !e.IsDeleted);
+            var entry = await _contestEntryRepository.GetEntryForEditAsync(contestId, entryId, currentUserId);
 
             if (entry == null) return false;
 
@@ -348,7 +336,7 @@ namespace DreamAquascape.Services.Core
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _contestEntryRepository.UpdateAsync(entry);
                 _logger.LogInformation("Contest entry {EntryId} deleted by user {UserId}", entryId, currentUserId);
                 return true;
             }
@@ -382,10 +370,9 @@ namespace DreamAquascape.Services.Core
         // Additional helper methods for permissions and queries...
         public async Task<bool> CanUserSubmitEntryAsync(int contestId, string userId)
         {
-            var contest = await _context.Contests
-                .FirstOrDefaultAsync(c => c.Id == contestId && !c.IsDeleted);
+            var contest = await _contestRepository.GetByIdAsync(contestId);
 
-            if (contest == null || !contest.IsActive) return false;
+            if (contest == null || contest.IsDeleted || !contest.IsActive) return false;
 
             var now = DateTime.UtcNow;
             if (now < contest.SubmissionStartDate || now > contest.SubmissionEndDate)
@@ -399,27 +386,23 @@ namespace DreamAquascape.Services.Core
 
         public async Task<bool> CanUserVoteAsync(int contestId, string userId)
         {
-            var contest = await _context.Contests
-                .FirstOrDefaultAsync(c => c.Id == contestId && !c.IsDeleted);
+            var contest = await _contestRepository.GetByIdAsync(contestId);
 
-            if (contest == null || !contest.IsActive) return false;
+            if (contest == null || contest.IsDeleted || !contest.IsActive) return false;
 
             var now = DateTime.UtcNow;
             if (now < contest.VotingStartDate || now > contest.VotingEndDate)
                 return false;
 
             // Check if user has already voted
-            var hasVoted = await _context.Votes
-                .Include(v => v.ContestEntry)
-                .AnyAsync(v => v.UserId == userId && v.ContestEntry.ContestId == contestId);
+            var hasVoted = await _voteRepository.HasUserVotedInContestAsync(userId, contestId);
 
             return !hasVoted;
         }
 
         public async Task<bool> CanUserEditEntryAsync(int contestId, int entryId, string userId)
         {
-            var contest = await _context.Contests
-                .FirstOrDefaultAsync(c => c.Id == contestId && !c.IsDeleted);
+            var contest = await _contestRepository.GetByIdAsync(contestId);
 
             if (contest == null || !contest.IsActive) return false;
 
