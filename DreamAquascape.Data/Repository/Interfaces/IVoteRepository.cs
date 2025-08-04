@@ -6,5 +6,6 @@ namespace DreamAquascape.Data.Repository.Interfaces
     {
         Task<Vote?> GetUserVoteInContestAsync(string userId, int contestId);
         Task<bool> HasUserVotedInContestAsync(string userId, int contestId);
+        Task<Vote?> GetUserVoteForEntryAsync(string userId, int entryId);
     }
 }

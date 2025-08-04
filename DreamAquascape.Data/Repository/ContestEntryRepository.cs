@@ -107,5 +107,28 @@ namespace DreamAquascape.Data.Repository
             return await DbSet
                 .FirstOrDefaultAsync(e => e.Id == entryId && !e.IsDeleted);
         }
+
+        public async Task<ContestEntry?> GetEntryDetailsWithAllDataAsync(int contestId, int entryId)
+        {
+            return await DbSet
+                .Include(e => e.Contest)
+                    .ThenInclude(c => c.Winners)
+                .Include(e => e.Participant)
+                .Include(e => e.EntryImages)
+                .Include(e => e.Votes)
+                    .ThenInclude(v => v.User)
+                .Include(e => e.Winner)
+                .FirstOrDefaultAsync(e => e.Id == entryId && e.ContestId == contestId && !e.IsDeleted);
+        }
+
+        public async Task<IEnumerable<ContestEntry>> GetAllEntriesInContestAsync(int contestId)
+        {
+            return await DbSet
+                .Where(e => e.ContestId == contestId && !e.IsDeleted)
+                .Include(e => e.Votes)
+                .Include(e => e.Participant)
+                .Include(e => e.EntryImages)
+                .ToListAsync();
+        }
     }
 }

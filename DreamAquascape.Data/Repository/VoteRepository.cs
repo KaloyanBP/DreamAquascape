@@ -22,5 +22,11 @@ namespace DreamAquascape.Data.Repository
             return await DbSet
                 .AnyAsync(v => v.UserId == userId && v.ContestEntry.ContestId == contestId);
         }
+
+        public async Task<Vote?> GetUserVoteForEntryAsync(string userId, int entryId)
+        {
+            return await DbSet
+                .FirstOrDefaultAsync(v => v.UserId == userId && v.ContestEntryId == entryId);
+        }
     }
 }

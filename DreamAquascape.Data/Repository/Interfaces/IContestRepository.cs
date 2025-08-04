@@ -1,4 +1,5 @@
 ﻿using DreamAquascape.Data.Models;
+using DreamAquascape.Web.ViewModels.Contest;
 
 namespace DreamAquascape.Data.Repository.Interfaces
 {
@@ -12,5 +13,12 @@ namespace DreamAquascape.Data.Repository.Interfaces
         Task<Contest?> GetContestForEditAsync(int contestId);
         Task<Contest?> GetContestForWinnerDeterminationAsync(int contestId);
         Task<IEnumerable<Contest>> GetEndedContestsWithoutWinnersAsync();
+
+        // New methods for filtered queries and statistics
+        Task<(IEnumerable<Contest> contests, int totalCount)> GetFilteredContestsAsync(ContestFilterViewModel filters);
+        Task<ContestStatsViewModel> GetContestStatsAsync();
+
+        // Contest creation method
+        Task<Contest> CreateContestWithPrizeAsync(Contest contest, Prize prize);
     }
 }

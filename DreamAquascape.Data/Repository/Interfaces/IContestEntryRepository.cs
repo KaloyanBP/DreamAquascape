@@ -22,5 +22,9 @@ namespace DreamAquascape.Data.Repository.Interfaces
         Task<int> GetEntryRankingInContestAsync(int contestId, int entryId);
 
         Task<ContestEntry?> GetContestEntryByIdAsync(int entryId);
+
+        // New method for detailed entry view
+        Task<ContestEntry?> GetEntryDetailsWithAllDataAsync(int contestId, int entryId);
+        Task<IEnumerable<ContestEntry>> GetAllEntriesInContestAsync(int contestId);
     }
 }
