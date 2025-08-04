@@ -101,5 +101,11 @@ namespace DreamAquascape.Data.Repository
 
             return rankedEntries.FindIndex(e => e.Id == entryId) + 1;
         }
+
+        public async Task<ContestEntry?> GetContestEntryByIdAsync(int entryId)
+        {
+            return await DbSet
+                .FirstOrDefaultAsync(e => e.Id == entryId && !e.IsDeleted);
+        }
     }
 }

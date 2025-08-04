@@ -4,6 +4,7 @@ namespace DreamAquascape.Data.Repository.Interfaces
 {
     public interface IContestEntryRepository : IRepository<ContestEntry, int>, IAsyncRepository<ContestEntry, int>
     {
+        // Existing methods
         Task<ContestEntry?> GetEntryWithAllDataAsync(int contestId, int entryId);
         Task<ContestEntry?> GetEntryForEditAsync(int contestId, int entryId, string userId);
 
@@ -19,5 +20,7 @@ namespace DreamAquascape.Data.Repository.Interfaces
         Task<Dictionary<int, int>> GetVoteCountsByContestAsync(int contestId);
         Task<int> GetVoteCountByEntryAsync(int entryId);
         Task<int> GetEntryRankingInContestAsync(int contestId, int entryId);
+
+        Task<ContestEntry?> GetContestEntryByIdAsync(int entryId);
     }
 }

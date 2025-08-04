@@ -15,12 +15,21 @@ namespace DreamAquascape.Services.Core
     {
         private readonly ILogger<ContestService> _logger;
         private readonly IContestRepository _contestRepository;
+        private readonly IVoteRepository _voteRepository;
+        private readonly IContestEntryRepository _contestEntryRepository;
         private readonly ApplicationDbContext _context;
 
-        public ContestService(ApplicationDbContext context, IContestRepository contestRepository, ILogger<ContestService> logger)
+        public ContestService(
+            ApplicationDbContext context,
+            IContestRepository contestRepository,
+            IVoteRepository voteRepository,
+            IContestEntryRepository contestEntryRepository,
+            ILogger<ContestService> logger)
         {
             _logger = logger;
             _contestRepository = contestRepository;
+            _voteRepository = voteRepository;
+            _contestEntryRepository = contestEntryRepository;
             _context = context;
         }
 
@@ -312,21 +321,16 @@ namespace DreamAquascape.Services.Core
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // Validate voting period
-                var contest = await _context.Contests
-                    .FirstOrDefaultAsync(c => c.Id == contestId && c.IsActive && !c.IsDeleted);
-
-                if (contest == null)
+                var contest = await _contestRepository.GetByIdAsync(contestId);
+                if (contest == null || !contest.IsActive || contest.IsDeleted)
                     throw new NotFoundException("Contest not found");
 
                 if (DateTime.UtcNow < contest.VotingStartDate || DateTime.UtcNow > contest.VotingEndDate)
                     throw new InvalidOperationException("Contest voting period is not active");
 
                 // Validate the entry exists and is active
-                var entry = await _context.ContestEntries
-                    .FirstOrDefaultAsync(e => e.Id == entryId && e.ContestId == contestId && !e.IsDeleted);
-
-                if (entry == null)
+                var entry = await _contestEntryRepository.GetByIdAsync(entryId);
+                if (entry == null || entry.ContestId != contestId || entry.IsDeleted)
                     throw new NotFoundException("Entry not found");
 
                 // Check if user is trying to vote for their own entry
@@ -334,11 +338,8 @@ namespace DreamAquascape.Services.Core
                     throw new InvalidOperationException("Users cannot vote for their own entries");
 
                 // Check if user already voted in this contest
-                var existingVote = await _context.Votes
-                    .Include(v => v.ContestEntry)
-                    .FirstOrDefaultAsync(v => v.UserId == userId && v.ContestEntry.ContestId == contestId);
-
-                if (existingVote != null)
+                var hasVoted = await _voteRepository.HasUserVotedInContestAsync(userId, contestId);
+                if (hasVoted)
                     throw new InvalidOperationException("User has already voted in this contest");
 
                 // Create the vote
@@ -350,8 +351,7 @@ namespace DreamAquascape.Services.Core
                     IpAddress = ipAddress
                 };
 
-                await _context.Votes.AddAsync(vote);
-                await _context.SaveChangesAsync();
+                await _voteRepository.AddAsync(vote);
                 await transaction.CommitAsync();
 
                 _logger.LogInformation("Vote cast by user {UserId} for entry {EntryId} in contest {ContestId}",
@@ -374,28 +374,21 @@ namespace DreamAquascape.Services.Core
             try
             {
                 // Validate voting period
-                var contest = await _context.Contests
-                    .FirstOrDefaultAsync(c => c.Id == contestId && c.IsActive && !c.IsDeleted);
-
-                if (contest == null)
+                var contest = await _contestRepository.GetByIdAsync(contestId);
+                if (contest == null || !contest.IsActive || contest.IsDeleted)
                     throw new NotFoundException("Contest not found");
 
                 if (DateTime.UtcNow < contest.VotingStartDate || DateTime.UtcNow > contest.VotingEndDate)
                     throw new InvalidOperationException("Contest voting period is not active");
 
                 // Get existing vote
-                var existingVote = await _context.Votes
-                    .Include(v => v.ContestEntry)
-                    .FirstOrDefaultAsync(v => v.UserId == userId && v.ContestEntry.ContestId == contestId);
-
+                var existingVote = await _voteRepository.GetUserVoteInContestAsync(userId, contestId);
                 if (existingVote == null)
                     throw new NotFoundException("No existing vote found for this user");
 
                 // Validate new entry
-                var newEntry = await _context.ContestEntries
-                    .FirstOrDefaultAsync(e => e.Id == newEntryId && e.ContestId == contestId && !e.IsDeleted);
-
-                if (newEntry == null)
+                var newEntry = await _contestEntryRepository.GetByIdAsync(newEntryId);
+                if (newEntry == null || newEntry.ContestId != contestId || newEntry.IsDeleted)
                     throw new NotFoundException("New entry not found");
 
                 if (newEntry.ParticipantId == userId)
@@ -405,7 +398,7 @@ namespace DreamAquascape.Services.Core
                 existingVote.ContestEntryId = newEntryId;
                 existingVote.VotedAt = DateTime.UtcNow;
 
-                await _context.SaveChangesAsync();
+                await _voteRepository.UpdateAsync(existingVote);
                 await transaction.CommitAsync();
 
                 _logger.LogInformation("Vote changed by user {UserId} to entry {EntryId} in contest {ContestId}",
@@ -428,33 +421,20 @@ namespace DreamAquascape.Services.Core
             try
             {
                 // Validate voting period
-                var contest = await _context.Contests
-                    .FirstOrDefaultAsync(c => c.Id == contestId && c.IsActive && !c.IsDeleted);
-
-                if (contest == null)
-                {
+                var contest = await _contestRepository.GetByIdAsync(contestId);
+                if (contest == null || !contest.IsActive || contest.IsDeleted)
                     throw new NotFoundException("Contest not found");
-                }
 
                 if (DateTime.UtcNow < contest.VotingStartDate || DateTime.UtcNow > contest.VotingEndDate)
-                {
                     throw new InvalidOperationException("Contest voting period is not active");
-                }
 
                 // Get existing vote
-                var existingVote = await _context.Votes
-                    .Include(v => v.ContestEntry)
-                    .FirstOrDefaultAsync(v => v.UserId == userId && v.ContestEntry.ContestId == contestId);
-
+                var existingVote = await _voteRepository.GetUserVoteInContestAsync(userId, contestId);
                 if (existingVote == null)
-                {
                     throw new NotFoundException("No existing vote found for this user");
-                }
 
                 // Remove the vote
-                _context.Votes.Remove(existingVote);
-
-                await _context.SaveChangesAsync();
+                await _voteRepository.HardDeleteAsync(existingVote);
                 await transaction.CommitAsync();
 
                 _logger.LogInformation("Vote removed by user {UserId} in contest {ContestId}",
@@ -639,12 +619,7 @@ namespace DreamAquascape.Services.Core
         /// <returns>The contest winner, or null if no entries or winner already exists</returns>
         public async Task<ContestWinner?> DetermineAndSetWinnerAsync(int contestId)
         {
-            var contest = await _context.Contests
-                .Include(c => c.Entries)
-                    .ThenInclude(e => e.Votes)
-                .Include(c => c.Winners)
-                .FirstOrDefaultAsync(c => c.Id == contestId);
-
+            var contest = await _contestRepository.GetContestForWinnerDeterminationAsync(contestId);
             if (contest == null)
             {
                 _logger.LogWarning("Contest with ID {ContestId} not found for winner determination", contestId);
@@ -706,15 +681,7 @@ namespace DreamAquascape.Services.Core
         {
             var newWinners = new List<ContestWinner>();
 
-            // Find contests where voting ended recently but no winner has been determined
-            var endedContests = await _context.Contests
-                .Include(c => c.Entries)
-                    .ThenInclude(e => e.Votes)
-                .Include(c => c.Winners)
-                .Where(c => c.VotingEndDate <= DateTime.UtcNow &&
-                           !c.Winners.Any(w => w.Position == 1) &&
-                           c.Entries.Any())
-                .ToListAsync();
+            var endedContests = await _contestRepository.GetEndedContestsWithoutWinnersAsync();
 
             foreach (var contest in endedContests)
             {
@@ -735,7 +702,7 @@ namespace DreamAquascape.Services.Core
             if (newWinners.Any())
             {
                 _logger.LogInformation("Processed {Count} ended contests and determined {WinnerCount} new winners",
-                    endedContests.Count, newWinners.Count);
+                    endedContests.Count(), newWinners.Count);
             }
 
             return newWinners;
@@ -850,16 +817,12 @@ namespace DreamAquascape.Services.Core
         {
             try
             {
-                var contest = await _context.Contests
-                    .FirstOrDefaultAsync(c => c.Id == contestId && !c.IsDeleted);
-
+                var contest = await _contestRepository.GetContestForToggleAsync(contestId);
                 if (contest == null)
                     return false;
 
                 contest.IsActive = !contest.IsActive;
-                //contest.UpdatedAt = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync();
+                await _contestRepository.UpdateAsync(contest);
 
                 _logger.LogInformation("Contest {ContestId} status toggled to {Status}",
                     contestId, contest.IsActive ? "Active" : "Inactive");
@@ -877,10 +840,7 @@ namespace DreamAquascape.Services.Core
         {
             try
             {
-                var contest = await _context.Contests
-                    .Include(c => c.Entries)
-                    .FirstOrDefaultAsync(c => c.Id == contestId && !c.IsDeleted);
-
+                var contest = await _contestRepository.GetContestForDeleteAsync(contestId);
                 if (contest == null)
                     return false;
 
@@ -892,9 +852,7 @@ namespace DreamAquascape.Services.Core
                 }
 
                 contest.IsDeleted = true;
-                //contest.UpdatedAt = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync();
+                await _contestRepository.UpdateAsync(contest);
 
                 _logger.LogInformation("Contest {ContestId} deleted successfully", contestId);
 
@@ -911,10 +869,7 @@ namespace DreamAquascape.Services.Core
         {
             try
             {
-                var contest = await _context.Contests
-                    .Include(c => c.Prizes)
-                    .FirstOrDefaultAsync(c => c.Id == contestId && !c.IsDeleted);
-
+                var contest = await _contestRepository.GetContestForEditAsync(contestId);
                 if (contest == null)
                     return null;
 

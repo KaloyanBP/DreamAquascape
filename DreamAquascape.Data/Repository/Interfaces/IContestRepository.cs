@@ -6,5 +6,11 @@ namespace DreamAquascape.Data.Repository.Interfaces
     {
         Task<IEnumerable<Contest>> GetActiveContestsAsync();
         Task<Contest?> GetContestDetailsAsync(int contestId);
+
+        Task<Contest?> GetContestForToggleAsync(int contestId);
+        Task<Contest?> GetContestForDeleteAsync(int contestId);
+        Task<Contest?> GetContestForEditAsync(int contestId);
+        Task<Contest?> GetContestForWinnerDeterminationAsync(int contestId);
+        Task<IEnumerable<Contest>> GetEndedContestsWithoutWinnersAsync();
     }
 }
