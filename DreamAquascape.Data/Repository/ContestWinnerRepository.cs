@@ -80,7 +80,8 @@ namespace DreamAquascape.Data.Repository
                 Notes = notes
             };
 
-            await AddAsync(winner); // This will save immediately
+            await AddAsync(winner);
+            await SaveChangesAsync(); // Explicit save for business operation
             return winner;
         }
 

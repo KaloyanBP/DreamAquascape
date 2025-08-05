@@ -93,25 +93,21 @@ namespace DreamAquascape.Data.Repository
         public void Add(TEntity item)
         {
             this.DbSet.Add(item);
-            this.DbContext.SaveChanges();
         }
 
         public async Task AddAsync(TEntity item)
         {
             await this.DbSet.AddAsync(item);
-            await this.DbContext.SaveChangesAsync();
         }
 
         public void AddRange(IEnumerable<TEntity> items)
         {
             this.DbSet.AddRange(items);
-            this.DbContext.SaveChanges();
         }
 
         public async Task AddRangeAsync(IEnumerable<TEntity> items)
         {
             await this.DbSet.AddRangeAsync(items);
-            await this.DbContext.SaveChangesAsync();
         }
 
         public bool Delete(TEntity entity)
@@ -131,17 +127,13 @@ namespace DreamAquascape.Data.Repository
         public bool HardDelete(TEntity entity)
         {
             this.DbSet.Remove(entity);
-            int updateCnt = this.DbContext.SaveChanges();
-
-            return updateCnt > 0;
+            return true;
         }
 
         public async Task<bool> HardDeleteAsync(TEntity entity)
         {
             this.DbSet.Remove(entity);
-            int updateCnt = await this.DbContext.SaveChangesAsync();
-
-            return updateCnt > 0;
+            return true;
         }
 
         public bool Update(TEntity item)
@@ -150,7 +142,6 @@ namespace DreamAquascape.Data.Repository
             {
                 this.DbSet.Attach(item);
                 this.DbSet.Entry(item).State = EntityState.Modified;
-                this.DbContext.SaveChanges();
 
                 return true;
             }
@@ -166,7 +157,6 @@ namespace DreamAquascape.Data.Repository
             {
                 this.DbSet.Attach(item);
                 this.DbSet.Entry(item).State = EntityState.Modified;
-                await this.DbContext.SaveChangesAsync();
 
                 return true;
             }

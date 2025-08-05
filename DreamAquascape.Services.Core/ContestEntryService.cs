@@ -233,6 +233,7 @@ namespace DreamAquascape.Services.Core
                 };
 
                 await _contestEntryRepository.AddAsync(entry);
+                await _contestEntryRepository.SaveChangesAsync();
 
                 _logger.LogInformation("Entry {EntryId} submitted by user {UserId} for contest {ContestId}",
                     entry.Id, userId, dto.ContestId);
@@ -302,6 +303,7 @@ namespace DreamAquascape.Services.Core
             try
             {
                 await _contestEntryRepository.UpdateAsync(entry);
+                await _contestEntryRepository.SaveChangesAsync();
                 _logger.LogInformation("Contest entry {EntryId} updated successfully by user {UserId}", model.Id, currentUserId);
                 return true;
             }
@@ -337,6 +339,7 @@ namespace DreamAquascape.Services.Core
             try
             {
                 await _contestEntryRepository.UpdateAsync(entry);
+                await _contestEntryRepository.SaveChangesAsync();
                 _logger.LogInformation("Contest entry {EntryId} deleted by user {UserId}", entryId, currentUserId);
                 return true;
             }

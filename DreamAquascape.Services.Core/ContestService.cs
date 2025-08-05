@@ -265,6 +265,7 @@ namespace DreamAquascape.Services.Core
                 };
 
                 await _voteRepository.AddAsync(vote);
+                await _voteRepository.SaveChangesAsync();
 
                 _logger.LogInformation("Vote cast by user {UserId} for entry {EntryId} in contest {ContestId}",
                     userId, entryId, contestId);
@@ -309,6 +310,7 @@ namespace DreamAquascape.Services.Core
                 existingVote.VotedAt = DateTime.UtcNow;
 
                 await _voteRepository.UpdateAsync(existingVote);
+                await _voteRepository.SaveChangesAsync();
 
                 _logger.LogInformation("Vote changed by user {UserId} to entry {EntryId} in contest {ContestId}",
                     userId, newEntryId, contestId);
@@ -342,6 +344,7 @@ namespace DreamAquascape.Services.Core
 
                 // Remove the vote
                 await _voteRepository.HardDeleteAsync(existingVote);
+                await _voteRepository.SaveChangesAsync();
 
                 _logger.LogInformation("Vote removed by user {UserId} in contest {ContestId}",
                     userId, contestId);
@@ -541,6 +544,7 @@ namespace DreamAquascape.Services.Core
             };
 
             await _contestWinnerRepository.AddAsync(winner);
+            await _contestWinnerRepository.SaveChangesAsync();
 
             _logger.LogInformation("Winner determined for contest {ContestId}: Entry {EntryId} with {VoteCount} votes",
                 contestId, winnerEntry.Id, winnerEntry.Votes.Count);
@@ -619,6 +623,7 @@ namespace DreamAquascape.Services.Core
 
                 contest.IsActive = !contest.IsActive;
                 await _contestRepository.UpdateAsync(contest);
+                await _contestRepository.SaveChangesAsync();
 
                 _logger.LogInformation("Contest {ContestId} status toggled to {Status}",
                     contestId, contest.IsActive ? "Active" : "Inactive");
@@ -649,6 +654,7 @@ namespace DreamAquascape.Services.Core
 
                 contest.IsDeleted = true;
                 await _contestRepository.UpdateAsync(contest);
+                await _contestRepository.SaveChangesAsync();
 
                 _logger.LogInformation("Contest {ContestId} deleted successfully", contestId);
 
@@ -772,6 +778,8 @@ namespace DreamAquascape.Services.Core
                     await _contestRepository.UpdateAsync(contest);
                 }
 
+                // Save all changes in a single transaction
+                await _contestRepository.SaveChangesAsync();
                 _logger.LogInformation("Contest {ContestId} updated successfully", model.Id);
 
                 return true;
