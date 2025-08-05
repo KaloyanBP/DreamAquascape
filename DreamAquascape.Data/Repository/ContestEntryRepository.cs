@@ -171,5 +171,44 @@ namespace DreamAquascape.Data.Repository
                 .Distinct()
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<ContestEntry>> GetUserEntriesAsync(string userId)
+        {
+            return await DbSet
+                .Where(e => e.ParticipantId == userId && !e.IsDeleted)
+                .Include(e => e.Contest)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<ContestEntry>> GetUserSubmissionsWithFullDataAsync(string userId, int page, int pageSize)
+        {
+            var skip = (page - 1) * pageSize;
+
+            return await DbSet
+                .Where(e => e.ParticipantId == userId && !e.IsDeleted)
+                .Include(e => e.Contest)
+                .Include(e => e.EntryImages)
+                .Include(e => e.Votes)
+                .OrderByDescending(e => e.SubmittedAt)
+                .Skip(skip)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<int>> GetContestIdsUserEnteredAsync(string userId)
+        {
+            return await DbSet
+                .Where(e => e.ParticipantId == userId && !e.IsDeleted)
+                .Select(e => e.ContestId)
+                .Distinct()
+                .ToListAsync();
+        }
+
+        public async Task<int> GetTotalEntriesSubmittedByUserAsync(string userId)
+        {
+            return await DbSet
+                .Where(e => e.ParticipantId == userId && !e.IsDeleted)
+                .CountAsync();
+        }
     }
 }

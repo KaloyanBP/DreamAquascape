@@ -26,5 +26,11 @@ namespace DreamAquascape.Data.Repository.Interfaces
         Task<int> GetActiveContestCountAsync();
         Task<int> GetContestsEndingSoonCountAsync(DateTime now, DateTime endDate);
         Task<double> GetAverageEntriesPerContestAsync();
+
+        // User dashboard methods
+        Task<IEnumerable<Contest>> GetActiveContestsWithFullDataAsync(DateTime now);
+        Task<int> GetActiveContestsCountForUserAsync(string userId, DateTime currentDate);
+        Task<int> GetSubmissionsInProgressCountForUserAsync(string userId, DateTime currentDate);
+
     }
 }

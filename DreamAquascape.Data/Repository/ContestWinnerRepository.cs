@@ -100,5 +100,12 @@ namespace DreamAquascape.Data.Repository
             var notes = $"Won with {winnerEntry.Votes.Count} votes";
             return await CreateWinnerAsync(contestId, winnerEntry.Id, 1, notes);
         }
+
+        public async Task<int> GetContestsWonByUserAsync(string userId)
+        {
+            return await DbSet
+                .Where(cw => cw.ContestEntry.ParticipantId == userId)
+                .CountAsync();
+        }
     }
 }

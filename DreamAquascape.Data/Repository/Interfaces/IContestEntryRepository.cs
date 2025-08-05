@@ -1,4 +1,5 @@
 ﻿using DreamAquascape.Data.Models;
+using System.Xml;
 
 namespace DreamAquascape.Data.Repository.Interfaces
 {
@@ -33,5 +34,10 @@ namespace DreamAquascape.Data.Repository.Interfaces
         Task<double> GetAverageVotesPerEntryAsync();
         Task<IEnumerable<string>> GetAllParticipantIdsAsync();
         Task<IEnumerable<string>> GetParticipantIdsSinceAsync(DateTime fromDate);
+
+        Task<IEnumerable<ContestEntry>> GetUserEntriesAsync(string userId);
+        Task<IEnumerable<ContestEntry>> GetUserSubmissionsWithFullDataAsync(string userId, int page, int pageSize);
+        Task<IEnumerable<int>> GetContestIdsUserEnteredAsync(string userId);
+        Task<int> GetTotalEntriesSubmittedByUserAsync(string userId);
     }
 }

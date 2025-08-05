@@ -18,5 +18,8 @@ namespace DreamAquascape.Data.Repository.Interfaces
         // Winner management
         Task<ContestWinner> CreateWinnerAsync(int contestId, int entryId, int position = 1, string? notes = null);
         Task<ContestWinner?> DetermineWinnerByVotesAsync(int contestId);
+
+        // User dashboard methods
+        Task<int> GetContestsWonByUserAsync(string userId);
     }
 }

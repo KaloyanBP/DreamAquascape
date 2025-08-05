@@ -219,5 +219,50 @@ namespace DreamAquascape.Data.Repository
                 ? contestsWithEntries.Average(c => c.EntryCount)
                 : 0;
         }
+
+        public async Task<IEnumerable<Contest>> GetActiveContestsWithFullDataAsync(DateTime now)
+        {
+            return await DbSet
+                .Where(c => c.IsActive && !c.IsDeleted &&
+                           c.SubmissionStartDate <= now && c.VotingEndDate >= now)
+                .Include(c => c.Categories)
+                .Include(c => c.Prizes)
+                .Include(c => c.Entries.Where(e => !e.IsDeleted))
+                .ToListAsync();
+        }
+
+        public async Task<int> GetActiveContestsCountForUserAsync(string userId, DateTime currentDate)
+        {
+            // Get contest IDs where user has participated (entries or votes)
+            var userEntryContestIds = await DbContext.ContestEntries
+                .Where(e => e.ParticipantId == userId && !e.IsDeleted)
+                .Select(e => e.ContestId)
+                .ToListAsync();
+
+            var userVoteContestIds = await DbContext.Votes
+                .Where(v => v.UserId == userId)
+                .Select(v => v.ContestEntry.ContestId)
+                .ToListAsync();
+
+            var participatedContestIds = userEntryContestIds
+                .Union(userVoteContestIds)
+                .Distinct()
+                .ToList();
+
+            return await DbSet
+                .Where(c => c.IsActive && !c.IsDeleted &&
+                           c.SubmissionStartDate <= currentDate && c.VotingEndDate >= currentDate &&
+                           participatedContestIds.Contains(c.Id))
+                .CountAsync();
+        }
+
+        public async Task<int> GetSubmissionsInProgressCountForUserAsync(string userId, DateTime currentDate)
+        {
+            return await DbSet
+                .Where(c => c.IsActive && !c.IsDeleted &&
+                           c.SubmissionStartDate <= currentDate && c.SubmissionEndDate >= currentDate &&
+                           !c.Entries.Any(e => e.ParticipantId == userId && !e.IsDeleted))
+                .CountAsync();
+        }
     }
 }
