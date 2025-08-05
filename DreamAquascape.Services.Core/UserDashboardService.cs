@@ -358,28 +358,5 @@ namespace DreamAquascape.Services.Core
 
             return user;
         }
-
-
-        // Helper methods
-        private async Task<(bool hasEntry, bool hasVoted, int? entryId, int? votedEntryId)> GetUserParticipationAsync(string userId, int contestId)
-        {
-            var userEntry = await _context.ContestEntries
-                .Where(e => e.ContestId == contestId && e.ParticipantId == userId && !e.IsDeleted)
-                .Select(e => e.Id)
-                .FirstOrDefaultAsync();
-
-            var userVote = await _context.Votes
-                .Where(v => v.UserId == userId && v.ContestEntry.ContestId == contestId)
-                .Select(v => v.ContestEntryId)
-                .FirstOrDefaultAsync();
-
-            return (
-                hasEntry: userEntry != 0,
-                hasVoted: userVote != 0,
-                entryId: userEntry == 0 ? null : (int?)userEntry,
-                votedEntryId: userVote == 0 ? null : (int?)userVote
-            );
-        }
-
     }
 }

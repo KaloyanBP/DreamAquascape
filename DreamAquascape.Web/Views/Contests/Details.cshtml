@@ -226,11 +226,14 @@
                                 }
                                 else
                                 {
-                                    <!-- User not logged in -->
-                                    <a href="@Url.Action("Login", "Account", new { returnUrl = Context.Request.Path })"
-                                       class="btn btn-outline-primary btn-sm">
-                                        <i class="bi bi-box-arrow-in-right"></i> Login to Vote
-                                    </a>
+                                    @if (@Model.CanVote)
+                                    {
+                                        <!-- User not logged in -->
+                                        <a asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@Context.Request.Path"
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-box-arrow-in-right"></i> Login to Vote
+                                        </a>
+                                    }
                                 }
                             </div>
                         </div>

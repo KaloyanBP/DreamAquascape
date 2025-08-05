@@ -22,6 +22,7 @@ namespace DreamAquascape.Web.Controllers
         }
 
         [HttpGet("")]
+        [AllowAnonymous]
         public async Task<IActionResult> Index([FromQuery] ContestFilterViewModel? filters)
         {
             // Initialize filters if null
@@ -63,6 +64,7 @@ namespace DreamAquascape.Web.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
             var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -99,6 +101,7 @@ namespace DreamAquascape.Web.Controllers
         }
 
         [HttpPost("Create")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(
             string title,
             string description,
@@ -268,42 +271,6 @@ namespace DreamAquascape.Web.Controllers
                 ModelState.AddModelError("", "An error occurred while updating the contest. Please try again.");
                 return View(model);
             }
-        }
-
-        public IActionResult Archive()
-        {
-            List<ContestItemViewModel> contests = new List<ContestItemViewModel>
-            {
-                new ContestItemViewModel
-                {
-                    Id = 2,
-                    Title = "Underwater Photography Contest",
-                    StartDate = new DateTime(2023, 7, 15),
-                    EndDate = new DateTime(2023, 10, 15),
-                    IsActive = false,
-                    ImageUrl = "https://avonturia.nl/wp-content/uploads/2023/06/Aquascaping-Aquarium-985x1024.png"
-                },
-                new ContestItemViewModel
-                {
-                    Id = 3,
-                    Title = "April",
-                    StartDate = new DateTime(2023, 4, 15),
-                    EndDate = new DateTime(2023, 4, 20),
-                    IsActive = false,
-                    ImageUrl = "https://avonturia.nl/wp-content/uploads/2023/06/Aquascaping-Aquarium-985x1024.png"
-                },
-                new ContestItemViewModel
-                {
-                    Id = 4,
-                    Title = "May",
-                    StartDate = new DateTime(2023, 5, 15),
-                    EndDate = new DateTime(2023, 5, 20),
-                    IsActive = false,
-                    ImageUrl = "https://avonturia.nl/wp-content/uploads/2023/06/Aquascaping-Aquarium-985x1024.png"
-                }
-            };
-
-            return PartialView("_Archive", contests);
         }
     }
 }

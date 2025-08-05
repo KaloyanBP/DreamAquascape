@@ -19,10 +19,8 @@ namespace DreamAquascape.Services.Core
         private readonly IContestEntryRepository _contestEntryRepository;
         private readonly IContestWinnerRepository _contestWinnerRepository;
         private readonly IPrizeRepository _prizeRepository;
-        private readonly ApplicationDbContext _context;
 
         public ContestService(
-            ApplicationDbContext context,
             IContestRepository contestRepository,
             IVoteRepository voteRepository,
             IContestEntryRepository contestEntryRepository,
@@ -36,7 +34,6 @@ namespace DreamAquascape.Services.Core
             _contestEntryRepository = contestEntryRepository;
             _contestWinnerRepository = contestWinnerRepository;
             _prizeRepository = prizeRepository;
-            _context = context;
         }
 
         public async Task<IEnumerable<ContestItemViewModel>> GetActiveContestsAsync()
@@ -140,10 +137,8 @@ namespace DreamAquascape.Services.Core
                                now <= contest.SubmissionEndDate &&
                                userEntry == null,
 
-                CanVote = !string.IsNullOrEmpty(currentUserId) &&
-                         now >= contest.VotingStartDate &&
-                         now <= contest.VotingEndDate &&
-                         userVote == null,
+                CanVote = now >= contest.VotingStartDate &&
+                         now <= contest.VotingEndDate,
 
                 Prize = contest.PrimaryPrize != null ? new PrizeViewModel
                 {
@@ -237,7 +232,6 @@ namespace DreamAquascape.Services.Core
 
         public async Task<Vote> CastVoteAsync(int contestId, int entryId, string userId, string userName, string? ipAddress = null)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 var contest = await _contestRepository.GetByIdAsync(contestId);
@@ -271,7 +265,6 @@ namespace DreamAquascape.Services.Core
                 };
 
                 await _voteRepository.AddAsync(vote);
-                await transaction.CommitAsync();
 
                 _logger.LogInformation("Vote cast by user {UserId} for entry {EntryId} in contest {ContestId}",
                     userId, entryId, contestId);
@@ -280,7 +273,6 @@ namespace DreamAquascape.Services.Core
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
                 _logger.LogError(ex, "Failed to cast vote for user {UserId} in contest {ContestId}",
                     userId, contestId);
                 throw;
@@ -289,7 +281,6 @@ namespace DreamAquascape.Services.Core
 
         public async Task<Vote> ChangeVoteAsync(int contestId, int newEntryId, string userId, string userName)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 // Validate voting period
@@ -318,7 +309,6 @@ namespace DreamAquascape.Services.Core
                 existingVote.VotedAt = DateTime.UtcNow;
 
                 await _voteRepository.UpdateAsync(existingVote);
-                await transaction.CommitAsync();
 
                 _logger.LogInformation("Vote changed by user {UserId} to entry {EntryId} in contest {ContestId}",
                     userId, newEntryId, contestId);
@@ -327,7 +317,6 @@ namespace DreamAquascape.Services.Core
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
                 _logger.LogError(ex, "Failed to change vote for user {UserId} in contest {ContestId}",
                     userId, contestId);
                 throw;
@@ -336,7 +325,6 @@ namespace DreamAquascape.Services.Core
 
         public async Task RemoveVoteAsync(int contestId, string userId)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 // Validate voting period
@@ -354,14 +342,12 @@ namespace DreamAquascape.Services.Core
 
                 // Remove the vote
                 await _voteRepository.HardDeleteAsync(existingVote);
-                await transaction.CommitAsync();
 
                 _logger.LogInformation("Vote removed by user {UserId} in contest {ContestId}",
                     userId, contestId);
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
                 _logger.LogError(ex, "Failed to remove vote for user {UserId} in contest {ContestId}",
                     userId, contestId);
                 throw;
