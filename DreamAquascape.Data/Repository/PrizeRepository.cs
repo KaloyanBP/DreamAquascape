@@ -12,7 +12,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<decimal> GetTotalActivePrizeValueAsync()
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Where(p => p.Contest.IsActive && !p.Contest.IsDeleted)
                 .SumAsync(p => p.MonetaryValue ?? 0);
         }

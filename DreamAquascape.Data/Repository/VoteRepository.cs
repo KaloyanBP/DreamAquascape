@@ -12,31 +12,25 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<Vote?> GetUserVoteInContestAsync(string userId, int contestId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Include(v => v.ContestEntry)
                 .FirstOrDefaultAsync(v => v.UserId == userId && v.ContestEntry.ContestId == contestId);
         }
 
         public async Task<bool> HasUserVotedInContestAsync(string userId, int contestId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .AnyAsync(v => v.UserId == userId && v.ContestEntry.ContestId == contestId);
         }
 
         public async Task<Vote?> GetUserVoteForEntryAsync(string userId, int entryId)
         {
-            return await DbSet
-                .FirstOrDefaultAsync(v => v.UserId == userId && v.ContestEntryId == entryId);
-        }
-
-        public async Task<int> GetTotalVoteCountAsync()
-        {
-            return await DbSet.CountAsync();
+            return await FirstOrDefaultAsync(v => v.UserId == userId && v.ContestEntryId == entryId);
         }
 
         public async Task<IEnumerable<string>> GetAllVoterIdsAsync()
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Select(v => v.UserId)
                 .Distinct()
                 .ToListAsync();
@@ -44,7 +38,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<IEnumerable<string>> GetVoterIdsSinceAsync(DateTime fromDate)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Where(v => v.VotedAt >= fromDate)
                 .Select(v => v.UserId)
                 .Distinct()
@@ -55,7 +49,7 @@ namespace DreamAquascape.Data.Repository
         {
             var skip = (page - 1) * pageSize;
 
-            return await DbSet
+            return await GetAllAttached()
                 .Where(v => v.UserId == userId)
                 .Include(v => v.ContestEntry)
                     .ThenInclude(e => e.Contest)
@@ -71,35 +65,35 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<int> GetTotalVotesForContestAsync(int contestId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Where(v => v.ContestEntry.ContestId == contestId)
                 .CountAsync();
         }
 
         public async Task<Vote?> GetUserVoteForContestAsync(string userId, int contestId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Where(v => v.UserId == userId && v.ContestEntry.ContestId == contestId)
                 .FirstOrDefaultAsync();
         }
 
         public async Task<int> GetVotesReceivedByUserAsync(string userId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Where(v => v.ContestEntry.ParticipantId == userId)
                 .CountAsync();
         }
 
         public async Task<int> GetVotesCastByUserAsync(string userId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Where(v => v.UserId == userId)
                 .CountAsync();
         }
 
         public async Task<IEnumerable<int>> GetContestIdsUserVotedInAsync(string userId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Where(v => v.UserId == userId)
                 .Select(v => v.ContestEntry.ContestId)
                 .Distinct()

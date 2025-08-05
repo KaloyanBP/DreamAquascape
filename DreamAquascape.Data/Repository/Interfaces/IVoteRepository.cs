@@ -9,7 +9,6 @@ namespace DreamAquascape.Data.Repository.Interfaces
         Task<Vote?> GetUserVoteForEntryAsync(string userId, int entryId);
 
         // Dashboard statistics methods
-        Task<int> GetTotalVoteCountAsync();
         Task<IEnumerable<string>> GetAllVoterIdsAsync();
         Task<IEnumerable<string>> GetVoterIdsSinceAsync(DateTime fromDate);
 

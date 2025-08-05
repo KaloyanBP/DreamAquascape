@@ -11,7 +11,6 @@ namespace DreamAquascape.Services.Core.AdminDashboard
         private readonly IContestEntryRepository _contestEntryRepository;
         private readonly IVoteRepository _voteRepository;
         private readonly IPrizeRepository _prizeRepository;
-        private readonly IContestWinnerRepository _contestWinnerRepository;
         private readonly ILogger<AdminDashboardService> _logger;
 
         public AdminDashboardService(
@@ -26,7 +25,6 @@ namespace DreamAquascape.Services.Core.AdminDashboard
             _contestEntryRepository = contestEntryRepository ?? throw new ArgumentNullException(nameof(contestEntryRepository));
             _voteRepository = voteRepository ?? throw new ArgumentNullException(nameof(voteRepository));
             _prizeRepository = prizeRepository ?? throw new ArgumentNullException(nameof(prizeRepository));
-            _contestWinnerRepository = contestWinnerRepository ?? throw new ArgumentNullException(nameof(contestWinnerRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -36,10 +34,10 @@ namespace DreamAquascape.Services.Core.AdminDashboard
             var thirtyDaysAgo = now.AddDays(-30);
 
             // Basic counts using repositories
-            var totalContests = await _contestRepository.GetTotalContestCountAsync();
+            var totalContests = await _contestRepository.CountAsync();
             var activeContests = await _contestRepository.GetActiveContestCountAsync();
-            var totalEntries = await _contestEntryRepository.GetTotalEntryCountAsync();
-            var totalVotes = await _voteRepository.GetTotalVoteCountAsync();
+            var totalEntries = await _contestEntryRepository.CountAsync();
+            var totalVotes = await _voteRepository.CountAsync();
             var totalUsers = await GetTotalUniqueParticipantsAsync();
 
             var pendingEntries = await _contestEntryRepository.GetPendingEntriesCountAsync(now);

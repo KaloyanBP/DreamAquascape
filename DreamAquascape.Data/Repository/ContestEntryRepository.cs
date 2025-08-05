@@ -12,7 +12,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<ContestEntry?> GetEntryWithAllDataAsync(int contestId, int entryId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Include(e => e.EntryImages.Where(img => !img.IsDeleted))
                 .Include(e => e.Votes)
                     .ThenInclude(v => v.User)
@@ -26,7 +26,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<ContestEntry?> GetEntryForEditAsync(int contestId, int entryId, string userId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Include(e => e.Contest)
                 .Include(e => e.EntryImages.Where(img => !img.IsDeleted))
                 .FirstOrDefaultAsync(e => e.Id == entryId &&
@@ -37,7 +37,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<IEnumerable<ContestEntry>> GetByContestIdWithImagesAsync(int contestId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Include(e => e.EntryImages.Where(img => !img.IsDeleted))
                 .Include(e => e.Votes)
                 .Include(e => e.Participant)
@@ -49,13 +49,13 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<int> GetEntryCountByContestAsync(int contestId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .CountAsync(e => e.ContestId == contestId && !e.IsDeleted);
         }
 
         public async Task<ContestEntry?> GetUserEntryInContestAsync(int contestId, string userId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Include(e => e.EntryImages.Where(img => !img.IsDeleted))
                 .FirstOrDefaultAsync(e => e.ContestId == contestId &&
                                         e.ParticipantId == userId &&
@@ -64,7 +64,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<bool> UserHasEntryInContestAsync(int contestId, string userId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .AnyAsync(e => e.ContestId == contestId &&
                               e.ParticipantId == userId &&
                               !e.IsDeleted);
@@ -72,7 +72,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<Dictionary<int, int>> GetVoteCountsByContestAsync(int contestId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Where(e => e.ContestId == contestId && !e.IsDeleted)
                 .Select(e => new { e.Id, VoteCount = e.Votes.Count })
                 .ToDictionaryAsync(x => x.Id, x => x.VoteCount);
@@ -80,7 +80,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<int> GetVoteCountByEntryAsync(int entryId)
         {
-            var entry = await DbSet
+            var entry = await GetAllAttached()
                 .Include(e => e.Votes)
                 .FirstOrDefaultAsync(e => e.Id == entryId && !e.IsDeleted);
 
@@ -89,7 +89,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<int> GetEntryRankingInContestAsync(int contestId, int entryId)
         {
-            var allEntries = await DbSet
+            var allEntries = await GetAllAttached()
                 .Where(e => e.ContestId == contestId && !e.IsDeleted)
                 .Include(e => e.Votes)
                 .ToListAsync();
@@ -104,13 +104,12 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<ContestEntry?> GetContestEntryByIdAsync(int entryId)
         {
-            return await DbSet
-                .FirstOrDefaultAsync(e => e.Id == entryId && !e.IsDeleted);
+            return await FirstOrDefaultAsync(e => e.Id == entryId && !e.IsDeleted);
         }
 
         public async Task<ContestEntry?> GetEntryDetailsWithAllDataAsync(int contestId, int entryId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Include(e => e.Contest)
                     .ThenInclude(c => c.Winners)
                 .Include(e => e.Participant)
@@ -123,7 +122,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<IEnumerable<ContestEntry>> GetAllEntriesInContestAsync(int contestId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Where(e => e.ContestId == contestId && !e.IsDeleted)
                 .Include(e => e.Votes)
                 .Include(e => e.Participant)
@@ -131,21 +130,16 @@ namespace DreamAquascape.Data.Repository
                 .ToListAsync();
         }
 
-        public async Task<int> GetTotalEntryCountAsync()
-        {
-            return await DbSet.CountAsync(e => !e.IsDeleted);
-        }
-
         public async Task<int> GetPendingEntriesCountAsync(DateTime now)
         {
-            return await DbSet.CountAsync(e =>
+            return await GetAllAttached().CountAsync(e =>
                 !e.IsDeleted && e.IsActive &&
                 e.Contest.SubmissionStartDate <= now && e.Contest.SubmissionEndDate >= now);
         }
 
         public async Task<double> GetAverageVotesPerEntryAsync()
         {
-            var entriesWithVotes = await DbSet
+            var entriesWithVotes = await GetAllAttached()
                 .Where(e => !e.IsDeleted)
                 .Select(e => new { e.Id, VoteCount = e.Votes.Count() })
                 .ToListAsync();
@@ -157,7 +151,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<IEnumerable<string>> GetAllParticipantIdsAsync()
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Select(e => e.ParticipantId)
                 .Distinct()
                 .ToListAsync();
@@ -165,7 +159,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<IEnumerable<string>> GetParticipantIdsSinceAsync(DateTime fromDate)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Where(e => e.SubmittedAt >= fromDate)
                 .Select(e => e.ParticipantId)
                 .Distinct()
@@ -174,7 +168,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<IEnumerable<ContestEntry>> GetUserEntriesAsync(string userId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Where(e => e.ParticipantId == userId && !e.IsDeleted)
                 .Include(e => e.Contest)
                 .ToListAsync();
@@ -184,7 +178,7 @@ namespace DreamAquascape.Data.Repository
         {
             var skip = (page - 1) * pageSize;
 
-            return await DbSet
+            return await GetAllAttached()
                 .Where(e => e.ParticipantId == userId && !e.IsDeleted)
                 .Include(e => e.Contest)
                 .Include(e => e.EntryImages)
@@ -197,7 +191,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<IEnumerable<int>> GetContestIdsUserEnteredAsync(string userId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Where(e => e.ParticipantId == userId && !e.IsDeleted)
                 .Select(e => e.ContestId)
                 .Distinct()
@@ -206,7 +200,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<int> GetTotalEntriesSubmittedByUserAsync(string userId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Where(e => e.ParticipantId == userId && !e.IsDeleted)
                 .CountAsync();
         }

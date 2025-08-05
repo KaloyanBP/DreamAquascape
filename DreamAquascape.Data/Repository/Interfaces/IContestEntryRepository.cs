@@ -29,7 +29,6 @@ namespace DreamAquascape.Data.Repository.Interfaces
         Task<IEnumerable<ContestEntry>> GetAllEntriesInContestAsync(int contestId);
 
         // Dashboard statistics methods
-        Task<int> GetTotalEntryCountAsync();
         Task<int> GetPendingEntriesCountAsync(DateTime now);
         Task<double> GetAverageVotesPerEntryAsync();
         Task<IEnumerable<string>> GetAllParticipantIdsAsync();

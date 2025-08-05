@@ -12,7 +12,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<ContestWinner?> GetPrimaryWinnerForContestAsync(int contestId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Include(w => w.ContestEntry)
                     .ThenInclude(e => e.Participant)
                 .Include(w => w.ContestEntry)
@@ -22,7 +22,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<IEnumerable<ContestWinner>> GetWinnersForContestAsync(int contestId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Include(w => w.ContestEntry)
                     .ThenInclude(e => e.Participant)
                 .Include(w => w.ContestEntry)
@@ -34,7 +34,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<IEnumerable<ContestWinner>> GetWinnersByUserAsync(string userId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Include(w => w.Contest)
                 .Include(w => w.ContestEntry)
                     .ThenInclude(e => e.EntryImages)
@@ -45,26 +45,26 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<ContestWinner?> GetWinnerByEntryAsync(int entryId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Include(w => w.Contest)
                 .FirstOrDefaultAsync(w => w.ContestEntryId == entryId);
         }
 
         public async Task<bool> HasContestWinnerAsync(int contestId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .AnyAsync(w => w.ContestId == contestId && w.Position == 1);
         }
 
         public async Task<bool> IsEntryWinnerAsync(int entryId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .AnyAsync(w => w.ContestEntryId == entryId);
         }
 
         public async Task<bool> HasUserWonContestAsync(string userId, int contestId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .AnyAsync(w => w.ContestId == contestId && w.ContestEntry.ParticipantId == userId);
         }
 
@@ -103,7 +103,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<int> GetContestsWonByUserAsync(string userId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .Where(cw => cw.ContestEntry.ParticipantId == userId)
                 .CountAsync();
         }

@@ -22,7 +22,6 @@ namespace DreamAquascape.Data.Repository.Interfaces
         Task<Contest> CreateContestWithPrizeAsync(Contest contest, Prize prize);
 
         // Dashboard statistics methods
-        Task<int> GetTotalContestCountAsync();
         Task<int> GetActiveContestCountAsync();
         Task<int> GetContestsEndingSoonCountAsync(DateTime now, DateTime endDate);
         Task<double> GetAverageEntriesPerContestAsync();

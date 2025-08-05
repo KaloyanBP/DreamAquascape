@@ -12,7 +12,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<ApplicationUser?> GetUserByIdAsync(string userId)
         {
-            return await DbSet
+            return await GetAllAttached()
                 .FirstOrDefaultAsync(u => u.Id == userId);
         }
     }
