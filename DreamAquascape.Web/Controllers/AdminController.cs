@@ -122,7 +122,7 @@ namespace DreamAquascape.Web.Controllers
         {
             try
             {
-                var success = await _contestService.ToggleContestStatusAsync(contestId);
+                var success = await _contestService.ToggleContestActiveStatusAsync(contestId);
                 if (success)
                 {
                     TempData["Success"] = "Contest status updated successfully.";

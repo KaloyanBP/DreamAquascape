@@ -231,6 +231,14 @@ namespace DreamAquascape.Web.Controllers
                 string? newImageUrl = null;
                 string? newPrizeImageUrl = null;
 
+                // Handle image removal logic
+                if (model.RemoveCurrentImage)
+                {
+                    // If user wants to remove current image, set it to null
+                    model.NewImageUrl = null;
+                    newImageUrl = null;
+                }
+
                 // Handle new contest image upload
                 if (newImageFile != null)
                 {
@@ -242,6 +250,15 @@ namespace DreamAquascape.Web.Controllers
                     }
                     model.NewImageUrl = newImageUrl;
                 }
+
+                // Handle prize image removal logic
+                if (model.RemoveCurrentPrizeImage)
+                {
+                    // If user wants to remove current prize image, set it to null
+                    model.NewPrizeImageUrl = null;
+                    newPrizeImageUrl = null;
+                }
+
 
                 // Handle new prize image upload
                 if (newPrizeImageFile != null)
@@ -255,7 +272,7 @@ namespace DreamAquascape.Web.Controllers
                     model.NewPrizeImageUrl = newPrizeImageUrl;
                 }
 
-                var success = await _contestService.UpdateContestAsync(model, model.NewImageUrl, model.NewPrizeImageUrl);
+                var success = await _contestService.UpdateContestAsync(model);
 
                 if (success)
                 {

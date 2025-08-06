@@ -1,12 +1,9 @@
-﻿using DreamAquascape.Data;
-using DreamAquascape.Data.Models;
+﻿using DreamAquascape.Data.Models;
 using DreamAquascape.Data.Repository.Interfaces;
-using DreamAquascape.Services.Common.Exceptions;
 using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels.Contest;
 using DreamAquascape.Web.ViewModels.ContestEntry;
 using DreamAquascape.Web.ViewModels.UserDashboard;
-using static DreamAquascape.GCommon.ExceptionMessages;
 using Microsoft.Extensions.Logging;
 
 namespace DreamAquascape.Services.Core
@@ -22,23 +19,6 @@ namespace DreamAquascape.Services.Core
         {
             _logger = logger;
             _unitOfWork = unitOfWork;
-        }
-
-        public async Task<IEnumerable<ContestItemViewModel>> GetActiveContestsAsync()
-        {
-            var activeContests = await _unitOfWork.ContestRepository.GetActiveContestsAsync();
-
-            return activeContests
-                .Select(c => new ContestItemViewModel
-                {
-                    Id = c.Id,
-                    Title = c.Title,
-                    ImageUrl = c.ImageFileUrl ?? "",
-                    StartDate = c.SubmissionStartDate,
-                    EndDate = c.VotingEndDate,
-                    IsActive = c.IsActive,
-                })
-                .ToList();
         }
 
         public async Task<ContestListViewModel> GetFilteredContestsAsync(ContestFilterViewModel filters)
@@ -474,7 +454,7 @@ namespace DreamAquascape.Services.Core
             return await GetFilteredContestsAsync(filters);
         }
 
-        public async Task<bool> ToggleContestStatusAsync(int contestId)
+        public async Task<bool> ToggleContestActiveStatusAsync(int contestId)
         {
             try
             {
@@ -563,7 +543,7 @@ namespace DreamAquascape.Services.Core
             }
         }
 
-        public async Task<bool> UpdateContestAsync(EditContestViewModel model, string? newImageUrl = null, string? newPrizeImageUrl = null)
+        public async Task<bool> UpdateContestAsync(EditContestViewModel model)
         {
             try
             {
@@ -584,14 +564,21 @@ namespace DreamAquascape.Services.Core
                 contest.ResultDate = model.ResultDate;
                 contest.IsActive = model.IsActive;
 
-                // Update image - use NewImageUrl from model if provided, otherwise use parameter
+                // Update image - handle removal or replacement
                 if (!string.IsNullOrEmpty(model.NewImageUrl))
                 {
                     contest.ImageFileUrl = model.NewImageUrl;
                 }
-                else if (!string.IsNullOrEmpty(newImageUrl))
+                else if (model.RemoveCurrentImage)
                 {
-                    contest.ImageFileUrl = newImageUrl;
+                    // Explicitly remove the current image
+                    contest.ImageFileUrl = null;
+                }
+
+                // Update image - use NewImageUrl from model if provided, otherwise use parameter
+                if (!string.IsNullOrEmpty(model.NewImageUrl))
+                {
+                    contest.ImageFileUrl = model.NewImageUrl;
                 }
 
                 // Update prize if exists
@@ -604,14 +591,22 @@ namespace DreamAquascape.Services.Core
                         prize.Description = model.PrizeDescription ?? "";
                         prize.MonetaryValue = model.PrizeMonetaryValue;
 
-                        // Update prize image - use NewPrizeImageUrl from model if provided, otherwise use parameter
+                        // Update prize image - handle removal or replacement
                         if (!string.IsNullOrEmpty(model.NewPrizeImageUrl))
                         {
                             prize.ImageUrl = model.NewPrizeImageUrl;
                         }
-                        else if (!string.IsNullOrEmpty(newPrizeImageUrl))
+                        else if (model.RemoveCurrentPrizeImage)
                         {
-                            prize.ImageUrl = newPrizeImageUrl;
+                            // Explicitly remove the current prize image
+                            prize.ImageUrl = null;
+                        }
+
+
+                        // Update prize image - use NewPrizeImageUrl from model if provided, otherwise use parameter
+                        if (!string.IsNullOrEmpty(model.NewPrizeImageUrl))
+                        {
+                            prize.ImageUrl = model.NewPrizeImageUrl;
                         }
 
                         // Save the updated prize
@@ -624,7 +619,7 @@ namespace DreamAquascape.Services.Core
                 else if (!string.IsNullOrEmpty(model.PrizeName))
                 {
                     // Create new prize if none exists but prize info provided
-                    var prizeImageUrl = !string.IsNullOrEmpty(model.NewPrizeImageUrl) ? model.NewPrizeImageUrl : newPrizeImageUrl;
+                    var prizeImageUrl = model.NewPrizeImageUrl;
                     var newPrize = new Prize
                     {
                         Name = model.PrizeName,

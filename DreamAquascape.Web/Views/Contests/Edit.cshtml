@@ -22,8 +22,17 @@
                 {
                     <div class="mb-3">
                         <label class="form-label fw-bold">Current Contest Image</label>
-                        <div class="mb-2">
-                            <img src="@Model.CurrentImageUrl" alt="Current Contest Image" class="img-fluid rounded" style="max-height: 200px; object-fit: cover;" />
+                        <p class="form-text mb-2">Check the box below to remove the current image</p>
+                        <div class="card" style="max-width: 300px;">
+                            <img src="@Model.CurrentImageUrl" alt="Current Contest Image" class="card-img-top" style="height: 200px; object-fit: cover;" />
+                            <div class="card-body text-center">
+                                <div class="form-check">
+                                    <input asp-for="RemoveCurrentImage" class="form-check-input" type="checkbox" id="removeCurrentImage">
+                                    <label class="form-check-label text-danger" for="removeCurrentImage">
+                                        <i class="bi bi-trash3 me-1"></i>Remove current image
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 }
@@ -38,14 +47,6 @@
                         }
                     </label>
                     <input name="newImageFile" class="form-control" type="file" accept="image/*" onchange="previewImage(event, '_Contest')" />
-                </div>
-
-                <!-- New Image URL (if uploaded programmatically) -->
-                <div class="mb-3">
-                    <label asp-for="NewImageUrl" class="form-label fw-bold">New Image URL (alternative to file upload)</label>
-                    <input asp-for="NewImageUrl" class="form-control" placeholder="https://example.com/image.jpg" />
-                    <span asp-validation-for="NewImageUrl" class="text-danger"></span>
-                    <small class="form-text text-muted">You can either upload a file above or provide a direct URL here.</small>
                 </div>
                 <!-- Image Preview -->
                 <div class="mb-4" id="imagePreviewContainer_Contest" style="display:none;">
@@ -126,8 +127,17 @@
                             {
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Current Prize Image</label>
-                                    <div class="mb-2">
-                                        <img src="@Model.CurrentPrizeImageUrl" alt="Current Prize Image" class="img-fluid rounded" style="max-height: 150px; object-fit: cover;" />
+                                    <p class="form-text mb-2">Check the box below to remove the current prize image</p>
+                                    <div class="card" style="max-width: 250px;">
+                                        <img src="@Model.CurrentPrizeImageUrl" alt="Current Prize Image" class="card-img-top" style="height: 150px; object-fit: cover;" />
+                                        <div class="card-body text-center">
+                                            <div class="form-check">
+                                                <input asp-for="RemoveCurrentPrizeImage" class="form-check-input" type="checkbox" id="removeCurrentPrizeImage">
+                                                <label class="form-check-label text-danger" for="removeCurrentPrizeImage">
+                                                    <i class="bi bi-trash3 me-1"></i>Remove current image
+                                                </label>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             }
@@ -158,14 +168,6 @@
                                     @(string.IsNullOrEmpty(Model.CurrentPrizeImageUrl) ? "Upload Prize Image" : "Upload New Prize Image (optional)")
                                 </label>
                                 <input name="newPrizeImageFile" class="form-control" type="file" accept="image/*" onchange="previewImage(event, '_Prize')" />
-                            </div>
-
-                            <!-- New Prize Image URL (if uploaded programmatically) -->
-                            <div class="mb-3">
-                                <label asp-for="NewPrizeImageUrl" class="form-label fw-bold">New Prize Image URL (alternative to file upload)</label>
-                                <input asp-for="NewPrizeImageUrl" class="form-control" placeholder="https://example.com/prize-image.jpg" />
-                                <span asp-validation-for="NewPrizeImageUrl" class="text-danger"></span>
-                                <small class="form-text text-muted">You can either upload a file above or provide a direct URL here.</small>
                             </div>
                             <!-- Prize Image Preview -->
                             <div class="mb-4" id="imagePreviewContainer_Prize" style="display:none;">
@@ -208,6 +210,19 @@
                 };
 
                 reader.readAsDataURL(input.files[0]);
+
+                // Auto-uncheck remove checkboxes when new file is selected
+                if (idSuffix === '_Contest') {
+                    const removeCheckbox = document.getElementById('removeCurrentImage');
+                    if (removeCheckbox) {
+                        removeCheckbox.checked = false;
+                    }
+                } else if (idSuffix === '_Prize') {
+                    const removeCheckbox = document.getElementById('removeCurrentPrizeImage');
+                    if (removeCheckbox) {
+                        removeCheckbox.checked = false;
+                    }
+                }
             } else {
                 previewImage.src = '#';
                 previewContainer.style.display = 'none';

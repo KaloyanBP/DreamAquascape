@@ -11,15 +11,6 @@ namespace DreamAquascape.Data.Repository
         {
         }
 
-        public async Task<IEnumerable<Contest>> GetActiveContestsAsync()
-        {
-            var now = DateTime.UtcNow;
-            return await GetAllAttached()
-                .Where(c => c.IsActive && !c.IsDeleted && c.SubmissionStartDate <= now && c.SubmissionEndDate >= now)
-                .OrderByDescending(c => c.SubmissionStartDate)
-                .ToListAsync();
-        }
-
         public async Task<Contest?> GetContestDetailsAsync(int contestId)
         {
             var contest = await GetAllAttached()

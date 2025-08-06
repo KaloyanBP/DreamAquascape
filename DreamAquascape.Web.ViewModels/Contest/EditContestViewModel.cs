@@ -22,6 +22,9 @@ namespace DreamAquascape.Web.ViewModels.Contest
         [Display(Name = "New Image URL")]
         public string? NewImageUrl { get; set; }
 
+        [Display(Name = "Remove Current Image")]
+        public bool RemoveCurrentImage { get; set; }
+
         [Required(ErrorMessage = "Submission start date is required.")]
         [Display(Name = "Submission Start Date")]
         public DateTime SubmissionStartDate { get; set; }
@@ -59,5 +62,8 @@ namespace DreamAquascape.Web.ViewModels.Contest
 
         [Display(Name = "New Prize Image URL")]
         public string? NewPrizeImageUrl { get; set; }
+
+        [Display(Name = "Remove Current Prize Image")]
+        public bool RemoveCurrentPrizeImage { get; set; }
     }
 }
