@@ -5,6 +5,7 @@ using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels.ContestEntry;
 using DreamAquascape.Web.ViewModels.UserDashboard;
 using Microsoft.Extensions.Logging;
+using static DreamAquascape.GCommon.ExceptionMessages;
 
 namespace DreamAquascape.Services.Core
 {
@@ -199,7 +200,7 @@ namespace DreamAquascape.Services.Core
                 var contest = await _unitOfWork.ContestRepository.GetByIdAsync(dto.ContestId);
 
                 if (contest == null || !contest.IsActive || contest.IsDeleted)
-                    throw new NotFoundException("Contest not found");
+                    throw new NotFoundException(ContestNotFoundErrorMessage);
 
                 if (DateTime.UtcNow < contest.SubmissionStartDate || DateTime.UtcNow > contest.SubmissionEndDate)
                     throw new InvalidOperationException("Contest submission period is not active");

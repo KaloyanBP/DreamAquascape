@@ -119,18 +119,18 @@ namespace DreamAquascape.Data.Repository
         /// <summary>
         /// Performs soft delete with optional user ID who performed the deletion
         /// </summary>
-        public bool Delete(TEntity entity, string? deletedBy = null)
+        public bool Delete(TEntity entity, DateTime? deletedAt = null, string? deletedBy = null)
         {
-            this.PerformSoftDeleteOfEntity(entity, deletedBy);
+            this.PerformSoftDeleteOfEntity(entity, deletedAt, deletedBy);
             return this.Update(entity);
         }
 
         /// <summary>
         /// Performs soft delete with optional user ID who performed the deletion
         /// </summary>
-        public Task<bool> DeleteAsync(TEntity entity, string? deletedBy = null)
+        public Task<bool> DeleteAsync(TEntity entity, DateTime? deletedAt = null, string? deletedBy = null)
         {
-            this.PerformSoftDeleteOfEntity(entity, deletedBy);
+            this.PerformSoftDeleteOfEntity(entity, deletedAt, deletedBy);
             return this.UpdateAsync(entity);
         }
 
@@ -180,7 +180,7 @@ namespace DreamAquascape.Data.Repository
             await this.DbContext.SaveChangesAsync();
         }
 
-        private void PerformSoftDeleteOfEntity(TEntity entity, string? deletedBy = null)
+        private void PerformSoftDeleteOfEntity(TEntity entity, DateTime? deletedAt = null, string? deletedBy = null)
         {
             // Fallback to reflection-based approach for legacy entities
             PropertyInfo? isDeletedProperty = this.GetIsDeletedProperty(entity);
@@ -195,7 +195,7 @@ namespace DreamAquascape.Data.Repository
             PropertyInfo? deletedAtProperty = typeof(TEntity)
                 .GetProperties()
                 .FirstOrDefault(pi => pi.PropertyType == typeof(DateTime?) && pi.Name == "DeletedAt");
-            deletedAtProperty?.SetValue(entity, DateTime.UtcNow);
+            deletedAtProperty?.SetValue(entity, deletedAt ?? DateTime.UtcNow);
 
             // Try to set DeletedBy property if it exists and deletedBy is provided
             if (!string.IsNullOrEmpty(deletedBy))

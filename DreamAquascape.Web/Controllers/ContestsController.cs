@@ -4,6 +4,7 @@ using DreamAquascape.Web.ViewModels.Contest;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using static DreamAquascape.GCommon.ExceptionMessages;
 
 namespace DreamAquascape.Web.Controllers
 {
@@ -197,7 +198,7 @@ namespace DreamAquascape.Web.Controllers
                 var contest = await _contestService.GetContestForEditAsync(id);
                 if (contest == null)
                 {
-                    TempData["ErrorMessage"] = "Contest not found.";
+                    TempData["ErrorMessage"] = ContestNotFoundErrorMessage;
                     return RedirectToAction("Index", "Admin");
                 }
 

@@ -18,7 +18,7 @@
 
         void AddRange(IEnumerable<TEntity> items);
 
-        bool Delete(TEntity entity);
+        bool Delete(TEntity entity, DateTime? deletedAt, string? deletedBy = null);
 
         bool HardDelete(TEntity entity);
 

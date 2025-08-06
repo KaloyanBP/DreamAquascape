@@ -18,7 +18,7 @@
 
         Task AddRangeAsync(IEnumerable<TEntity> items);
 
-        Task<bool> DeleteAsync(TEntity entity, string? deletedBy = null);
+        Task<bool> DeleteAsync(TEntity entity, DateTime? deletedAt, string? deletedBy = null);
 
         Task<bool> UpdateAsync(TEntity item);
 

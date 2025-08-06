@@ -94,18 +94,18 @@ namespace DreamAquascape.Services.Core
                 // 1. Validate voting period
                 var contest = await _unitOfWork.ContestRepository.GetByIdAsync(contestId);
                 if (contest == null || !contest.IsActive || contest.IsDeleted)
-                    throw new NotFoundException("Contest not found");
+                    throw new NotFoundException(ContestNotFoundErrorMessage);
 
                 if (!_businessRules.IsVotingPeriodActive(contest, _dateTimeProvider.UtcNow))
-                    throw new InvalidOperationException("Contest voting period is not active");
+                    throw new InvalidOperationException(ContestVotingPeriodNotActiveMessage);
 
                 // 2. Get existing vote
                 var existingVote = await _unitOfWork.VoteRepository.GetUserVoteInContestAsync(userId, contestId);
                 if (existingVote == null)
-                    throw new NotFoundException("No existing vote found for this user");
+                    throw new NotFoundException(NoExistingVoteFoundMessage);
 
                 // 3. Remove the vote
-                await _unitOfWork.VoteRepository.DeleteAsync(existingVote, userId);
+                await _unitOfWork.VoteRepository.DeleteAsync(existingVote, _dateTimeProvider.UtcNow, userId);
                 await _unitOfWork.SaveChangesAsync();
 
                 _logger.LogInformation("Vote removed by user {UserId} in contest {ContestId}",
