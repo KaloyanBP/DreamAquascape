@@ -167,24 +167,12 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<Contest> CreateContestWithPrizeAsync(Contest contest, Prize prize)
         {
-            using var transaction = await DbContext.Database.BeginTransactionAsync();
-            try
-            {
-                // Add the prize to the contest
-                contest.Prizes = new List<Prize> { prize };
+            // Add the prize to the contest
+            contest.Prizes = new List<Prize> { prize };
 
-                // Add the contest
-                await DbSet.AddAsync(contest);
-                await DbContext.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-                return contest;
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+            // Add the contest
+            await DbSet.AddAsync(contest);
+            return contest;
         }
 
         public async Task<int> GetActiveContestCountAsync()

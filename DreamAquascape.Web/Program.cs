@@ -1,5 +1,6 @@
 using DreamAquascape.Data;
 using DreamAquascape.Data.Models;
+using DreamAquascape.Data.Repository;
 using DreamAquascape.Data.Repository.Interfaces;
 using DreamAquascape.Data.Seeding;
 using DreamAquascape.Data.Seeding.Interfaces;
@@ -29,6 +30,9 @@ namespace DreamAquascape.Web
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             builder.Services.AddRepositories(typeof(IContestRepository).Assembly);
+
+            // Register Unit of Work
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             builder.Services.AddControllersWithViews();
 

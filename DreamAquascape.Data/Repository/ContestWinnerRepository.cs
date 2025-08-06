@@ -81,7 +81,6 @@ namespace DreamAquascape.Data.Repository
             };
 
             await AddAsync(winner);
-            await SaveChangesAsync(); // Explicit save for business operation
             return winner;
         }
 
@@ -92,7 +91,7 @@ namespace DreamAquascape.Data.Repository
                 .Include(e => e.Votes)
                 .Where(e => e.ContestId == contestId && !e.IsDeleted)
                 .OrderByDescending(e => e.Votes.Count)
-                .ThenBy(e => e.SubmittedAt) // Tie-breaker: earliest submission
+                .ThenBy(e => e.SubmittedAt) // Earliest submission wins in case of a tie
                 .FirstOrDefaultAsync();
 
             if (winnerEntry == null)

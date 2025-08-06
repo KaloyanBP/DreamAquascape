@@ -10,26 +10,14 @@ namespace DreamAquascape.Services.Core
 {
     public class UserDashboardService : IUserDashboardService
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IVoteRepository _voteRepository;
-        private readonly IContestEntryRepository _contestEntryRepository;
-        private readonly IContestRepository _contestRepository;
-        private readonly IContestWinnerRepository _contestWinnerRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<UserDashboardService> _logger;
 
         public UserDashboardService(
-            IUserRepository userRepository,
-            IVoteRepository voteRepository,
-            IContestEntryRepository contestEntryRepository,
-            IContestRepository contestRepository,
-            IContestWinnerRepository contestWinnerRepository,
+            IUnitOfWork unitOfWork,
             ILogger<UserDashboardService> logger)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _voteRepository = voteRepository ?? throw new ArgumentNullException(nameof(voteRepository));
-            _contestEntryRepository = contestEntryRepository ?? throw new ArgumentNullException(nameof(contestEntryRepository));
-            _contestRepository = contestRepository ?? throw new ArgumentNullException(nameof(contestRepository));
-            _contestWinnerRepository = contestWinnerRepository ?? throw new ArgumentNullException(nameof(contestWinnerRepository));
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _logger = logger;
         }
 
@@ -38,8 +26,8 @@ namespace DreamAquascape.Services.Core
             var now = DateTime.UtcNow;
 
             // Get user participation data using repositories
-            var userContestIdsFromEntries = await _contestEntryRepository.GetContestIdsUserEnteredAsync(userId);
-            var userContestIdsFromVotes = await _voteRepository.GetContestIdsUserVotedInAsync(userId);
+            var userContestIdsFromEntries = await _unitOfWork.ContestEntryRepository.GetContestIdsUserEnteredAsync(userId);
+            var userContestIdsFromVotes = await _unitOfWork.VoteRepository.GetContestIdsUserVotedInAsync(userId);
 
             // Basic counts
             var totalContestsParticipated = userContestIdsFromEntries
@@ -47,18 +35,18 @@ namespace DreamAquascape.Services.Core
                 .Distinct()
                 .Count();
 
-            var totalEntriesSubmitted = await _contestEntryRepository.GetTotalEntriesSubmittedByUserAsync(userId);
+            var totalEntriesSubmitted = await _unitOfWork.ContestEntryRepository.GetTotalEntriesSubmittedByUserAsync(userId);
 
-            var totalVotesCast = await _voteRepository.GetVotesCastByUserAsync(userId);
+            var totalVotesCast = await _unitOfWork.VoteRepository.GetVotesCastByUserAsync(userId);
 
-            var totalVotesReceived = await _voteRepository.GetVotesReceivedByUserAsync(userId);
+            var totalVotesReceived = await _unitOfWork.VoteRepository.GetVotesReceivedByUserAsync(userId);
 
-            var contestsWon = await _contestWinnerRepository.GetContestsWonByUserAsync(userId);
+            var contestsWon = await _unitOfWork.ContestWinnerRepository.GetContestsWonByUserAsync(userId);
 
             // Current activity - contests where user has participated and are still active
-            var activeContests = await _contestRepository.GetActiveContestsCountForUserAsync(userId, now);
+            var activeContests = await _unitOfWork.ContestRepository.GetActiveContestsCountForUserAsync(userId, now);
 
-            var submissionsInProgress = await _contestRepository.GetSubmissionsInProgressCountForUserAsync(userId, now);
+            var submissionsInProgress = await _unitOfWork.ContestRepository.GetSubmissionsInProgressCountForUserAsync(userId, now);
 
             // Performance metrics
             var averageVotesPerEntry = totalEntriesSubmitted > 0 ? (double)totalVotesReceived / totalEntriesSubmitted : 0;
@@ -86,7 +74,7 @@ namespace DreamAquascape.Services.Core
             var now = DateTime.UtcNow;
 
             // Get contests that are currently active (accepting submissions or voting)
-            var activeContests = await _contestRepository.GetActiveContestsWithFullDataAsync(now);
+            var activeContests = await _unitOfWork.ContestRepository.GetActiveContestsWithFullDataAsync(now);
 
             var result = new List<UserActiveContestViewModel>();
 
@@ -95,10 +83,10 @@ namespace DreamAquascape.Services.Core
                 // Check user participation directly from entries and votes
                 var userEntry = contest.Entries.FirstOrDefault(e => e.ParticipantId == userId);
 
-                var userVote = await _voteRepository.GetUserVoteForContestAsync(userId, contest.Id);
+                var userVote = await _unitOfWork.VoteRepository.GetUserVoteForContestAsync(userId, contest.Id);
 
                 // Get total votes for this contest
-                var totalVotes = await _voteRepository.GetTotalVotesForContestAsync(contest.Id);
+                var totalVotes = await _unitOfWork.VoteRepository.GetTotalVotesForContestAsync(contest.Id);
 
                 // Determine contest phase and status
                 string phase;
@@ -153,19 +141,19 @@ namespace DreamAquascape.Services.Core
 
         public async Task<List<UserSubmissionViewModel>> GetUserSubmissionsAsync(string userId, int page = 1, int pageSize = 10)
         {
-            var entries = await _contestEntryRepository.GetUserSubmissionsWithFullDataAsync(userId, page, pageSize);
+            var entries = await _unitOfWork.ContestEntryRepository.GetUserSubmissionsWithFullDataAsync(userId, page, pageSize);
             var result = new List<UserSubmissionViewModel>();
 
             foreach (var entry in entries)
             {
                 var contest = entry.Contest;
-                var totalContestVotes = await _voteRepository.GetTotalVotesForContestAsync(contest.Id);
+                var totalContestVotes = await _unitOfWork.VoteRepository.GetTotalVotesForContestAsync(contest.Id);
 
                 var votesReceived = entry.Votes.Count;
                 var votePercentage = totalContestVotes > 0 ? (double)votesReceived / totalContestVotes * 100 : 0;
 
                 // Calculate ranking using repository
-                var ranking = await _contestEntryRepository.GetEntryRankingInContestAsync(contest.Id, entry.Id);
+                var ranking = await _unitOfWork.ContestEntryRepository.GetEntryRankingInContestAsync(contest.Id, entry.Id);
 
                 var isWinner = contest.PrimaryWinner?.ContestEntryId == entry.Id;
 
@@ -217,7 +205,7 @@ namespace DreamAquascape.Services.Core
 
         public async Task<List<UserVotingHistoryViewModel>> GetUserVotingHistoryAsync(string userId, int page = 1, int pageSize = 10)
         {
-            var votes = await _voteRepository.GetUserVotingHistoryAsync(userId, page, pageSize);
+            var votes = await _unitOfWork.VoteRepository.GetUserVotingHistoryAsync(userId, page, pageSize);
             var result = new List<UserVotingHistoryViewModel>();
 
             foreach (var vote in votes)
@@ -251,7 +239,7 @@ namespace DreamAquascape.Services.Core
                     entryWon = contest.PrimaryWinner?.ContestEntryId == entry.Id;
 
                     // Calculate final ranking using repository
-                    entryFinalRanking = await _contestEntryRepository.GetEntryRankingInContestAsync(contest.Id, entry.Id);
+                    entryFinalRanking = await _unitOfWork.ContestEntryRepository.GetEntryRankingInContestAsync(contest.Id, entry.Id);
                 }
 
                 result.Add(new UserVotingHistoryViewModel
@@ -284,7 +272,7 @@ namespace DreamAquascape.Services.Core
                 return null;
             }
 
-            var user = await _userRepository.GetUserByIdAsync(userId);
+            var user = await _unitOfWork.UserRepository.GetUserByIdAsync(userId);
 
             if (user == null)
             {
