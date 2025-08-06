@@ -1,4 +1,5 @@
-﻿using DreamAquascape.Services.Core.Interfaces;
+﻿using DreamAquascape.Services.Core.Infrastructure;
+using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels.Contest;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

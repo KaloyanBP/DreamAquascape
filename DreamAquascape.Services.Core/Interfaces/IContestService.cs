@@ -10,11 +10,6 @@ namespace DreamAquascape.Services.Core.Interfaces
         Task<ContestDetailsViewModel?> GetContestWithEntriesAsync(int contestId, string? currentUserId = null);
         Task<Contest> SubmitContestAsync(CreateContestViewModel dto, PrizeViewModel prizeDto, string createdBy);
 
-        // Voting
-        Task<Vote> CastVoteAsync(int contestId, int entryId, string userId, string userName, string? ipAddress = null);
-        Task<Vote> ChangeVoteAsync(int contestId, int newEntryId, string userId, string userName);
-        Task RemoveVoteAsync(int contestId, string userId);
-
         // Winner determination
         Task<ContestWinner?> DetermineAndSetWinnerAsync(int contestId);
         Task<List<ContestWinner>> ProcessEndedContestsAsync();

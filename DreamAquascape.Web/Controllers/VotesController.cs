@@ -9,12 +9,12 @@ namespace DreamAquascape.Web.Controllers
     /// </summary>
     public class VotesController : Controller
     {
-        private readonly IContestService _contestService;
+        private readonly IVotingService _votingService;
         private readonly ILogger<VotesController> _logger;
 
-        public VotesController(IContestService contestService, ILogger<VotesController> logger)
+        public VotesController(IVotingService votingService, ILogger<VotesController> logger)
         {
-            _contestService = contestService;
+            _votingService = votingService;
             _logger = logger;
         }
 
@@ -37,8 +37,8 @@ namespace DreamAquascape.Web.Controllers
                 // Get IP address for fraud prevention
                 var ipAddress = GetClientIpAddress();
 
-                // Cast the vote
-                var vote = await _contestService.CastVoteAsync(contestId, entryId, userId, userName, ipAddress);
+                // Cast the vote (note: userName parameter removed as it's not needed by VotingService)
+                var vote = await _votingService.CastVoteAsync(contestId, entryId, userId, ipAddress);
 
                 // Set success message
                 TempData["SuccessMessage"] = "Your vote has been cast successfully!";
@@ -85,7 +85,7 @@ namespace DreamAquascape.Web.Controllers
                     return RedirectToAction("Login", "Account");
                 }
 
-                await _contestService.RemoveVoteAsync(contestId, userId);
+                await _votingService.RemoveVoteAsync(contestId, userId);
                 TempData["SuccessMessage"] = "Your vote has been removed successfully!";
 
                 _logger.LogInformation("Vote removed by user {UserId} from contest {ContestId}", userId, contestId);

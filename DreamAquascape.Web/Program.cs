@@ -6,6 +6,9 @@ using DreamAquascape.Data.Seeding;
 using DreamAquascape.Data.Seeding.Interfaces;
 using DreamAquascape.Services.Core;
 using DreamAquascape.Services.Core.AdminDashboard;
+using DreamAquascape.Services.Core.Business.Permissions;
+using DreamAquascape.Services.Core.Business.Rules;
+using DreamAquascape.Services.Core.Infrastructure;
 using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Identity;
@@ -46,6 +49,14 @@ namespace DreamAquascape.Web
             builder.Services.AddScoped<IContestEntryService, ContestEntryService>();
             builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
             builder.Services.AddScoped<IUserDashboardService, UserDashboardService>();
+
+            // Register new abstraction services for better testability
+            builder.Services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+            builder.Services.AddScoped<IContestBusinessRules, ContestBusinessRules>();
+            builder.Services.AddScoped<IContestPermissionService, ContestPermissionService>();
+
+            // Register VotingService with all its dependencies
+            builder.Services.AddScoped<IVotingService, VotingService>();
 
             // Add background service for automatic winner determination
             builder.Services.AddHostedService<WinnerDeterminationService>();

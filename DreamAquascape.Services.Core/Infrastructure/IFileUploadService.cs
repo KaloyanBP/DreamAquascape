@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace DreamAquascape.Services.Core.Interfaces
+namespace DreamAquascape.Services.Core.Infrastructure
 {
     public class FileValidationResult
     {       

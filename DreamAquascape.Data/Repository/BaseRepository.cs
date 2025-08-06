@@ -130,12 +130,6 @@ namespace DreamAquascape.Data.Repository
             return true;
         }
 
-        public async Task<bool> HardDeleteAsync(TEntity entity)
-        {
-            this.DbSet.Remove(entity);
-            return true;
-        }
-
         public bool Update(TEntity item)
         {
             try

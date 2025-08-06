@@ -1,9 +1,8 @@
-﻿using DreamAquascape.Services.Core.Interfaces;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using static DreamAquascape.GCommon.ApplicationConstants;
 
-namespace DreamAquascape.Services.Core
+namespace DreamAquascape.Services.Core.Infrastructure
 {
     public class FileUploadService : IFileUploadService
     {

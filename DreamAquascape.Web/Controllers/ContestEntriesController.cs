@@ -1,5 +1,6 @@
 ﻿using DreamAquascape.Services.Common.Exceptions;
 using DreamAquascape.Services.Core;
+using DreamAquascape.Services.Core.Infrastructure;
 using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels.ContestEntry;
 using Microsoft.AspNetCore.Mvc;
