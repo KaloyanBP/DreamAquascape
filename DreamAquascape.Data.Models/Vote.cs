@@ -1,13 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace DreamAquascape.Data.Models
 {
-    public class Vote
+    public class Vote: SoftDeletableEntity
     {
-        public int Id { get; set; }
-
         public int ContestEntryId { get; set; }
 
         [Comment("Foreign key to the referenced AspNetUser.")]

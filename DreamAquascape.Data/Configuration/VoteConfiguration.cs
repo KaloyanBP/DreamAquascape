@@ -1,18 +1,15 @@
-﻿using DreamAquascape.Data.Models;
+﻿using DreamAquascape.Data.Configuration.Base;
+using DreamAquascape.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using static DreamAquascape.Data.Common.EntityConstants.Vote;
 
 namespace DreamAquascape.Data.Configuration
 {
-    public class VoteConfiguration : IEntityTypeConfiguration<Vote>
+    public class VoteConfiguration : SoftDeletableEntityConfiguration<Vote>
     {
-        public void Configure(EntityTypeBuilder<Vote> entity)
+        protected override void ConfigureEntity(EntityTypeBuilder<Vote> entity)
         {
-            // Primary Key
-            entity.HasKey(v => v.Id);
-
-            // Properties
+            // Properties specific to Vote entity
             entity.Property(v => v.ContestEntryId)
                 .IsRequired();
 
@@ -45,13 +42,20 @@ namespace DreamAquascape.Data.Configuration
             // Indexes for performance
             entity.HasIndex(v => new { v.UserId, v.ContestEntryId })
                 .IsUnique()
-                .HasDatabaseName("IX_Vote_User_Entry_Unique"); // Prevent duplicate votes
+                .HasDatabaseName("IX_Vote_User_Entry_Unique") // Prevent duplicate votes
+                .HasFilter("[IsDeleted] = 0"); // Only active votes should be unique
 
             entity.HasIndex(v => v.ContestEntryId);
             entity.HasIndex(v => v.VotedAt);
+        }
 
-            // Global query filter
-            entity.HasQueryFilter(v => !v.ContestEntry.IsDeleted && !v.ContestEntry.Contest.IsDeleted);
+        protected override void ConfigureSoftDeletion(EntityTypeBuilder<Vote> builder)
+        {
+            // Call base configuration first
+            base.ConfigureSoftDeletion(builder);
+
+            // Override the global query filter to include related entity checks
+            builder.HasQueryFilter(v => !v.IsDeleted && !v.ContestEntry.IsDeleted && !v.ContestEntry.Contest.IsDeleted);
         }
     }
 }

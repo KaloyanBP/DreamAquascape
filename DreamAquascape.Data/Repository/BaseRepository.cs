@@ -113,14 +113,24 @@ namespace DreamAquascape.Data.Repository
         public bool Delete(TEntity entity)
         {
             this.PerformSoftDeleteOfEntity(entity);
-
             return this.Update(entity);
         }
 
-        public Task<bool> DeleteAsync(TEntity entity)
+        /// <summary>
+        /// Performs soft delete with optional user ID who performed the deletion
+        /// </summary>
+        public bool Delete(TEntity entity, string? deletedBy = null)
         {
-            this.PerformSoftDeleteOfEntity(entity);
+            this.PerformSoftDeleteOfEntity(entity, deletedBy);
+            return this.Update(entity);
+        }
 
+        /// <summary>
+        /// Performs soft delete with optional user ID who performed the deletion
+        /// </summary>
+        public Task<bool> DeleteAsync(TEntity entity, string? deletedBy = null)
+        {
+            this.PerformSoftDeleteOfEntity(entity, deletedBy);
             return this.UpdateAsync(entity);
         }
 
@@ -170,16 +180,36 @@ namespace DreamAquascape.Data.Repository
             await this.DbContext.SaveChangesAsync();
         }
 
-        private void PerformSoftDeleteOfEntity(TEntity entity)
+        private void PerformSoftDeleteOfEntity(TEntity entity, string? deletedBy = null)
         {
-            PropertyInfo? isDeletedProperty =
-                this.GetIsDeletedProperty(entity);
+            // Fallback to reflection-based approach for legacy entities
+            PropertyInfo? isDeletedProperty = this.GetIsDeletedProperty(entity);
             if (isDeletedProperty == null)
             {
                 throw new InvalidOperationException(SoftDeleteOnNonSoftDeletableEntity);
             }
 
             isDeletedProperty.SetValue(entity, true);
+
+            // Try to set DeletedAt property if it exists
+            PropertyInfo? deletedAtProperty = typeof(TEntity)
+                .GetProperties()
+                .FirstOrDefault(pi => pi.PropertyType == typeof(DateTime?) && pi.Name == "DeletedAt");
+            deletedAtProperty?.SetValue(entity, DateTime.UtcNow);
+
+            // Try to set DeletedBy property if it exists and deletedBy is provided
+            if (!string.IsNullOrEmpty(deletedBy))
+            {
+                PropertyInfo? deletedByProperty = typeof(TEntity)
+                    .GetProperties()
+                    .FirstOrDefault(pi => pi.PropertyType == typeof(string) && pi.Name == "DeletedBy");
+                deletedByProperty?.SetValue(entity, deletedBy);
+            }
+        }
+
+        private void PerformSoftDeleteOfEntity(TEntity entity)
+        {
+            this.PerformSoftDeleteOfEntity(entity, null);
         }
 
         private PropertyInfo? GetIsDeletedProperty(TEntity entity)

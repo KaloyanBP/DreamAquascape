@@ -105,7 +105,7 @@ namespace DreamAquascape.Services.Core
                     throw new NotFoundException("No existing vote found for this user");
 
                 // 3. Remove the vote
-                _unitOfWork.VoteRepository.HardDelete(existingVote);
+                await _unitOfWork.VoteRepository.DeleteAsync(existingVote, userId);
                 await _unitOfWork.SaveChangesAsync();
 
                 _logger.LogInformation("Vote removed by user {UserId} in contest {ContestId}",
