@@ -194,21 +194,21 @@
                                         <div class="row text-muted small">
                                             <div class="col-md-6">
                                                 <i class="bi bi-calendar me-1"></i>
-                                                Submitted: @entry.SubmittedAt.ToString("MMM dd, yyyy 'at' HH:mm")
+                                                Submitted: <span class="utc-date" data-utc="@entry.SubmittedAt.ToString("o")" data-utc-format="datetime-long" />
                                             </div>
                                             <div class="col-md-6">
                                                 @if (entry.ContestEndDate > DateTime.UtcNow)
                                                 {
                                                     <i class="bi bi-clock me-1"></i>
                                                     <span class="text-warning">
-                                                        Contest ends: @entry.ContestEndDate?.ToString("MMM dd, yyyy")
+                                                        Contest ends: <span class="utc-date" data-utc="@entry.ContestEndDate?.ToString("o")" data-utc-format="datetime-long" />
                                                     </span>
                                                 }
                                                 else
                                                 {
                                                     <i class="bi bi-flag-checkered me-1"></i>
                                                     <span class="text-secondary">
-                                                        Contest ended: @entry.ContestEndDate?.ToString("MMM dd, yyyy")
+                                                        Contest ended: <span class="utc-date" data-utc="@entry.ContestEndDate?.ToString("o")" data-utc-format="datetime-long" />
                                                     </span>
                                                 }
                                             </div>

@@ -81,16 +81,51 @@
 
                                 <!-- Status Badge -->
                                 <div class="position-absolute top-0 end-0 p-2">
-                                    @if (contest.IsActive)
+                                    @{
+                                        var now = DateTime.UtcNow;
+                                        var daysRemaining = (contest.EndDate - now).Days;
+                                        string phase = "Ended";
+                                        string phaseClass = "bg-secondary";
+                                        string phaseIcon = "bi-flag-checkered";
+                                        bool submissionPhase = false;
+                                        bool votingPhase = false;
+
+                                        if (contest.IsActive)
+                                        {
+                                            if (now < contest.StartDate)
+                                            {
+                                                phase = "Coming Soon";
+                                                phaseClass = "bg-info";
+                                                phaseIcon = "bi-clock";
+                                            }
+                                            else if (now <= contest.EndDate)
+                                            {
+                                                submissionPhase = true;
+                                                phase = daysRemaining > 0 ? $"{daysRemaining} days left" : "Ending today";
+                                                phaseClass = daysRemaining <= 3 ? "bg-warning" : "bg-success";
+                                                phaseIcon = "bi-hourglass-split";
+
+                                                if (now < contest.SubmissionEndDate)
+                                                {
+                                                    submissionPhase = true;
+                                                }
+                                                else if (now < contest.VotingEndDate)
+                                                {
+                                                    votingPhase = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    @if (submissionPhase)
                                     {
-                                        <span class="badge bg-success">
-                                            <i class="bi bi-play-circle me-1"></i>Active
+                                        <span class="badge bg-primary">
+                                            <i class="bi bi-play-circle me-1"></i>Submiting Open
                                         </span>
                                     }
-                                    else
+                                    @if (votingPhase)
                                     {
-                                        <span class="badge bg-secondary">
-                                            <i class="bi bi-archive me-1"></i>Archived
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-play-circle me-1"></i>Voting Open
                                         </span>
                                     }
                                 </div>
@@ -113,45 +148,29 @@
                                 <!-- Contest Dates -->
                                 <div class="contest-dates mb-3">
                                     <div class="row text-muted small">
-                                        <div class="col-6">
+                                        <div class="col-4">
                                             <i class="bi bi-calendar-event me-1"></i>
                                             <strong>Start:</strong><br>
-                                            @contest.StartDate.ToString("MMM dd, yyyy")
+                                            <span class="utc-date" data-utc="@contest.StartDate.ToString("o")" data-utc-format="date"></span><br />
+                                            <span class="utc-date" data-utc="@contest.StartDate.ToString("o")" data-utc-format="time"></span>
                                         </div>
-                                        <div class="col-6">
+                                        <div class="col-4">
+                                            <i class="bi bi-calendar-event me-1"></i>
+                                            <strong>Voting:</strong><br />
+                                            <span class="utc-date" data-utc="@contest.VotingStartDate.ToString("o")" data-utc-format="date"></span><br />
+                                            <span class="utc-date" data-utc="@contest.VotingStartDate.ToString("o")" data-utc-format="time"></span>
+                                        </div>
+                                        <div class="col-4">
                                             <i class="bi bi-calendar-check me-1"></i>
                                             <strong>End:</strong><br>
-                                            @contest.EndDate.ToString("MMM dd, yyyy")
+                                            <span class="utc-date" data-utc="@contest.EndDate.ToString("o")" data-utc-format="date"></span><br />
+                                            <span class="utc-date" data-utc="@contest.EndDate.ToString("o")" data-utc-format="time"></span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Contest Phase Indicator -->
                                 <div class="contest-phase mb-3">
-                                    @{
-                                        var now = DateTime.UtcNow;
-                                        var daysRemaining = (contest.EndDate - now).Days;
-                                        string phase = "Ended";
-                                        string phaseClass = "bg-secondary";
-                                        string phaseIcon = "bi-flag-checkered";
-
-                                        if (contest.IsActive)
-                                        {
-                                            if (now < contest.StartDate)
-                                            {
-                                                phase = "Coming Soon";
-                                                phaseClass = "bg-info";
-                                                phaseIcon = "bi-clock";
-                                            }
-                                            else if (now <= contest.EndDate)
-                                            {
-                                                phase = daysRemaining > 0 ? $"{daysRemaining} days left" : "Ending today";
-                                                phaseClass = daysRemaining <= 3 ? "bg-warning" : "bg-success";
-                                                phaseIcon = "bi-hourglass-split";
-                                            }
-                                        }
-                                    }
-
                                     <div class="progress mb-2" style="height: 6px;">
                                         @{
                                             var totalDuration = (contest.EndDate - contest.StartDate).TotalDays;

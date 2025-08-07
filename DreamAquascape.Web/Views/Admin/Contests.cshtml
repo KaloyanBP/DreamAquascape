@@ -113,9 +113,11 @@
                                     <td>
                                         <small class="text-muted">
                                             <strong>Submission:</strong><br>
-                                            @contest.SubmissionStartDate.ToString("MMM dd") - @contest.SubmissionEndDate.ToString("MMM dd")<br>
+                                            <span class="utc-date" data-utc="@contest.SubmissionStartDate.ToString("o")" data-utc-format="date" /> - 
+                                            <span class="utc-date" data-utc="@contest.SubmissionEndDate.ToString("o")" data-utc-format="date" /><br>
                                             <strong>Voting:</strong><br>
-                                            @contest.VotingStartDate.ToString("MMM dd") - @contest.VotingEndDate.ToString("MMM dd")
+                                            <span class="utc-date" data-utc="@contest.VotingStartDate.ToString("o")" data-utc-format="date" /> - 
+                                            <span class="utc-date" data-utc="@contest.VotingEndDate.ToString("o")" data-utc-format="date" />
                                         </small>
                                     </td>
                                     <td class="text-center">

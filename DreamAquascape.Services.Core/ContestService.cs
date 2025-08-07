@@ -187,6 +187,7 @@ namespace DreamAquascape.Services.Core
 
                 // Create contest with prize using repository
                 var createdContest = await _unitOfWork.ContestRepository.CreateContestWithPrizeAsync(contest, primaryPrize);
+                await _unitOfWork.SaveChangesAsync();
 
                 _logger.LogInformation("Contest {ContestId} created by user {UserId}", createdContest.Id, createdBy);
                 return createdContest;

@@ -12,7 +12,7 @@
                 Edit Your Aquascape Entry
             </h2>
             <p class="mb-0 mt-2">
-                <small>Contest: <strong>@Model.ContestTitle</strong> | Submission deadline: <strong>@Model.SubmissionEndDate.ToString("MMM dd, yyyy HH:mm")</strong></small>
+                <small>Contest: <strong>@Model.ContestTitle</strong> | Submission deadline: <strong><span class="utc-date" data-utc="@Model.SubmissionEndDate.ToString("o")" data-utc-format="datetime"></span></strong></small>
             </p>
         </div>
         <div class="card-body">
