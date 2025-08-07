@@ -16,10 +16,10 @@
             </div>
             <div class="col-auto">
                 <div class="btn-group" role="group">
-                    <a href="/contests/create-entry" class="btn btn-primary">
+                    <a asp-controller="Contests" asp-action="Index" asp-route-status="2" class="btn btn-primary">
                         <i class="bi bi-plus me-2"></i>Submit Entry
                     </a>
-                    <a href="/contests" class="btn btn-outline-primary">
+                    <a asp-controller="Contests" asp-action="Index" asp-route-status="0" class="btn btn-primary">
                         <i class="bi bi-search me-2"></i>Browse Contests
                     </a>
                 </div>
@@ -195,13 +195,13 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="/contests/create-entry" class="btn btn-primary">
+                        <a asp-controller="Contests" asp-action="Index" asp-route-status="2" class="btn btn-primary">
                             <i class="bi bi-plus me-2"></i>Submit New Entry
                         </a>
-                        <a href="/contests?status=3" class="btn btn-outline-success">
+                        <a asp-controller="Contests" asp-action="Index" asp-route-status="3" class="btn btn-primary">
                             <i class="bi bi-hand-thumbs-up me-2"></i>Vote in Contests
                         </a>
-                        <a href="/contests" class="btn btn-outline-info">
+                        <a asp-controller="Contests" asp-action="Index" asp-route-status="0" class="btn btn-primary">
                             <i class="bi bi-search me-2"></i>Browse All Contests
                         </a>
                         <a href="/Identity/Account/Manage" class="btn btn-outline-secondary">

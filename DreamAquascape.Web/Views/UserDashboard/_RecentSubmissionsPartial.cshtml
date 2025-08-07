@@ -47,13 +47,13 @@
                         </div>
                         
                         <div class="submission-actions mt-2">
-                            <a href="/entries/@submission.EntryId" class="btn btn-outline-primary btn-sm">
+                            <a asp-controller="ContestEntries" asp-action="Details" asp-route-contestId="@submission.ContestId" asp-route-entryId="@submission.EntryId" class="btn btn-outline-primary btn-sm">
                                 <i class="fas fa-eye me-1"></i>View Entry
                             </a>
                             
                             @if (submission.CanEdit)
                             {
-                                <a href="contests/entries/@submission.EntryId/edit" class="btn btn-outline-secondary btn-sm">
+                                <a asp-controller="ContestEntries" asp-action="Edit" asp-route-contestId="@submission.ContestId" asp-route-entryId="@submission.EntryId" class="btn btn-outline-secondary btn-sm">
                                     <i class="fas fa-edit me-1"></i>Edit
                                 </a>
                             }
