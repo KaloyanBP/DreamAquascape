@@ -1,9 +1,6 @@
 ﻿using DreamAquascape.Data.Models;
-using DreamAquascape.Data.Repository.Interfaces;
 using DreamAquascape.Services.Common.Exceptions;
-using DreamAquascape.Services.Core.Business.Permissions;
-using DreamAquascape.Services.Core.Business.Rules;
-using DreamAquascape.Services.Core.Infrastructure;
+using DreamAquascape.Services.Core.Tests.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Moq;
 using static DreamAquascape.GCommon.ExceptionMessages;
@@ -11,41 +8,22 @@ using static DreamAquascape.GCommon.ExceptionMessages;
 namespace DreamAquascape.Services.Core.Tests
 {
     [TestFixture]
-    public class VotingServiceTests
+    public class VotingServiceTests : ServiceTestBase
     {
-        private Mock<IUnitOfWork> _mockUnitOfWork;
-        private Mock<IContestBusinessRules> _mockBusinessRules;
-        private Mock<IContestPermissionService> _mockPermissionService;
-        private Mock<IDateTimeProvider> _mockDateTimeProvider;
-        private Mock<ILogger<VotingService>> _mockLogger;
-        private Mock<IContestRepository> _mockContestRepository;
-        private Mock<IContestEntryRepository> _mockContestEntryRepository;
-        private Mock<IVoteRepository> _mockVoteRepository;
         private VotingService _votingService;
-        private DateTime _testDateTime = new DateTime(2025, 8, 6, 12, 0, 0, DateTimeKind.Utc);
+        private Mock<ILogger<VotingService>> _mockLogger;
 
         [SetUp]
-        public void Setup()
+        public override void SetUp()
         {
-            _mockUnitOfWork = new Mock<IUnitOfWork>();
-            _mockBusinessRules = new Mock<IContestBusinessRules>();
-            _mockPermissionService = new Mock<IContestPermissionService>();
-            _mockDateTimeProvider = new Mock<IDateTimeProvider>();
-            _mockLogger = new Mock<ILogger<VotingService>>();
-            _mockContestRepository = new Mock<IContestRepository>();
-            _mockContestEntryRepository = new Mock<IContestEntryRepository>();
-            _mockVoteRepository = new Mock<IVoteRepository>();
-
-            _mockUnitOfWork.Setup(x => x.ContestRepository).Returns(_mockContestRepository.Object);
-            _mockUnitOfWork.Setup(x => x.ContestEntryRepository).Returns(_mockContestEntryRepository.Object);
-            _mockUnitOfWork.Setup(x => x.VoteRepository).Returns(_mockVoteRepository.Object);
-            _mockDateTimeProvider.Setup(x => x.UtcNow).Returns(_testDateTime);
+            base.SetUp();
+            _mockLogger = CreateMockLogger<VotingService>();
 
             _votingService = new VotingService(
-                _mockUnitOfWork.Object,
-                _mockBusinessRules.Object,
-                _mockPermissionService.Object,
-                _mockDateTimeProvider.Object,
+                MockUnitOfWork.Object,
+                MockBusinessRules.Object,
+                MockPermissionService.Object,
+                MockDateTimeProvider.Object,
                 _mockLogger.Object);
         }
 
@@ -60,16 +38,16 @@ namespace DreamAquascape.Services.Core.Tests
             var userId = "user123";
             var ipAddress = "192.168.1.1";
 
-            var contest = new Contest { Id = contestId, IsActive = true, IsDeleted = false };
-            var entry = new ContestEntry { Id = entryId, ContestId = contestId, ParticipantId = "otheruser", IsDeleted = false };
+            var contest = CreateTestContest(contestId);
+            var entry = CreateTestEntry(entryId, contestId, "otheruser");
 
-            _mockContestRepository.Setup(x => x.GetByIdAsync(contestId))
+            MockContestRepository.Setup(x => x.GetByIdAsync(contestId))
                 .ReturnsAsync(contest);
-            _mockBusinessRules.Setup(x => x.IsVotingPeriodActive(contest, _testDateTime))
+            MockBusinessRules.Setup(x => x.IsVotingPeriodActive(contest, TestDateTime))
                 .Returns(true);
-            _mockContestEntryRepository.Setup(x => x.GetByIdAsync(entryId))
+            MockContestEntryRepository.Setup(x => x.GetByIdAsync(entryId))
                 .ReturnsAsync(entry);
-            _mockPermissionService.Setup(x => x.CanUserVoteInContestAsync(userId, contestId))
+            MockPermissionService.Setup(x => x.CanUserVoteInContestAsync(userId, contestId))
                 .ReturnsAsync(true);
 
             // Act
@@ -79,11 +57,11 @@ namespace DreamAquascape.Services.Core.Tests
             Assert.That(result, Is.Not.Null);
             Assert.That(result.ContestEntryId, Is.EqualTo(entryId));
             Assert.That(result.UserId, Is.EqualTo(userId));
-            Assert.That(result.VotedAt, Is.EqualTo(_testDateTime));
+            Assert.That(result.VotedAt, Is.EqualTo(TestDateTime));
             Assert.That(result.IpAddress, Is.EqualTo(ipAddress));
 
-            _mockVoteRepository.Verify(x => x.AddAsync(It.IsAny<Vote>()), Times.Once);
-            _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
+            MockVoteRepository.Verify(x => x.AddAsync(It.IsAny<Vote>()), Times.Once);
+            MockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
         }
 
         [Test]
@@ -94,7 +72,7 @@ namespace DreamAquascape.Services.Core.Tests
             var entryId = 1;
             var userId = "user123";
 
-            _mockContestRepository.Setup(x => x.GetByIdAsync(contestId))
+            MockContestRepository.Setup(x => x.GetByIdAsync(contestId))
                 .ReturnsAsync((Contest?)null);
 
             // Act & Assert
@@ -114,7 +92,7 @@ namespace DreamAquascape.Services.Core.Tests
 
             var contest = new Contest { Id = contestId, IsActive = false, IsDeleted = false };
 
-            _mockContestRepository.Setup(x => x.GetByIdAsync(contestId))
+            MockContestRepository.Setup(x => x.GetByIdAsync(contestId))
                 .ReturnsAsync(contest);
 
             // Act & Assert
@@ -134,9 +112,9 @@ namespace DreamAquascape.Services.Core.Tests
 
             var contest = new Contest { Id = contestId, IsActive = true, IsDeleted = false };
 
-            _mockContestRepository.Setup(x => x.GetByIdAsync(contestId))
+            MockContestRepository.Setup(x => x.GetByIdAsync(contestId))
                 .ReturnsAsync(contest);
-            _mockBusinessRules.Setup(x => x.IsVotingPeriodActive(contest, _testDateTime))
+            MockBusinessRules.Setup(x => x.IsVotingPeriodActive(contest, TestDateTime))
                 .Returns(false);
 
             // Act & Assert
@@ -156,11 +134,11 @@ namespace DreamAquascape.Services.Core.Tests
 
             var contest = new Contest { Id = contestId, IsActive = true, IsDeleted = false };
 
-            _mockContestRepository.Setup(x => x.GetByIdAsync(contestId))
+            MockContestRepository.Setup(x => x.GetByIdAsync(contestId))
                 .ReturnsAsync(contest);
-            _mockBusinessRules.Setup(x => x.IsVotingPeriodActive(contest, _testDateTime))
+            MockBusinessRules.Setup(x => x.IsVotingPeriodActive(contest, TestDateTime))
                 .Returns(true);
-            _mockContestEntryRepository.Setup(x => x.GetByIdAsync(entryId))
+            MockContestEntryRepository.Setup(x => x.GetByIdAsync(entryId))
                 .ReturnsAsync((ContestEntry?)null);
 
             // Act & Assert
@@ -181,11 +159,11 @@ namespace DreamAquascape.Services.Core.Tests
             var contest = new Contest { Id = contestId, IsActive = true, IsDeleted = false };
             var entry = new ContestEntry { Id = entryId, ContestId = 2, ParticipantId = "otheruser", IsDeleted = false };
 
-            _mockContestRepository.Setup(x => x.GetByIdAsync(contestId))
+            MockContestRepository.Setup(x => x.GetByIdAsync(contestId))
                 .ReturnsAsync(contest);
-            _mockBusinessRules.Setup(x => x.IsVotingPeriodActive(contest, _testDateTime))
+            MockBusinessRules.Setup(x => x.IsVotingPeriodActive(contest, TestDateTime))
                 .Returns(true);
-            _mockContestEntryRepository.Setup(x => x.GetByIdAsync(entryId))
+            MockContestEntryRepository.Setup(x => x.GetByIdAsync(entryId))
                 .ReturnsAsync(entry);
 
             // Act & Assert
@@ -206,13 +184,13 @@ namespace DreamAquascape.Services.Core.Tests
             var contest = new Contest { Id = contestId, IsActive = true, IsDeleted = false };
             var entry = new ContestEntry { Id = entryId, ContestId = contestId, ParticipantId = "otheruser", IsDeleted = false };
 
-            _mockContestRepository.Setup(x => x.GetByIdAsync(contestId))
+            MockContestRepository.Setup(x => x.GetByIdAsync(contestId))
                 .ReturnsAsync(contest);
-            _mockBusinessRules.Setup(x => x.IsVotingPeriodActive(contest, _testDateTime))
+            MockBusinessRules.Setup(x => x.IsVotingPeriodActive(contest, TestDateTime))
                 .Returns(true);
-            _mockContestEntryRepository.Setup(x => x.GetByIdAsync(entryId))
+            MockContestEntryRepository.Setup(x => x.GetByIdAsync(entryId))
                 .ReturnsAsync(entry);
-            _mockPermissionService.Setup(x => x.CanUserVoteInContestAsync(userId, contestId))
+            MockPermissionService.Setup(x => x.CanUserVoteInContestAsync(userId, contestId))
                 .ReturnsAsync(false);
 
             // Act & Assert
@@ -233,13 +211,13 @@ namespace DreamAquascape.Services.Core.Tests
             var contest = new Contest { Id = contestId, IsActive = true, IsDeleted = false };
             var entry = new ContestEntry { Id = entryId, ContestId = contestId, ParticipantId = userId, IsDeleted = false };
 
-            _mockContestRepository.Setup(x => x.GetByIdAsync(contestId))
+            MockContestRepository.Setup(x => x.GetByIdAsync(contestId))
                 .ReturnsAsync(contest);
-            _mockBusinessRules.Setup(x => x.IsVotingPeriodActive(contest, _testDateTime))
+            MockBusinessRules.Setup(x => x.IsVotingPeriodActive(contest, TestDateTime))
                 .Returns(true);
-            _mockContestEntryRepository.Setup(x => x.GetByIdAsync(entryId))
+            MockContestEntryRepository.Setup(x => x.GetByIdAsync(entryId))
                 .ReturnsAsync(entry);
-            _mockPermissionService.Setup(x => x.CanUserVoteInContestAsync(userId, contestId))
+            MockPermissionService.Setup(x => x.CanUserVoteInContestAsync(userId, contestId))
                 .ReturnsAsync(true);
 
             // Act & Assert
@@ -263,15 +241,15 @@ namespace DreamAquascape.Services.Core.Tests
             var contest = new Contest { Id = contestId, IsActive = true, IsDeleted = false };
             var existingVote = new Vote { Id = 1, ContestEntryId = 1, UserId = userId };
 
-            _mockContestRepository.Setup(x => x.GetByIdAsync(contestId))
+            MockContestRepository.Setup(x => x.GetByIdAsync(contestId))
                 .ReturnsAsync(contest);
-            _mockBusinessRules.Setup(x => x.IsVotingPeriodActive(contest, _testDateTime))
+            MockBusinessRules.Setup(x => x.IsVotingPeriodActive(contest, TestDateTime))
                 .Returns(true);
-            _mockVoteRepository.Setup(x => x.GetUserVoteInContestAsync(userId, contestId))
+            MockVoteRepository.Setup(x => x.GetUserVoteInContestAsync(userId, contestId))
                 .ReturnsAsync(existingVote);
 
             // Setup the mock to actually modify the vote when DeleteAsync is called
-            _mockVoteRepository.Setup(x => x.DeleteAsync(existingVote, _testDateTime, userId))
+            MockVoteRepository.Setup(x => x.DeleteAsync(existingVote, TestDateTime, userId))
                 .Callback<Vote, DateTime?, string?>((vote, deletedAt, deletedBy) =>
                 {
                     vote.IsDeleted = true;
@@ -285,9 +263,9 @@ namespace DreamAquascape.Services.Core.Tests
 
             // Assert
             Assert.That(existingVote.IsDeleted, Is.True);
-            Assert.That(existingVote.DeletedAt, Is.EqualTo(_testDateTime));
+            Assert.That(existingVote.DeletedAt, Is.EqualTo(TestDateTime));
             Assert.That(existingVote.DeletedBy, Is.EqualTo(userId));
-            _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
+            MockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
         }
 
         [Test]
@@ -297,7 +275,7 @@ namespace DreamAquascape.Services.Core.Tests
             var contestId = 999;
             var userId = "user123";
 
-            _mockContestRepository.Setup(x => x.GetByIdAsync(contestId))
+            MockContestRepository.Setup(x => x.GetByIdAsync(contestId))
                 .ReturnsAsync((Contest?)null);
 
             // Act & Assert
@@ -316,9 +294,9 @@ namespace DreamAquascape.Services.Core.Tests
 
             var contest = new Contest { Id = contestId, IsActive = true, IsDeleted = false };
 
-            _mockContestRepository.Setup(x => x.GetByIdAsync(contestId))
+            MockContestRepository.Setup(x => x.GetByIdAsync(contestId))
                 .ReturnsAsync(contest);
-            _mockBusinessRules.Setup(x => x.IsVotingPeriodActive(contest, _testDateTime))
+            MockBusinessRules.Setup(x => x.IsVotingPeriodActive(contest, TestDateTime))
                 .Returns(false);
 
             // Act & Assert
@@ -337,11 +315,11 @@ namespace DreamAquascape.Services.Core.Tests
 
             var contest = new Contest { Id = contestId, IsActive = true, IsDeleted = false };
 
-            _mockContestRepository.Setup(x => x.GetByIdAsync(contestId))
+            MockContestRepository.Setup(x => x.GetByIdAsync(contestId))
                 .ReturnsAsync(contest);
-            _mockBusinessRules.Setup(x => x.IsVotingPeriodActive(contest, _testDateTime))
+            MockBusinessRules.Setup(x => x.IsVotingPeriodActive(contest, TestDateTime))
                 .Returns(true);
-            _mockVoteRepository.Setup(x => x.GetUserVoteInContestAsync(userId, contestId))
+            MockVoteRepository.Setup(x => x.GetUserVoteInContestAsync(userId, contestId))
                 .ReturnsAsync((Vote?)null);
 
             // Act & Assert
@@ -363,7 +341,7 @@ namespace DreamAquascape.Services.Core.Tests
             var contestId = 1;
             var expectedVote = new Vote { Id = 1, UserId = userId, ContestEntryId = 1 };
 
-            _mockVoteRepository.Setup(x => x.GetUserVoteInContestAsync(userId, contestId))
+            MockVoteRepository.Setup(x => x.GetUserVoteInContestAsync(userId, contestId))
                 .ReturnsAsync(expectedVote);
 
             // Act
@@ -380,7 +358,7 @@ namespace DreamAquascape.Services.Core.Tests
             var userId = "user123";
             var contestId = 1;
 
-            _mockVoteRepository.Setup(x => x.GetUserVoteInContestAsync(userId, contestId))
+            MockVoteRepository.Setup(x => x.GetUserVoteInContestAsync(userId, contestId))
                 .ReturnsAsync((Vote?)null);
 
             // Act
@@ -401,7 +379,7 @@ namespace DreamAquascape.Services.Core.Tests
             var userId = "user123";
             var contestId = 1;
 
-            _mockVoteRepository.Setup(x => x.HasUserVotedInContestAsync(userId, contestId))
+            MockVoteRepository.Setup(x => x.HasUserVotedInContestAsync(userId, contestId))
                 .ReturnsAsync(true);
 
             // Act
@@ -418,7 +396,7 @@ namespace DreamAquascape.Services.Core.Tests
             var userId = "user123";
             var contestId = 1;
 
-            _mockVoteRepository.Setup(x => x.HasUserVotedInContestAsync(userId, contestId))
+            MockVoteRepository.Setup(x => x.HasUserVotedInContestAsync(userId, contestId))
                 .ReturnsAsync(false);
 
             // Act
@@ -440,7 +418,7 @@ namespace DreamAquascape.Services.Core.Tests
             var entryId = 1;
             var userId = "user123";
 
-            _mockContestRepository.Setup(x => x.GetByIdAsync(contestId))
+            MockContestRepository.Setup(x => x.GetByIdAsync(contestId))
                 .ThrowsAsync(new Exception(DatabaseConnectionFailedMessage));
 
             // Act & Assert
@@ -457,7 +435,7 @@ namespace DreamAquascape.Services.Core.Tests
             var contestId = 1;
             var userId = "user123";
 
-            _mockContestRepository.Setup(x => x.GetByIdAsync(contestId))
+            MockContestRepository.Setup(x => x.GetByIdAsync(contestId))
                 .ThrowsAsync(new Exception(DatabaseConnectionFailedMessage));
 
             // Act & Assert
