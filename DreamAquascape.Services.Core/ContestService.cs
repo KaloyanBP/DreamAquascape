@@ -17,137 +17,8 @@ namespace DreamAquascape.Services.Core
             IUnitOfWork unitOfWork,
             ILogger<ContestService> logger)
         {
-            _logger = logger;
-            _unitOfWork = unitOfWork;
-        }
-
-        public async Task<ContestListViewModel> GetFilteredContestsAsync(ContestFilterViewModel filters)
-        {
-            // Get filtered contests and total count from repository
-            var (contests, totalCount) = await _unitOfWork.ContestRepository.GetFilteredContestsAsync(filters);
-
-            // Map contests to view models
-            var contestViewModels = contests.Select(c => new ContestItemViewModel
-            {
-                Id = c.Id,
-                Title = c.Title,
-                Description = c.Description,
-                ImageUrl = c.ImageFileUrl ?? "",
-                StartDate = c.SubmissionStartDate,
-                EndDate = c.VotingEndDate,
-                SubmissionStartDate = c.SubmissionStartDate,
-                SubmissionEndDate = c.SubmissionEndDate,
-                VotingStartDate = c.VotingStartDate,
-                VotingEndDate = c.VotingEndDate,
-                IsActive = c.IsActive,
-                EntryCount = c.Entries.Count(e => !e.IsDeleted),
-                VoteCount = c.Entries.SelectMany(e => e.Votes).Count(),
-                TotalEntries = c.Entries.Count(e => !e.IsDeleted),
-                TotalVotes = c.Entries.SelectMany(e => e.Votes).Count(),
-                Prizes = c.Prizes.Select(p => new PrizeViewModel
-                {
-                    MonetaryValue = p.MonetaryValue,
-                    Description = p.Description
-                }).ToList()
-            }).ToList();
-
-            // Get contest statistics from repository
-            var stats = await _unitOfWork.ContestRepository.GetContestStatsAsync();
-
-            return new ContestListViewModel
-            {
-                Contests = contestViewModels,
-                Filters = filters,
-                Stats = stats,
-                Pagination = new PaginationViewModel
-                {
-                    CurrentPage = filters.Page,
-                    PageSize = filters.PageSize,
-                    TotalItems = totalCount,
-                    TotalPages = (int)Math.Ceiling((double)totalCount / filters.PageSize)
-                }
-            };
-        }
-
-        public async Task<ContestDetailsViewModel?> GetContestWithEntriesAsync(int contestId, string? currentUserId = null)
-        {
-            // First, get the contest with all related data
-            Contest? contest = await _unitOfWork.ContestRepository.GetContestDetailsAsync(contestId);
-
-            if (contest == null)
-                return null;
-
-            // Get user participation data if user is authenticated
-            ContestEntry? userEntry = null;
-            Vote? userVote = null;
-
-            if (!string.IsNullOrEmpty(currentUserId))
-            {
-                userEntry = contest.Entries
-                    .FirstOrDefault(e => e.ContestId == contestId && e.ParticipantId == currentUserId && !e.IsDeleted);
-
-                userVote = contest.Entries?.SelectMany(e => e.Votes)
-                    .FirstOrDefault(v => v.UserId == currentUserId && v.ContestEntry.ContestId == contestId);
-            }
-
-            var now = DateTime.UtcNow;
-            return new ContestDetailsViewModel
-            {
-                Id = contest.Id,
-                Title = contest.Title,
-                Description = contest.Description,
-                StartDate = contest.SubmissionStartDate,
-                EndDate = contest.VotingEndDate,
-                IsActive = contest.IsActive,
-
-                CanSubmitEntry = !string.IsNullOrEmpty(currentUserId) &&
-                               now >= contest.SubmissionStartDate &&
-                               now <= contest.SubmissionEndDate &&
-                               userEntry == null,
-
-                CanVote = now >= contest.VotingStartDate &&
-                         now <= contest.VotingEndDate,
-
-                Prize = contest.PrimaryPrize != null ? new PrizeViewModel
-                {
-                    Name = contest.PrimaryPrize.Name,
-                    Description = contest.PrimaryPrize.Description,
-                } : null,
-
-                Entries = contest.Entries
-                    .Where(e => !e.IsDeleted)
-                    .Select(e => new ContestEntryViewModel
-                    {
-                        Id = e.Id,
-                        Title = e.Title,
-                        Description = e.Description,
-                        EntryImages = e.EntryImages
-                            .OrderBy(img => img.DisplayOrder)
-                            .Select(img => img.ImageUrl)
-                            .ToList(),
-
-                        CanUserVote = !string.IsNullOrEmpty(currentUserId) &&
-                                     now >= contest.VotingStartDate &&
-                                     now <= contest.VotingEndDate &&
-                                     e.ParticipantId != currentUserId &&
-                                     userVote == null,
-
-                        HasUserVoted = userVote?.ContestEntryId == e.Id,
-                        IsWinner = contest.PrimaryWinner?.ContestEntryId == e.Id,
-                        IsOwnEntry = e.ParticipantId == currentUserId,
-                        VoteCount = e.Votes.Count(),
-                        SubmittedAt = e.SubmittedAt
-                    })
-                    .OrderByDescending(e => e.VoteCount)
-                    .ThenBy(e => e.SubmittedAt)
-                    .ToList(),
-
-                WinnerEntryId = contest.PrimaryWinner?.ContestEntryId,
-                UserHasSubmittedEntry = userEntry != null,
-                UserHasVoted = userVote != null,
-                UserVotedForEntryId = userVote?.ContestEntryId,
-                UserSubmittedEntryId = userEntry?.Id
-            };
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         }
 
         public async Task<Contest> SubmitContestAsync(CreateContestViewModel dto, PrizeViewModel prizeDto, string createdBy)
@@ -313,25 +184,6 @@ namespace DreamAquascape.Services.Core
             };
         }
 
-        private ICollection<EntryImage> GetEntryImages(List<string> imageUrls)
-        {
-            if (imageUrls == null || !imageUrls.Any())
-                throw new ArgumentException("Entry images cannot be null or empty");
-
-            var entryImages = new List<EntryImage>();
-            for (int i = 0; i < imageUrls.Count; i++)
-            {
-                entryImages.Add(new EntryImage
-                {
-                    ImageUrl = imageUrls[i],
-                    DisplayOrder = i + 1,
-                    UploadedAt = DateTime.UtcNow
-                });
-            }
-
-            return entryImages;
-        }
-
         /// <summary>
         /// Automatically determines and sets the winner for a contest when voting ends.
         /// Winner is determined by highest vote count, with ties broken by earliest submission.
@@ -429,32 +281,6 @@ namespace DreamAquascape.Services.Core
             return newWinners;
         }
 
-        // Admin management methods - Backward compatibility wrapper
-        public async Task<ContestListViewModel> GetFilteredContestsAsync(string searchTerm = "", string status = "", int page = 1, int pageSize = 10)
-        {
-            // Convert parameters to ContestFilterViewModel for consistency
-            var filters = new ContestFilterViewModel
-            {
-                Search = searchTerm,
-                Status = status?.ToLower() switch
-                {
-                    "active" => ContestStatus.Active,
-                    "inactive" => ContestStatus.Archived,
-                    "submission" => ContestStatus.Submission,
-                    "voting" => ContestStatus.Voting,
-                    "ended" => ContestStatus.Ended,
-                    _ => ContestStatus.All
-                },
-                Page = page,
-                PageSize = pageSize,
-                SortBy = ContestSortBy.Newest,
-                ExcludeArchived = false
-            };
-
-            // Use the main GetFilteredContestsAsync method
-            return await GetFilteredContestsAsync(filters);
-        }
-
         public async Task<bool> ToggleContestActiveStatusAsync(int contestId)
         {
             try
@@ -506,41 +332,6 @@ namespace DreamAquascape.Services.Core
             {
                 _logger.LogError(ex, "Error deleting contest {ContestId}", contestId);
                 return false;
-            }
-        }
-
-        public async Task<EditContestViewModel?> GetContestForEditAsync(int contestId)
-        {
-            try
-            {
-                var contest = await _unitOfWork.ContestRepository.GetContestForEditAsync(contestId);
-                if (contest == null)
-                    return null;
-
-                var prize = contest.Prizes.FirstOrDefault();
-
-                return new EditContestViewModel
-                {
-                    Id = contest.Id,
-                    Title = contest.Title,
-                    Description = contest.Description,
-                    CurrentImageUrl = contest.ImageFileUrl,
-                    SubmissionStartDate = contest.SubmissionStartDate,
-                    SubmissionEndDate = contest.SubmissionEndDate,
-                    VotingStartDate = contest.VotingStartDate,
-                    VotingEndDate = contest.VotingEndDate,
-                    ResultDate = contest.ResultDate,
-                    IsActive = contest.IsActive,
-                    PrizeName = prize?.Name,
-                    PrizeDescription = prize?.Description,
-                    PrizeMonetaryValue = prize?.MonetaryValue,
-                    CurrentPrizeImageUrl = prize?.ImageUrl
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting contest for edit {ContestId}", contestId);
-                return null;
             }
         }
 

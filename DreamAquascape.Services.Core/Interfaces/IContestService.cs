@@ -5,8 +5,6 @@ namespace DreamAquascape.Services.Core.Interfaces
 {
     public interface IContestService
     {
-        Task<ContestListViewModel> GetFilteredContestsAsync(ContestFilterViewModel filters);
-        Task<ContestDetailsViewModel?> GetContestWithEntriesAsync(int contestId, string? currentUserId = null);
         Task<Contest> SubmitContestAsync(CreateContestViewModel dto, PrizeViewModel prizeDto, string createdBy);
 
         // Winner determination
@@ -14,10 +12,8 @@ namespace DreamAquascape.Services.Core.Interfaces
         Task<List<ContestWinner>> ProcessEndedContestsAsync();
 
         // Admin management
-        Task<ContestListViewModel> GetFilteredContestsAsync(string searchTerm = "", string status = "", int page = 1, int pageSize = 10);
         Task<bool> ToggleContestActiveStatusAsync(int contestId);
         Task<bool> DeleteContestAsync(int contestId);
-        Task<EditContestViewModel?> GetContestForEditAsync(int contestId);
         Task<bool> UpdateContestAsync(EditContestViewModel model);
     }
 }

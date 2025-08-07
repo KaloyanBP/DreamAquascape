@@ -5,7 +5,7 @@ using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels.ContestEntry;
 using DreamAquascape.Web.ViewModels.UserDashboard;
 using Microsoft.Extensions.Logging;
-using static DreamAquascape.GCommon.ExceptionMessages;
+using DreamAquascape.GCommon;
 
 namespace DreamAquascape.Services.Core
 {
@@ -58,11 +58,11 @@ namespace DreamAquascape.Services.Core
             // Determine contest phase
             string contestPhase;
             if (now < contest.SubmissionEndDate)
-                contestPhase = "Submission";
+                contestPhase = ContestPhases.Submission;
             else if (now < contest.VotingEndDate)
-                contestPhase = "Voting";
+                contestPhase = ContestPhases.Voting;
             else
-                contestPhase = "Results";
+                contestPhase = ContestPhases.Results;
 
             // Check user permissions
             bool isOwnEntry = !string.IsNullOrEmpty(currentUserId) && entry.ParticipantId == currentUserId;
@@ -88,7 +88,7 @@ namespace DreamAquascape.Services.Core
 
                 // Participant Information
                 ParticipantId = entry.ParticipantId,
-                ParticipantName = entry.Participant.UserName ?? "Unknown",
+                ParticipantName = entry.Participant.UserName ?? ApplicationConstants.UnknownUserName,
 
                 // Contest Information
                 ContestId = contest.Id,
@@ -200,7 +200,7 @@ namespace DreamAquascape.Services.Core
                 var contest = await _unitOfWork.ContestRepository.GetByIdAsync(dto.ContestId);
 
                 if (contest == null || !contest.IsActive || contest.IsDeleted)
-                    throw new NotFoundException(ContestNotFoundErrorMessage);
+                    throw new NotFoundException(ExceptionMessages.ContestNotFoundErrorMessage);
 
                 if (DateTime.UtcNow < contest.SubmissionStartDate || DateTime.UtcNow > contest.SubmissionEndDate)
                     throw new InvalidOperationException("Contest submission period is not active");

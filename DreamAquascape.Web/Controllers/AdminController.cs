@@ -12,17 +12,20 @@ namespace DreamAquascape.Web.Controllers
     {
         private readonly IAdminDashboardService _dashboardService;
         private readonly IContestService _contestService;
+        private readonly IContestQueryService _contestQueryService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<AdminController> _logger;
 
         public AdminController(
             IAdminDashboardService dashboardService,
             IContestService contestService,
+            IContestQueryService contestQueryService,
             UserManager<ApplicationUser> userManager,
             ILogger<AdminController> logger)
         {
             _dashboardService = dashboardService;
             _contestService = contestService;
+            _contestQueryService = contestQueryService;
             _userManager = userManager;
             _logger = logger;
         }
@@ -88,7 +91,7 @@ namespace DreamAquascape.Web.Controllers
                     filters.PageSize = 10;
                 }
 
-                var contests = await _contestService.GetFilteredContestsAsync(filters);
+                var contests = await _contestQueryService.GetFilteredContestsAsync(filters);
 
                 // Pass current filter values to ViewBag for pagination links
                 ViewBag.Search = filters.Search;

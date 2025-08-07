@@ -16,11 +16,16 @@ namespace DreamAquascape.Web.Controllers
     {
         private readonly IFileUploadService _fileUploadService;
         private readonly IContestService _contestService;
+        private readonly IContestQueryService _contestQueryService;
 
-        public ContestsController(IFileUploadService fileUploadService, IContestService contestService)
+        public ContestsController(
+            IFileUploadService fileUploadService,
+            IContestService contestService,
+            IContestQueryService contestQueryService)
         {
             _fileUploadService = fileUploadService ?? throw new ArgumentNullException(nameof(fileUploadService));
             _contestService = contestService ?? throw new ArgumentNullException(nameof(contestService));
+            _contestQueryService = contestQueryService ?? throw new ArgumentNullException(nameof(contestQueryService));
         }
 
         [HttpGet("")]
@@ -33,7 +38,7 @@ namespace DreamAquascape.Web.Controllers
 
             try
             {
-                var result = await _contestService.GetFilteredContestsAsync(filters);
+                var result = await _contestQueryService.GetFilteredContestsAsync(filters);
 
                 // Set up ViewBag for the partial filter component (simplified for MVP)
                 ViewBag.ResultCount = result.Contests.Count();
@@ -70,7 +75,7 @@ namespace DreamAquascape.Web.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var contest = await _contestService.GetContestWithEntriesAsync(id, currentUserId);
+            var contest = await _contestQueryService.GetContestDetailsAsync(id, currentUserId);
 
             if (contest == null)
             {
@@ -195,7 +200,7 @@ namespace DreamAquascape.Web.Controllers
         {
             try
             {
-                var contest = await _contestService.GetContestForEditAsync(id);
+                var contest = await _contestQueryService.GetContestForEditAsync(id);
                 if (contest == null)
                 {
                     TempData["ErrorMessage"] = ContestNotFoundErrorMessage;

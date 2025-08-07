@@ -4,6 +4,7 @@
     {
         public const string AdminRoleName = "Admin";
         public const string UserRoleName = "User";
+        public const string UnknownUserName = "Unknown";
         public const string ApplicationName = "Dream Aquascape";
         public const string ApplicationVersion = "1.0.0";
         public const string ApplicationDescription = "An application for aquascaping enthusiasts to share and discover beautiful aquascapes.";
@@ -17,5 +18,12 @@
         public const string PrizeImageUploadPath = "prizes";
         public const long MaxFileSize = 5 * 1024 * 1024;
         public static readonly string[] AllowedImageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+    }
+
+    public static class ContestPhases
+    {
+        public const string Submission = "Submission";
+        public const string Voting = "Voting";
+        public const string Results = "Results";
     }
 }
