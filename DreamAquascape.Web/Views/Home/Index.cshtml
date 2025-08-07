@@ -1,4 +1,5 @@
 ﻿@model DreamAquascape.Web.ViewModels.Home.HomeIndexViewModel
+@using static DreamAquascape.Web.ViewModels.Home.ContestStatusHelper
 @{
     ViewData["Title"] = "DreamAquascape - Aquascaping Contests & Community";
 }
@@ -119,6 +120,7 @@
         box-shadow: 0 4px 20px rgba(0, 105, 92, 0.08);
         border-left: 5px solid #009688;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
     }
 
         .contest-card:hover {
@@ -127,12 +129,16 @@
         }
 
     .contest-status {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
         display: inline-block;
         padding: 0.3rem 1rem;
         border-radius: 1rem;
         font-size: 0.9rem;
         font-weight: 600;
-        margin-bottom: 1rem;
+        margin-bottom: 0;
+        z-index: 1;
     }
 
     .status-active {
@@ -233,9 +239,18 @@
             <a asp-controller="Contests" asp-action="Index" class="btn-hero primary">
                 <i class="bi bi-trophy me-2"></i>Browse Contests
             </a>
-            <a asp-area="Identity" asp-page="/Account/Register" class="btn-hero secondary">
-                <i class="bi bi-person-plus me-2"></i>Join Community
-            </a>
+            @if (User.Identity.IsAuthenticated)
+            {
+                <a asp-controller="User" asp-action="Dashboard" class="btn-hero secondary">
+                    <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
+                </a>
+            }
+            else
+            {
+                <a asp-area="Identity" asp-page="/Account/Register" class="btn-hero secondary">
+                    <i class="bi bi-person-plus me-2"></i>Join Community
+                </a>
+            }
         </div>
     </div>
 
@@ -265,87 +280,39 @@
     <div class="contests-section">
         <h2><i class="bi bi-stars me-2"></i>Featured Contests</h2>
 
-        <div class="row">
-            <!-- Active Contest -->
-            <div class="col-lg-6">
-                <div class="contest-card">
-                    <div class="contest-status status-active">🔥 Submissions Open</div>
-                    <h3 class="contest-title">Nano Tank Masterclass</h3>
-                    <div class="contest-meta">
-                        <i class="bi bi-calendar-event me-1"></i> Ends: August 15, 2025<br>
-                        <i class="bi bi-people me-1"></i> 67 entries • <i class="bi bi-trophy me-1"></i> $150 Prize Pool<br>
-                        <i class="bi bi-tag me-1"></i> Category: Nano Tanks (under 20L)
-                    </div>
-                    <div class="contest-actions">
-                        <a asp-controller="Contests" asp-action="Details" asp-route-id="1" class="btn btn-primary btn-sm-custom">
-                            <i class="bi bi-eye me-1"></i>View Details
-                        </a>
-                        <a asp-controller="ContestEntries" asp-action="Create" asp-route-contestId="1" class="btn btn-success btn-sm-custom">
-                            <i class="bi bi-upload me-1"></i>Submit Entry
-                        </a>
-                    </div>
-                </div>
+        @if (Model.HasFeaturedContests)
+        {
+            <div class="row">
+                @if (Model.ActiveContest != null)
+                {
+                    @await Html.PartialAsync("_FeaturedContestCard", Model.ActiveContest)
+                }
+
+                @if (Model.VotingContest != null)
+                {
+                    @await Html.PartialAsync("_FeaturedContestCard", Model.VotingContest)
+                }
             </div>
 
-            <!-- Voting Contest -->
-            <div class="col-lg-6">
-                <div class="contest-card">
-                    <div class="contest-status status-voting">🗳️ Voting Phase</div>
-                    <h3 class="contest-title">Dutch Style Championship</h3>
-                    <div class="contest-meta">
-                        <i class="bi bi-clock me-1"></i> Voting ends: July 30, 2025<br>
-                        <i class="bi bi-people me-1"></i> 89 entries • <i class="bi bi-heart me-1"></i> 2,341 votes<br>
-                        <i class="bi bi-award me-1"></i> Winner gets featured article
-                    </div>
-                    <div class="contest-actions">
-                        <a asp-controller="Contests" asp-action="Details" asp-route-id="2" class="btn btn-primary btn-sm-custom">
-                            <i class="bi bi-eye me-1"></i>View Entries
-                        </a>
-                        <a asp-controller="Contests" asp-action="Vote" asp-route-id="2" class="btn btn-warning btn-sm-custom">
-                            <i class="bi bi-heart me-1"></i>Vote Now
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+            <div class="row">
+                @if (Model.UpcomingContest != null)
+                {
+                    @await Html.PartialAsync("_FeaturedContestCard", Model.UpcomingContest)
+                }
 
-        <div class="row">
-            <!-- Upcoming Contest -->
-            <div class="col-lg-6">
-                <div class="contest-card">
-                    <div class="contest-status status-upcoming">⏰ Starting Soon</div>
-                    <h3 class="contest-title">Biotope Adventure</h3>
-                    <div class="contest-meta">
-                        <i class="bi bi-calendar-plus me-1"></i> Starts: August 1, 2025<br>
-                        <i class="bi bi-globe me-1"></i> Theme: Natural Biotopes<br>
-                        <i class="bi bi-gift me-1"></i> Premium aquascaping tools prize
-                    </div>
-                    <div class="contest-actions">
-                        <a asp-controller="Contests" asp-action="Details" asp-route-id="3" class="btn btn-outline-primary btn-sm-custom">
-                            <i class="bi bi-bell me-1"></i>Get Notified
-                        </a>
-                    </div>
-                </div>
+                @if (Model.RecentlyEndedContest != null)
+                {
+                    @await Html.PartialAsync("_FeaturedContestCard", Model.RecentlyEndedContest)
+                }
             </div>
-
-            <!-- Recently Ended -->
-            <div class="col-lg-6">
-                <div class="contest-card">
-                    <div class="contest-status status-ended">🏆 Recently Finished</div>
-                    <h3 class="contest-title">Iwagumi Excellence</h3>
-                    <div class="contest-meta">
-                        <i class="bi bi-check-circle me-1"></i> Completed: July 20, 2025<br>
-                        <i class="bi bi-star me-1"></i> Winner: Bobsan <br>
-                        <i class="bi bi-people me-1"></i> 156 participants
-                    </div>
-                    <div class="contest-actions">
-                        <a asp-controller="Contests" asp-action="Results" asp-route-id="4" class="btn btn-outline-success btn-sm-custom">
-                            <i class="bi bi-trophy me-1"></i>View Results
-                        </a>
-                    </div>
-                </div>
+        }
+        else
+        {
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle me-2"></i>
+                No featured contests available at the moment. Check back soon for exciting new competitions!
             </div>
-        </div>
+        }
 
         <div class="text-center mt-4">
             <a asp-controller="Contests" asp-action="Index" class="btn btn-outline-primary btn-lg">

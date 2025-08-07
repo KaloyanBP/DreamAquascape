@@ -52,6 +52,7 @@ namespace DreamAquascape.Services.Core
                     Prizes = c.Prizes.Select(p => new PrizeViewModel
                     {
                         MonetaryValue = p.MonetaryValue,
+                        Name = p.Name,
                         Description = p.Description
                     }).ToList()
                 }).ToList();

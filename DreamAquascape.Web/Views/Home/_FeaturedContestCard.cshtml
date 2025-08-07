@@ -1,0 +1,89 @@
+﻿@model DreamAquascape.Web.ViewModels.Contest.ContestItemViewModel
+@using static DreamAquascape.Web.ViewModels.Home.ContestStatusHelper
+@{
+    var status = GetContestStatus(Model);
+    var primaryActionText = GetPrimaryActionText(status.Status);
+    var primaryActionIcon = GetPrimaryActionIcon(status.Status);
+    var primaryActionClass = GetPrimaryActionClass(status.Status);
+}
+
+<div class="col-lg-6">
+    <div class="contest-card">
+        <div class="contest-status @status.StatusClass">@status.StatusText</div>
+        <h3 class="contest-title">@Model.Title</h3>
+        <div class="contest-meta">
+            @switch (status.Status)
+            {
+                case ContestStatus.Upcoming:
+                    <span><i class="bi bi-calendar-plus me-1"></i> Starts: <span class="utc-date" data-utc="@Model.SubmissionStartDate.ToString("o")" data-utc-format="datetime-long" /></span>
+                    
+                    <br />
+                    @if (Model.Prizes.Any())
+                    {
+                        <span><i class="bi bi-gift me-1"></i> Prizes Available</span>
+                    }
+                    else
+                    {
+                        <span><i class="bi bi-gift me-1"></i> No prizes available</span>
+                    }
+                    break;
+                case ContestStatus.SubmissionOpen:
+                    <span><i class="bi bi-calendar-event me-1"></i> Ends: <span class="utc-date" data-utc="@Model.SubmissionEndDate.ToString("o")" data-utc-format="datetime-long" /></span>
+            
+                    <br>
+                    <span><i class="bi bi-people me-1"></i> @Model.EntryCount entries</span>
+                    @if (Model.Prizes.Any())
+                    {
+                        <span> • <i class="bi bi-trophy me-1"></i> @Model.Prizes[0].Name</span>
+                    }
+                    break;
+                case ContestStatus.Voting:
+                    <span><i class="bi bi-clock me-1"></i> Voting ends: <span class="utc-date" data-utc="@Model.VotingEndDate.ToString("o")" data-utc-format="datetime-long" /></span>
+            
+                    <br>
+                    <span><i class="bi bi-people me-1"></i> @Model.EntryCount entries • <i class="bi bi-heart me-1"></i> @Model.VoteCount votes</span>
+                    break;
+                case ContestStatus.Ended:
+                    <span><i class="bi bi-check-circle me-1"></i> Completed: <span class="utc-date" data-utc="@Model.VotingEndDate.ToString("o")" data-utc-format="datetime-long" /></span>
+            
+                    <br>
+                    <span><i class="bi bi-people me-1"></i> @Model.EntryCount participants • <i class="bi bi-heart me-1"></i> @Model.VoteCount total votes</span>
+                    break;
+            }
+            @if (!string.IsNullOrEmpty(Model.Description))
+            {
+                <br>
+            
+                <span><i class="bi bi-tag me-1"></i> @Model.Description</span>
+            }
+        </div>
+        <div class="contest-actions">
+            <a asp-controller="Contests" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-primary btn-sm-custom">
+                <i class="bi bi-eye me-1"></i>View Details
+            </a>
+            @switch (status.Status)
+            {
+                case ContestStatus.SubmissionOpen:
+                    <a asp-controller="ContestEntries" asp-action="Create" asp-route-contestId="@Model.Id" class="btn @primaryActionClass btn-sm-custom">
+                        <i class="@primaryActionIcon me-1"></i>@primaryActionText
+                    </a>
+                    break;
+                case ContestStatus.Voting:
+                    <a asp-controller="Contests" asp-action="Details" asp-route-id="@Model.Id" class="btn @primaryActionClass btn-sm-custom">
+                        <i class="@primaryActionIcon me-1"></i>@primaryActionText
+                    </a>
+                    break;
+                case ContestStatus.Ended:
+                    <a asp-controller="Contests" asp-action="Details" asp-route-id="@Model.Id" class="btn @primaryActionClass btn-sm-custom">
+                        <i class="@primaryActionIcon me-1"></i>@primaryActionText
+                    </a>
+                    break;
+                case ContestStatus.Upcoming:
+                    <a asp-controller="Contests" asp-action="Details" asp-route-id="@Model.Id" class="btn @primaryActionClass btn-sm-custom">
+                        <i class="@primaryActionIcon me-1"></i>@primaryActionText
+                    </a>
+                    break;
+            }
+        </div>
+    </div>
+</div>
