@@ -48,6 +48,7 @@ namespace DreamAquascape.Web
             builder.Services.AddScoped<IContestService, ContestService>();
             builder.Services.AddScoped<IContestQueryService, ContestQueryService>();
             builder.Services.AddScoped<IContestEntryService, ContestEntryService>();
+            builder.Services.AddScoped<IContestEntryQueryService, ContestEntryQueryService>();
             builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
             builder.Services.AddScoped<IUserDashboardService, UserDashboardService>();
 

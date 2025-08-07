@@ -16,11 +16,16 @@ namespace DreamAquascape.Web.Controllers
     {
         private readonly IFileUploadService _fileUploadService;
         private readonly IContestEntryService _contestEntryService;
+        private readonly IContestEntryQueryService _contestEntryQueryService;
 
-        public ContestEntriesController(IFileUploadService fileUploadService, IContestEntryService contestEntryService)
+        public ContestEntriesController(
+            IFileUploadService fileUploadService,
+            IContestEntryService contestEntryService,
+            IContestEntryQueryService contestEntryQueryService)
         {
             _fileUploadService = fileUploadService ?? throw new ArgumentNullException(nameof(fileUploadService));
             _contestEntryService = contestEntryService ?? throw new ArgumentNullException(nameof(contestEntryService));
+            _contestEntryQueryService = contestEntryQueryService ?? throw new ArgumentNullException(nameof(contestEntryQueryService));
         }
 
         [HttpGet("")]
@@ -33,7 +38,7 @@ namespace DreamAquascape.Web.Controllers
         public async Task<IActionResult> Details(int contestId, int entryId)
         {
             var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var entryDetails = await _contestEntryService.GetContestEntryDetailsAsync(contestId, entryId, currentUserId);
+            var entryDetails = await _contestEntryQueryService.GetContestEntryDetailsAsync(contestId, entryId, currentUserId);
 
             if (entryDetails == null)
             {
@@ -91,7 +96,7 @@ namespace DreamAquascape.Web.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var model = await _contestEntryService.GetContestEntryForEditAsync(contestId, entryId, currentUserId);
+            var model = await _contestEntryQueryService.GetContestEntryForEditAsync(contestId, entryId, currentUserId);
             if (model == null)
             {
                 return NotFound("Contest entry not found or you don't have permission to edit it.");
@@ -118,7 +123,7 @@ namespace DreamAquascape.Web.Controllers
             if (!ModelState.IsValid)
             {
                 // Reload the model data if validation fails
-                var reloadedModel = await _contestEntryService.GetContestEntryForEditAsync(contestId, entryId, currentUserId);
+                var reloadedModel = await _contestEntryQueryService.GetContestEntryForEditAsync(contestId, entryId, currentUserId);
                 if (reloadedModel != null)
                 {
                     model.ExistingImages = reloadedModel.ExistingImages;
@@ -155,7 +160,7 @@ namespace DreamAquascape.Web.Controllers
                 ModelState.AddModelError("", "An error occurred while updating your entry. Please try again.");
 
                 // Reload the model data
-                var reloadedModel = await _contestEntryService.GetContestEntryForEditAsync(contestId, entryId, currentUserId);
+                var reloadedModel = await _contestEntryQueryService.GetContestEntryForEditAsync(contestId, entryId, currentUserId);
                 if (reloadedModel != null)
                 {
                     model.ExistingImages = reloadedModel.ExistingImages;
