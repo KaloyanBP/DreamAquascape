@@ -13,8 +13,6 @@ namespace DreamAquascape.Web.ViewModels.UserDashboard
         public DateTime SubmissionEndDate { get; set; }
         public DateTime VotingStartDate { get; set; }
         public DateTime VotingEndDate { get; set; }
-
-        public string ContestStatus { get; set; } = string.Empty; // "Accepting Submissions", "Voting", "Ended"
         public int DaysRemaining { get; set; }
         public ContestPhases Phase { get; set; } // "Submission", "Voting", "Results"
 

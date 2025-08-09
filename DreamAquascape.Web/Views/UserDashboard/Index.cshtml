@@ -106,7 +106,7 @@
                                                 </div>
                                             }
                                             <div class="contest-status-badge @GetStatusBadgeClass(contest.Phase)">
-                                                @contest.Phase
+                                                @GetStatusDisplayText(contest.Phase)
                                             </div>
                                         </div>
                                         <div class="contest-card-body">
@@ -390,6 +390,17 @@
             ContestPhases.Voting => "badge bg-success",
             ContestPhases.Results => "badge bg-warning",
             _ => "badge bg-secondary"
+        };
+    }
+    
+    string GetStatusDisplayText(ContestPhases phase)
+    {
+        return phase switch
+        {
+            ContestPhases.Submission => "Accepting Submissions",
+            ContestPhases.Voting => "Voting",
+            ContestPhases.Results => "Ended",
+            _ => "Ended"
         };
     }
 }

@@ -252,7 +252,7 @@ namespace DreamAquascape.Services.Core
             return new ContestEntryViewModel
             {
                 Id = entry.Id,
-                UserName = entry.Participant?.UserName ?? "Unknown",
+                UserName = entry.Participant.DisplayName ?? entry.Participant.UserName,
                 Title = entry.Title,
                 Description = entry.Description,
                 SubmittedAt = entry.SubmittedAt,

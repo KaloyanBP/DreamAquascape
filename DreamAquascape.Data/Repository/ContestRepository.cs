@@ -18,6 +18,8 @@ namespace DreamAquascape.Data.Repository
                 .Include(c => c.Entries)
                     .ThenInclude(e => e.Votes)
                 .Include(c => c.Entries)
+                    .ThenInclude(e => e.Participant)
+                .Include(c => c.Entries)
                     .ThenInclude(e => e.EntryImages)
                 .Include(c => c.Prizes)
                 .Include(c => c.Winners)

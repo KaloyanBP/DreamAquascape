@@ -13,7 +13,7 @@
         public bool CanChangeVote { get; set; } // True if voting period is still active
 
         // Contest status
-        public string ContestStatus { get; set; } = string.Empty;
+        public string ContestVotingStatus { get; set; } = string.Empty; // "Upcoming", "Voting", "Ended"
         public DateTime? VotingEndDate { get; set; }
 
         // Entry preview
