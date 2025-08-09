@@ -16,6 +16,7 @@ namespace DreamAquascape.Services.Core.Tests.Infrastructure
         protected Mock<IUnitOfWork> MockUnitOfWork { get; private set; } = null!;
         protected Mock<IContestRepository> MockContestRepository { get; private set; } = null!;
         protected Mock<IContestEntryRepository> MockContestEntryRepository { get; private set; } = null!;
+        protected Mock<IContestWinnerRepository> MockContestWinnerRepository { get; private set; } = null!;
         protected Mock<IVoteRepository> MockVoteRepository { get; private set; } = null!;
         protected Mock<IContestBusinessRules> MockBusinessRules { get; private set; } = null!;
         protected Mock<IContestPermissionService> MockPermissionService { get; private set; } = null!;
@@ -28,6 +29,7 @@ namespace DreamAquascape.Services.Core.Tests.Infrastructure
             MockUnitOfWork = new Mock<IUnitOfWork>();
             MockContestRepository = new Mock<IContestRepository>();
             MockContestEntryRepository = new Mock<IContestEntryRepository>();
+            MockContestWinnerRepository = new Mock<IContestWinnerRepository>();
             MockVoteRepository = new Mock<IVoteRepository>();
             MockBusinessRules = new Mock<IContestBusinessRules>();
             MockPermissionService = new Mock<IContestPermissionService>();
@@ -35,6 +37,7 @@ namespace DreamAquascape.Services.Core.Tests.Infrastructure
 
             MockUnitOfWork.Setup(x => x.ContestRepository).Returns(MockContestRepository.Object);
             MockUnitOfWork.Setup(x => x.ContestEntryRepository).Returns(MockContestEntryRepository.Object);
+            MockUnitOfWork.Setup(x => x.ContestWinnerRepository).Returns(MockContestWinnerRepository.Object);
             MockUnitOfWork.Setup(x => x.VoteRepository).Returns(MockVoteRepository.Object);
             MockDateTimeProvider.Setup(x => x.UtcNow).Returns(TestDateTime);
         }
@@ -70,7 +73,8 @@ namespace DreamAquascape.Services.Core.Tests.Infrastructure
                 Title = $"Test Entry {id}",
                 Description = $"Test Entry Description {id}",
                 SubmittedAt = TestDateTime.AddDays(-3),
-                IsDeleted = false
+                IsDeleted = false,
+                EntryImages = new HashSet<EntryImage>()
             };
         }
 
