@@ -1,4 +1,5 @@
 ﻿using DreamAquascape.Data.Repository.Interfaces;
+using DreamAquascape.Services.Core.Infrastructure;
 using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels.ContestEntry;
 using DreamAquascape.Web.ViewModels.UserDashboard;
@@ -12,13 +13,16 @@ namespace DreamAquascape.Services.Core
     public class ContestEntryQueryService : IContestEntryQueryService
     {
         private readonly ILogger<ContestEntryQueryService> _logger;
+        private readonly IDateTimeProvider _dateTimeProvider;
         private readonly IUnitOfWork _unitOfWork;
 
         public ContestEntryQueryService(
             IUnitOfWork unitOfWork,
+            IDateTimeProvider dateTimeProvider,
             ILogger<ContestEntryQueryService> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _dateTimeProvider = dateTimeProvider ?? throw new ArgumentException(nameof(dateTimeProvider));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         }
 
@@ -200,7 +204,7 @@ namespace DreamAquascape.Services.Core
                 }
 
                 // Check if editing is still allowed
-                var now = DateTime.UtcNow;
+                var now = _dateTimeProvider.UtcNow;
                 if (now > entry.Contest.SubmissionEndDate || !entry.Contest.IsActive)
                 {
                     _logger.LogWarning("Edit attempt after submission deadline for entry {EntryId}", entryId);

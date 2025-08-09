@@ -5,6 +5,7 @@ using DreamAquascape.Web.ViewModels.ContestEntry;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using DreamAquascape.Services.Core.Infrastructure;
 
 namespace DreamAquascape.Services.Core.Tests
 {
@@ -19,7 +20,7 @@ namespace DreamAquascape.Services.Core.Tests
         {
             base.SetUp();
             _mockLogger = CreateMockLogger<ContestEntryQueryService>();
-            _service = new ContestEntryQueryService(MockUnitOfWork.Object, _mockLogger.Object);
+            _service = new ContestEntryQueryService(MockUnitOfWork.Object, MockDateTimeProvider.Object, _mockLogger.Object);
         }
 
         [Test]

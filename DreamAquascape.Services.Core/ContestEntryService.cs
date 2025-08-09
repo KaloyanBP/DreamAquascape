@@ -205,52 +205,5 @@ namespace DreamAquascape.Services.Core
 
             return entryImages;
         }
-
-        // Additional helper methods for permissions and queries...
-        public async Task<bool> CanUserSubmitEntryAsync(int contestId, string userId)
-        {
-            var contest = await _unitOfWork.ContestRepository.GetByIdAsync(contestId);
-
-            if (contest == null || contest.IsDeleted || !contest.IsActive) return false;
-
-            var now = DateTime.UtcNow;
-            if (now < contest.SubmissionStartDate || now > contest.SubmissionEndDate)
-                return false;
-
-            // Check if user already has an entry
-            var hasExistingEntry = await _unitOfWork.ContestEntryRepository.UserHasEntryInContestAsync(contestId, userId);
-
-            return !hasExistingEntry;
-        }
-
-        public async Task<bool> CanUserVoteAsync(int contestId, string userId)
-        {
-            var contest = await _unitOfWork.ContestRepository.GetByIdAsync(contestId);
-
-            if (contest == null || contest.IsDeleted || !contest.IsActive) return false;
-
-            var now = DateTime.UtcNow;
-            if (now < contest.VotingStartDate || now > contest.VotingEndDate)
-                return false;
-
-            // Check if user has already voted
-            var hasVoted = await _unitOfWork.VoteRepository.HasUserVotedInContestAsync(userId, contestId);
-
-            return !hasVoted;
-        }
-
-        public async Task<bool> CanUserEditEntryAsync(int contestId, int entryId, string userId)
-        {
-            var contest = await _unitOfWork.ContestRepository.GetByIdAsync(contestId);
-
-            if (contest == null || !contest.IsActive) return false;
-
-            var entry = await _unitOfWork.ContestEntryRepository.GetUserEntryInContestAsync(contestId, userId);
-
-            if (entry == null || entry.Id != entryId) return false;
-
-            var now = DateTime.UtcNow;
-            return now >= contest.SubmissionStartDate && now <= contest.SubmissionEndDate;
-        }
     }
 }
