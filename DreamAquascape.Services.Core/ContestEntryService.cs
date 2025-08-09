@@ -2,10 +2,10 @@
 using DreamAquascape.Data.Repository.Interfaces;
 using DreamAquascape.Services.Common.Exceptions;
 using DreamAquascape.Services.Core.Interfaces;
-using DreamAquascape.Services.Core.Infrastructure;
 using DreamAquascape.Web.ViewModels.ContestEntry;
 using Microsoft.Extensions.Logging;
 using DreamAquascape.GCommon;
+using DreamAquascape.GCommon.Infrastructure;
 
 namespace DreamAquascape.Services.Core
 {

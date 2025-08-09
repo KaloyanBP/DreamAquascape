@@ -1,6 +1,6 @@
 ﻿using DreamAquascape.Data.Repository.Interfaces;
 using DreamAquascape.Services.Core.Interfaces;
-using DreamAquascape.Services.Core.Infrastructure;
+using DreamAquascape.GCommon.Infrastructure;
 using DreamAquascape.Web.ViewModels.AdminDashboard;
 using Microsoft.Extensions.Logging;
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using DreamAquascape.GCommon.Infrastructure;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using static DreamAquascape.GCommon.ApplicationConstants;
 
@@ -8,6 +9,7 @@ namespace DreamAquascape.Services.Core.Infrastructure
     {
         private readonly string _webRootPath;
         private readonly ILogger<FileUploadService> _logger;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
         private readonly string[] _allowedImageExtensions;
         private readonly long _maxFileSize;
@@ -15,10 +17,12 @@ namespace DreamAquascape.Services.Core.Infrastructure
 
         public FileUploadService(
             string webRootPath,
-            ILogger<FileUploadService> logger)
+            ILogger<FileUploadService> logger,
+            IDateTimeProvider dateTimeProvider)
         {
             _webRootPath = webRootPath;
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _dateTimeProvider = dateTimeProvider ?? throw new ArgumentNullException(nameof(dateTimeProvider));
 
             _allowedImageExtensions = AllowedImageExtensions;
             _maxFileSize = MaxFileSize;
@@ -130,7 +134,7 @@ namespace DreamAquascape.Services.Core.Infrastructure
 
         private async Task<string> SaveFileAsync(IFormFile file, string subfolder)
         {
-            var timestamp = DateTime.UtcNow.ToString("yyyyMMdd_HHmmss");
+            var timestamp = _dateTimeProvider.UtcNow.ToString("yyyyMMdd_HHmmss");
             var randomString = Path.GetRandomFileName().Replace(".", "").Substring(0, 8);
             var extension = Path.GetExtension(file.FileName);
             var fileName = $"{timestamp}_{randomString}{extension}";

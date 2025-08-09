@@ -1,5 +1,5 @@
 ﻿using DreamAquascape.Data.Repository.Interfaces;
-using DreamAquascape.Services.Core.Infrastructure;
+using DreamAquascape.GCommon.Infrastructure;
 using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels.ContestEntry;
 using DreamAquascape.Web.ViewModels.UserDashboard;

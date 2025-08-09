@@ -2,6 +2,7 @@
 
 namespace DreamAquascape.Data.Repository
 {
+    using DreamAquascape.GCommon.Infrastructure;
     using Interfaces;
     using Microsoft.EntityFrameworkCore;
     using System.Linq.Expressions;
@@ -15,11 +16,13 @@ namespace DreamAquascape.Data.Repository
     {
         protected readonly ApplicationDbContext DbContext;
         protected readonly DbSet<TEntity> DbSet;
+        protected readonly IDateTimeProvider DateTimeProvider;
 
-        protected BaseRepository(ApplicationDbContext dbContext)
+        protected BaseRepository(ApplicationDbContext dbContext, IDateTimeProvider dateTimeProvider)
         {
             this.DbContext = dbContext;
             this.DbSet = this.DbContext.Set<TEntity>();
+            this.DateTimeProvider = dateTimeProvider;
         }
 
         public TEntity? GetById(TKey id)
@@ -195,7 +198,7 @@ namespace DreamAquascape.Data.Repository
             PropertyInfo? deletedAtProperty = typeof(TEntity)
                 .GetProperties()
                 .FirstOrDefault(pi => pi.PropertyType == typeof(DateTime?) && pi.Name == "DeletedAt");
-            deletedAtProperty?.SetValue(entity, deletedAt ?? DateTime.UtcNow);
+            deletedAtProperty?.SetValue(entity, deletedAt ?? DateTimeProvider.UtcNow);
 
             // Try to set DeletedBy property if it exists and deletedBy is provided
             if (!string.IsNullOrEmpty(deletedBy))

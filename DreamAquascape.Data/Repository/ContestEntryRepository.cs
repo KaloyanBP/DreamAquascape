@@ -1,12 +1,13 @@
 ﻿using DreamAquascape.Data.Models;
 using DreamAquascape.Data.Repository.Interfaces;
+using DreamAquascape.GCommon.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace DreamAquascape.Data.Repository
 {
     public class ContestEntryRepository : BaseRepository<ContestEntry, int>, IContestEntryRepository
     {
-        public ContestEntryRepository(ApplicationDbContext dbContext) : base(dbContext)
+        public ContestEntryRepository(ApplicationDbContext dbContext, IDateTimeProvider dateTimeProvider) : base(dbContext, dateTimeProvider)
         {
         }
 

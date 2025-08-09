@@ -1,4 +1,5 @@
 ﻿using DreamAquascape.Data.Repository.Interfaces;
+using DreamAquascape.GCommon.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace DreamAquascape.Data.Repository
@@ -6,6 +7,7 @@ namespace DreamAquascape.Data.Repository
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ApplicationDbContext _context;
+        private readonly IDateTimeProvider _dateTimeProvider;
         private IDbContextTransaction? _transaction;
 
         // Repository instances
@@ -17,9 +19,10 @@ namespace DreamAquascape.Data.Repository
         private IPrizeRepository? _prizeRepository;
         private IUserRepository? _userRepository;
 
-        public UnitOfWork(ApplicationDbContext context)
+        public UnitOfWork(ApplicationDbContext context, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         // Repository properties with lazy initialization
@@ -27,7 +30,7 @@ namespace DreamAquascape.Data.Repository
         {
             get
             {
-                _contestRepository ??= new ContestRepository(_context);
+                _contestRepository ??= new ContestRepository(_context, _dateTimeProvider);
                 return _contestRepository;
             }
         }
@@ -36,7 +39,7 @@ namespace DreamAquascape.Data.Repository
         {
             get
             {
-                _contestEntryRepository ??= new ContestEntryRepository(_context);
+                _contestEntryRepository ??= new ContestEntryRepository(_context, _dateTimeProvider);
                 return _contestEntryRepository;
             }
         }
@@ -45,7 +48,7 @@ namespace DreamAquascape.Data.Repository
         {
             get
             {
-                _contestWinnerRepository ??= new ContestWinnerRepository(_context);
+                _contestWinnerRepository ??= new ContestWinnerRepository(_context, _dateTimeProvider);
                 return _contestWinnerRepository;
             }
         }
@@ -54,7 +57,7 @@ namespace DreamAquascape.Data.Repository
         {
             get
             {
-                _voteRepository ??= new VoteRepository(_context);
+                _voteRepository ??= new VoteRepository(_context, _dateTimeProvider);
                 return _voteRepository;
             }
         }
@@ -63,7 +66,7 @@ namespace DreamAquascape.Data.Repository
         {
             get
             {
-                _entryImageRepository ??= new EntryImageRepository(_context);
+                _entryImageRepository ??= new EntryImageRepository(_context, _dateTimeProvider);
                 return _entryImageRepository;
             }
         }
@@ -72,7 +75,7 @@ namespace DreamAquascape.Data.Repository
         {
             get
             {
-                _prizeRepository ??= new PrizeRepository(_context);
+                _prizeRepository ??= new PrizeRepository(_context, _dateTimeProvider);
                 return _prizeRepository;
             }
         }
@@ -81,7 +84,7 @@ namespace DreamAquascape.Data.Repository
         {
             get
             {
-                _userRepository ??= new UserRepository(_context);
+                _userRepository ??= new UserRepository(_context, _dateTimeProvider);
                 return _userRepository;
             }
         }

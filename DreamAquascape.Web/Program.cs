@@ -11,6 +11,7 @@ using DreamAquascape.Services.Core.Business.Rules;
 using DreamAquascape.Services.Core.Infrastructure;
 using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.Infrastructure.Extensions;
+using DreamAquascape.GCommon.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,12 +40,6 @@ namespace DreamAquascape.Web
 
             builder.Services.AddControllersWithViews();
 
-            builder.Services.AddTransient<IFileUploadService>(provider =>
-            {
-                var env = provider.GetRequiredService<IWebHostEnvironment>();
-                var logger = provider.GetRequiredService<ILogger<FileUploadService>>();
-                return new FileUploadService(env.WebRootPath, logger);
-            });
             builder.Services.AddScoped<IContestService, ContestService>();
             builder.Services.AddScoped<IContestQueryService, ContestQueryService>();
             builder.Services.AddScoped<IContestEntryService, ContestEntryService>();
@@ -59,6 +54,14 @@ namespace DreamAquascape.Web
 
             // Register VotingService with all its dependencies
             builder.Services.AddScoped<IVotingService, VotingService>();
+
+            builder.Services.AddTransient<IFileUploadService>(provider =>
+            {
+                var env = provider.GetRequiredService<IWebHostEnvironment>();
+                var logger = provider.GetRequiredService<ILogger<FileUploadService>>();
+                var dateTimeProvider = provider.GetRequiredService<IDateTimeProvider>();
+                return new FileUploadService(env.WebRootPath, logger, dateTimeProvider);
+            });
 
             // Add background service for automatic winner determination
             builder.Services.AddHostedService<WinnerDeterminationService>();

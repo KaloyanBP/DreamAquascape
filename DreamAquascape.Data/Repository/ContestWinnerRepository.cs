@@ -1,12 +1,13 @@
 ﻿using DreamAquascape.Data.Models;
 using DreamAquascape.Data.Repository.Interfaces;
+using DreamAquascape.GCommon.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace DreamAquascape.Data.Repository
 {
     public class ContestWinnerRepository : BaseRepository<ContestWinner, int>, IContestWinnerRepository
     {
-        public ContestWinnerRepository(ApplicationDbContext dbContext) : base(dbContext)
+        public ContestWinnerRepository(ApplicationDbContext dbContext, IDateTimeProvider dateTimeProvider) : base(dbContext, dateTimeProvider)
         {
         }
 
@@ -75,7 +76,7 @@ namespace DreamAquascape.Data.Repository
                 ContestId = contestId,
                 ContestEntryId = entryId,
                 Position = position,
-                WonAt = DateTime.UtcNow,
+                WonAt = DateTimeProvider.UtcNow,
                 AwardTitle = position == 1 ? "Contest Winner" : $"Contest Winner - Position {position}",
                 Notes = notes
             };

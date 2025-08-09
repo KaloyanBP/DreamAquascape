@@ -1,5 +1,6 @@
 ﻿using DreamAquascape.Data.Models;
 using DreamAquascape.Data.Repository.Interfaces;
+using DreamAquascape.GCommon.Infrastructure;
 using DreamAquascape.Web.ViewModels.Contest;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,7 +8,7 @@ namespace DreamAquascape.Data.Repository
 {
     public class ContestRepository : BaseRepository<Contest, int>, IContestRepository
     {
-        public ContestRepository(ApplicationDbContext dbContext) : base(dbContext)
+        public ContestRepository(ApplicationDbContext dbContext, IDateTimeProvider dateTimeProvider) : base(dbContext, dateTimeProvider)
         {
         }
 
@@ -55,7 +56,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<IEnumerable<Contest>> GetEndedContestsWithoutWinnersAsync()
         {
-            var now = DateTime.UtcNow;
+            var now = DateTimeProvider.UtcNow;
             return await GetAllAttached()
                 .Include(c => c.Entries)
                     .ThenInclude(e => e.Votes)
@@ -68,7 +69,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<(IEnumerable<Contest> contests, int totalCount)> GetFilteredContestsAsync(ContestFilterViewModel filters)
         {
-            var now = DateTime.UtcNow;
+            var now = DateTimeProvider.UtcNow;
 
             // Start with all contests
             var query = GetAllAttached()
@@ -141,7 +142,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<ContestStatsViewModel> GetContestStatsAsync()
         {
-            var now = DateTime.UtcNow;
+            var now = DateTimeProvider.UtcNow;
             var allContests = await GetAllAttached().Where(c => !c.IsDeleted).ToListAsync();
 
             return new ContestStatsViewModel
@@ -168,7 +169,7 @@ namespace DreamAquascape.Data.Repository
 
         public async Task<int> GetActiveContestCountAsync()
         {
-            var now = DateTime.UtcNow;
+            var now = DateTimeProvider.UtcNow;
             return await GetAllAttached().CountAsync(c =>
                 c.IsActive && !c.IsDeleted &&
                 c.SubmissionStartDate <= now && c.VotingEndDate >= now);

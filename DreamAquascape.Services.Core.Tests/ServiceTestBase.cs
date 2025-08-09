@@ -2,7 +2,7 @@
 using DreamAquascape.Data.Repository.Interfaces;
 using DreamAquascape.Services.Core.Business.Permissions;
 using DreamAquascape.Services.Core.Business.Rules;
-using DreamAquascape.Services.Core.Infrastructure;
+using DreamAquascape.GCommon.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Moq;
 

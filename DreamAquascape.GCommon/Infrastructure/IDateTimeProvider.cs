@@ -1,4 +1,4 @@
-﻿namespace DreamAquascape.Services.Core.Infrastructure
+﻿namespace DreamAquascape.GCommon.Infrastructure
 {
     /// <summary>
     /// Abstraction for DateTime operations to enable testability

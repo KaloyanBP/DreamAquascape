@@ -3,10 +3,10 @@ using DreamAquascape.Data.Repository.Interfaces;
 using DreamAquascape.Services.Common.Exceptions;
 using DreamAquascape.Services.Core.Business.Permissions;
 using DreamAquascape.Services.Core.Business.Rules;
-using DreamAquascape.Services.Core.Infrastructure;
+using DreamAquascape.GCommon.Infrastructure;
 using DreamAquascape.Services.Core.Interfaces;
 using Microsoft.Extensions.Logging;
-using static DreamAquascape.GCommon.ExceptionMessages;
+using DreamAquascape.GCommon;
 
 namespace DreamAquascape.Services.Core
 {
@@ -39,27 +39,27 @@ namespace DreamAquascape.Services.Core
                 // 1. Get contest and validate existence
                 var contest = await _unitOfWork.ContestRepository.GetByIdAsync(contestId);
                 if (contest == null || !contest.IsActive || contest.IsDeleted)
-                    throw new NotFoundException(String.Format(ContestNotFoundMessage, contestId));
+                    throw new NotFoundException(String.Format(ExceptionMessages.ContestNotFoundMessage, contestId));
 
                 // 2. Validate voting period using business rules
                 if (!_businessRules.IsVotingPeriodActive(contest, _dateTimeProvider.UtcNow))
-                    throw new InvalidOperationException(ContestVotingPeriodNotActiveMessage);
+                    throw new InvalidOperationException(ExceptionMessages.ContestVotingPeriodNotActiveMessage);
 
                 // 3. Get entry and validate
                 var entry = await _unitOfWork.ContestEntryRepository.GetByIdAsync(entryId);
                 if (entry == null || entry.ContestId != contestId || entry.IsDeleted)
-                    throw new NotFoundException(ContestEntryNotFoundMessage);
+                    throw new NotFoundException(ExceptionMessages.ContestEntryNotFoundMessage);
 
                 // 4. Check if user has already voted in this contest
                 if (!await _permissionService.CanUserVoteInContestAsync(userId, contestId))
                 {
-                    throw new InvalidOperationException(UserAlreadyVotedInContestMessage);
+                    throw new InvalidOperationException(ExceptionMessages.UserAlreadyVotedInContestMessage);
                 }
 
                 // 5. Check if user is trying to vote for their own entry
                 if (entry.ParticipantId == userId)
                 {
-                    throw new InvalidOperationException(UserCannotVoteForOwnEntryMessage);
+                    throw new InvalidOperationException(ExceptionMessages.UserCannotVoteForOwnEntryMessage);
                 }
 
                 // 6. Create and save vote
@@ -94,15 +94,15 @@ namespace DreamAquascape.Services.Core
                 // 1. Validate voting period
                 var contest = await _unitOfWork.ContestRepository.GetByIdAsync(contestId);
                 if (contest == null || !contest.IsActive || contest.IsDeleted)
-                    throw new NotFoundException(ContestNotFoundErrorMessage);
+                    throw new NotFoundException(ExceptionMessages.ContestNotFoundErrorMessage);
 
                 if (!_businessRules.IsVotingPeriodActive(contest, _dateTimeProvider.UtcNow))
-                    throw new InvalidOperationException(ContestVotingPeriodNotActiveMessage);
+                    throw new InvalidOperationException(ExceptionMessages.ContestVotingPeriodNotActiveMessage);
 
                 // 2. Get existing vote
                 var existingVote = await _unitOfWork.VoteRepository.GetUserVoteInContestAsync(userId, contestId);
                 if (existingVote == null)
-                    throw new NotFoundException(NoExistingVoteFoundMessage);
+                    throw new NotFoundException(ExceptionMessages.NoExistingVoteFoundMessage);
 
                 // 3. Remove the vote
                 await _unitOfWork.VoteRepository.DeleteAsync(existingVote, _dateTimeProvider.UtcNow, userId);
