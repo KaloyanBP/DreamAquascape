@@ -17,7 +17,7 @@ namespace DreamAquascape.Services.Core.Tests
         {
             base.SetUp();
             _mockLogger = CreateMockLogger<ContestQueryService>();
-            _contestQueryService = new ContestQueryService(MockUnitOfWork.Object, _mockLogger.Object);
+            _contestQueryService = new ContestQueryService(MockUnitOfWork.Object, _mockLogger.Object, MockDateTimeProvider.Object);
         }
 
         [Test]

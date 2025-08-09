@@ -2,8 +2,8 @@
 using DreamAquascape.Data.Repository.Interfaces;
 using DreamAquascape.Services.Common.Exceptions;
 using DreamAquascape.Services.Core.Interfaces;
+using DreamAquascape.Services.Core.Infrastructure;
 using DreamAquascape.Web.ViewModels.ContestEntry;
-using DreamAquascape.Web.ViewModels.UserDashboard;
 using Microsoft.Extensions.Logging;
 using DreamAquascape.GCommon;
 
@@ -13,13 +13,16 @@ namespace DreamAquascape.Services.Core
     {
         private readonly ILogger<ContestEntryService> _logger;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
         public ContestEntryService(
             ILogger<ContestEntryService> logger,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IDateTimeProvider dateTimeProvider)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _dateTimeProvider = dateTimeProvider ?? throw new ArgumentNullException(nameof(dateTimeProvider));
         }
 
         public async Task<ContestEntry> SubmitEntryAsync(CreateContestEntryViewModel dto, string userId, string userName)
@@ -32,7 +35,7 @@ namespace DreamAquascape.Services.Core
                 if (contest == null || !contest.IsActive || contest.IsDeleted)
                     throw new NotFoundException(ExceptionMessages.ContestNotFoundErrorMessage);
 
-                if (DateTime.UtcNow < contest.SubmissionStartDate || DateTime.UtcNow > contest.SubmissionEndDate)
+                if (_dateTimeProvider.UtcNow < contest.SubmissionStartDate || _dateTimeProvider.UtcNow > contest.SubmissionEndDate)
                     throw new InvalidOperationException("Contest submission period is not active");
 
                 // Check if user already has an entry
@@ -52,7 +55,7 @@ namespace DreamAquascape.Services.Core
                     ParticipantId = userId,
                     Title = dto.Title,
                     Description = dto.Description,
-                    SubmittedAt = DateTime.UtcNow,
+                    SubmittedAt = _dateTimeProvider.UtcNow,
                     IsActive = true,
                     IsDeleted = false,
                     EntryImages = GetEntryImages(dto.EntryImages)
@@ -91,7 +94,7 @@ namespace DreamAquascape.Services.Core
             if (entry == null) return false;
 
             // Check if editing is allowed
-            var now = DateTime.UtcNow;
+            var now = _dateTimeProvider.UtcNow;
             var canEdit = contest.IsActive &&
                          now >= contest.SubmissionStartDate &&
                          now <= contest.SubmissionEndDate;
@@ -161,7 +164,7 @@ namespace DreamAquascape.Services.Core
             if (entry == null) return false;
 
             // Check if deletion is allowed (same rules as editing)
-            var now = DateTime.UtcNow;
+            var now = _dateTimeProvider.UtcNow;
             var canDelete = contest.IsActive &&
                            now >= contest.SubmissionStartDate &&
                            now <= contest.SubmissionEndDate;
@@ -199,7 +202,7 @@ namespace DreamAquascape.Services.Core
                 {
                     ImageUrl = imageUrls[i],
                     DisplayOrder = i + 1,
-                    UploadedAt = DateTime.UtcNow
+                    UploadedAt = _dateTimeProvider.UtcNow
                 });
             }
 

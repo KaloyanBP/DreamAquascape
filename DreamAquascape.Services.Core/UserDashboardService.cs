@@ -2,6 +2,7 @@
 using DreamAquascape.Data.Models;
 using DreamAquascape.Data.Repository.Interfaces;
 using DreamAquascape.Services.Core.Interfaces;
+using DreamAquascape.Services.Core.Infrastructure;
 using DreamAquascape.Web.ViewModels.UserDashboard;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -12,18 +13,21 @@ namespace DreamAquascape.Services.Core
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<UserDashboardService> _logger;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
         public UserDashboardService(
             IUnitOfWork unitOfWork,
-            ILogger<UserDashboardService> logger)
+            ILogger<UserDashboardService> logger,
+            IDateTimeProvider dateTimeProvider)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _logger = logger;
+            _dateTimeProvider = dateTimeProvider ?? throw new ArgumentNullException(nameof(dateTimeProvider));
         }
 
         public async Task<UserQuickStatsViewModel> GetUserQuickStatsAsync(string userId)
         {
-            var now = DateTime.UtcNow;
+            var now = _dateTimeProvider.UtcNow;
 
             // Get user participation data using repositories
             var userContestIdsFromEntries = await _unitOfWork.ContestEntryRepository.GetContestIdsUserEnteredAsync(userId);
@@ -71,7 +75,7 @@ namespace DreamAquascape.Services.Core
 
         public async Task<List<UserActiveContestViewModel>> GetUserActiveContestsAsync(string userId)
         {
-            var now = DateTime.UtcNow;
+            var now = _dateTimeProvider.UtcNow;
 
             // Get contests that are currently active (accepting submissions or voting)
             var activeContests = await _unitOfWork.ContestRepository.GetActiveContestsWithFullDataAsync(now);
@@ -158,7 +162,7 @@ namespace DreamAquascape.Services.Core
                 var isWinner = contest.PrimaryWinner?.ContestEntryId == entry.Id;
 
                 // Determine status
-                var now = DateTime.UtcNow;
+                var now = _dateTimeProvider.UtcNow;
                 string status;
                 if (contest.VotingEndDate < now)
                 {
@@ -212,7 +216,7 @@ namespace DreamAquascape.Services.Core
             {
                 var contest = vote.ContestEntry.Contest;
                 var entry = vote.ContestEntry;
-                var now = DateTime.UtcNow;
+                var now = _dateTimeProvider.UtcNow;
 
                 var canChangeVote = contest.VotingEndDate > now && contest.IsActive;
 

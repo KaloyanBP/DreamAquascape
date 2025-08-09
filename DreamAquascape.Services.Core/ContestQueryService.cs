@@ -1,5 +1,6 @@
 ﻿using DreamAquascape.Data.Repository.Interfaces;
 using DreamAquascape.Services.Core.Interfaces;
+using DreamAquascape.Services.Core.Infrastructure;
 using DreamAquascape.Web.ViewModels.Contest;
 using DreamAquascape.Data.Models;
 using Microsoft.Extensions.Logging;
@@ -13,13 +14,16 @@ namespace DreamAquascape.Services.Core
     {
         private readonly ILogger<ContestQueryService> _logger;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
         public ContestQueryService(
             IUnitOfWork unitOfWork,
-            ILogger<ContestQueryService> logger)
+            ILogger<ContestQueryService> logger,
+            IDateTimeProvider dateTimeProvider)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _dateTimeProvider = dateTimeProvider ?? throw new ArgumentNullException(nameof(dateTimeProvider));
         }
 
         public async Task<ContestListViewModel> GetFilteredContestsAsync(ContestFilterViewModel filters)
@@ -117,7 +121,7 @@ namespace DreamAquascape.Services.Core
                                            v.ContestEntry.ContestId == contestId);
                 }
 
-                var now = DateTime.UtcNow;
+                var now = _dateTimeProvider.UtcNow;
                 var result = new ContestDetailsViewModel
                 {
                     Id = contest.Id,

@@ -1,5 +1,6 @@
 ﻿using DreamAquascape.Data.Repository.Interfaces;
 using DreamAquascape.Services.Core.Interfaces;
+using DreamAquascape.Services.Core.Infrastructure;
 using DreamAquascape.Web.ViewModels.AdminDashboard;
 using Microsoft.Extensions.Logging;
 
@@ -9,18 +10,21 @@ namespace DreamAquascape.Services.Core.AdminDashboard
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<AdminDashboardService> _logger;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
         public AdminDashboardService(
             IUnitOfWork unitOfWork,
-            ILogger<AdminDashboardService> logger)
+            ILogger<AdminDashboardService> logger,
+            IDateTimeProvider dateTimeProvider)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _dateTimeProvider = dateTimeProvider ?? throw new ArgumentNullException(nameof(dateTimeProvider));
         }
 
         public async Task<DashboardStatsViewModel> GetDashboardStatsAsync()
         {
-            var now = DateTime.UtcNow;
+            var now = _dateTimeProvider.UtcNow;
             var thirtyDaysAgo = now.AddDays(-30);
 
             // Basic counts using repositories

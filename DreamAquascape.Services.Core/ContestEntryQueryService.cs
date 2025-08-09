@@ -42,7 +42,7 @@ namespace DreamAquascape.Services.Core
                 }
 
                 var contest = entry.Contest;
-                var now = DateTime.UtcNow;
+                var now = _dateTimeProvider.UtcNow;
 
                 // Get ranking from repository
                 var entryRanking = await _unitOfWork.ContestEntryRepository.GetEntryRankingInContestAsync(contestId, entryId);

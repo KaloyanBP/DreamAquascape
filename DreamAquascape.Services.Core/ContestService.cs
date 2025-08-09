@@ -1,6 +1,7 @@
 ﻿using DreamAquascape.Data.Models;
 using DreamAquascape.Data.Repository.Interfaces;
 using DreamAquascape.Services.Core.Interfaces;
+using DreamAquascape.Services.Core.Infrastructure;
 using DreamAquascape.Web.ViewModels.Contest;
 using DreamAquascape.Web.ViewModels.ContestEntry;
 using DreamAquascape.Web.ViewModels.UserDashboard;
@@ -12,13 +13,16 @@ namespace DreamAquascape.Services.Core
     {
         private readonly ILogger<ContestService> _logger;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
         public ContestService(
             IUnitOfWork unitOfWork,
-            ILogger<ContestService> logger)
+            ILogger<ContestService> logger,
+            IDateTimeProvider dateTimeProvider)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _dateTimeProvider = dateTimeProvider ?? throw new ArgumentNullException(nameof(dateTimeProvider));
         }
 
         public async Task<Contest> SubmitContestAsync(CreateContestViewModel dto, PrizeViewModel prizeDto, string createdBy)
@@ -79,7 +83,7 @@ namespace DreamAquascape.Services.Core
                 return null;
 
             var contest = entry.Contest;
-            var now = DateTime.UtcNow;
+            var now = _dateTimeProvider.UtcNow;
 
             // Get all entries in this contest for ranking calculation
             var allContestEntries = await _unitOfWork.ContestEntryRepository.GetAllEntriesInContestAsync(contestId);
@@ -232,7 +236,7 @@ namespace DreamAquascape.Services.Core
                 ContestId = contestId,
                 ContestEntryId = winnerEntry.Id,
                 Position = 1,
-                WonAt = DateTime.UtcNow,
+                WonAt = _dateTimeProvider.UtcNow,
                 AwardTitle = "Contest Winner",
                 Notes = $"Won with {winnerEntry.Votes.Count} votes"
             };
