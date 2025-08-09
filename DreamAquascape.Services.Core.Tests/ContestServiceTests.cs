@@ -298,5 +298,247 @@ namespace DreamAquascape.Services.Core.Tests
             // Assert
             Assert.That(result, Is.False);
         }
+
+        [Test]
+        public void SubmitContestAsyncShouldThrowExceptionWhenSubmissionStartDateAfterEndDate()
+        {
+            // Arrange
+            var dto = new CreateContestViewModel
+            {
+                Title = "Test Contest",
+                Description = "Test Description",
+                SubmissionStartDate = TestDateTime.AddDays(10), // Start after end
+                SubmissionEndDate = TestDateTime.AddDays(5),    // End before start
+                VotingStartDate = TestDateTime.AddDays(11),
+                VotingEndDate = TestDateTime.AddDays(20),
+                ResultDate = TestDateTime.AddDays(21)
+            };
+
+            var prizeDto = new PrizeViewModel
+            {
+                Name = "Test Prize",
+                Description = "Test Prize Description"
+            };
+
+            // Act & Assert
+            var ex = Assert.ThrowsAsync<InvalidOperationException>(
+                async () => await _service.SubmitContestAsync(dto, prizeDto, "test-user"));
+
+            Assert.That(ex.Message, Contains.Substring("Submission start date must be before end date"));
+        }
+
+        [Test]
+        public void SubmitContestAsyncShouldThrowExceptionWhenVotingDatesInvalid()
+        {
+            // Arrange
+            var dto = new CreateContestViewModel
+            {
+                Title = "Test Contest",
+                Description = "Test Description",
+                SubmissionStartDate = TestDateTime.AddDays(1),
+                SubmissionEndDate = TestDateTime.AddDays(10),
+                VotingStartDate = TestDateTime.AddDays(1), // Voting starts at same time as submission
+                VotingEndDate = TestDateTime.AddDays(8),   // This violates the rule: VotingStartDate <= SubmissionStartDate
+                ResultDate = TestDateTime.AddDays(21)
+            };
+
+            var prizeDto = new PrizeViewModel
+            {
+                Name = "Test Prize",
+                Description = "Test Prize Description"
+            };
+
+            // Act & Assert
+            var ex = Assert.ThrowsAsync<InvalidOperationException>(
+                async () => await _service.SubmitContestAsync(dto, prizeDto, "test-user"));
+
+            Assert.That(ex.Message, Contains.Substring("Start voting date must be after submission start date"));
+        }
+
+        [Test]
+        public async Task GetContestEntryDetailsAsyncShouldReturnNullWhenEntryNotFound()
+        {
+            // Arrange
+            MockContestEntryRepository.Setup(x => x.GetEntryDetailsWithAllDataAsync(1, 999))
+                .ReturnsAsync((ContestEntry?)null);
+
+            // Act
+            var result = await _service.GetContestEntryDetailsAsync(1, 999);
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [Test]
+        public async Task GetContestEntryDetailsAsyncShouldCalculateCorrectRankingAndPercentage()
+        {
+            // Arrange
+            var contest = CreateTestContest(1);
+            contest.Winners = new HashSet<ContestWinner>();
+
+            var entry1 = CreateTestEntry(1, 1, "user1");
+            var entry2 = CreateTestEntry(2, 1, "user2");
+            var entry3 = CreateTestEntry(3, 1, "user3");
+
+            // Setup votes - entry2 has most votes (3), entry1 has 2, entry3 has 1
+            var vote1 = CreateTestVote(1, 1, "voter1");
+            vote1.User = CreateTestUser("voter1", "Voter1");
+            var vote2 = CreateTestVote(2, 1, "voter2");
+            vote2.User = CreateTestUser("voter2", "Voter2");
+            var vote3 = CreateTestVote(3, 2, "voter1");
+            vote3.User = CreateTestUser("voter1", "Voter1");
+            var vote4 = CreateTestVote(4, 2, "voter3");
+            vote4.User = CreateTestUser("voter3", "Voter3");
+            var vote5 = CreateTestVote(5, 2, "voter4");
+            vote5.User = CreateTestUser("voter4", "Voter4");
+            var vote6 = CreateTestVote(6, 3, "voter5");
+            vote6.User = CreateTestUser("voter5", "Voter5");
+
+            entry1.Votes = new HashSet<Vote> { vote1, vote2 };
+            entry2.Votes = new HashSet<Vote> { vote3, vote4, vote5 };
+            entry3.Votes = new HashSet<Vote> { vote6 };
+
+            entry1.Contest = contest;
+            entry1.Participant = CreateTestUser("user1", "User1");
+            entry1.EntryImages = new HashSet<EntryImage>();
+
+            var allEntries = new List<ContestEntry> { entry1, entry2, entry3 };
+
+            MockContestEntryRepository.Setup(x => x.GetEntryDetailsWithAllDataAsync(1, 1))
+                .ReturnsAsync(entry1);
+            MockContestEntryRepository.Setup(x => x.GetAllEntriesInContestAsync(1))
+                .ReturnsAsync(allEntries);
+            MockVoteRepository.Setup(x => x.GetUserVoteForEntryAsync("test-user", 1))
+                .ReturnsAsync((Vote?)null);
+
+            // Act
+            var result = await _service.GetContestEntryDetailsAsync(1, 1, "test-user");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.That(result.EntryRanking, Is.EqualTo(2)); // entry1 should be ranked 2nd (entry2 has more votes)
+            Assert.That(Math.Round(result.VotePercentage, 2), Is.EqualTo(33.33)); // 2 votes out of 6 total = 33.33%
+        }
+
+        [Test]
+        public async Task ProcessEndedContestsAsyncShouldReturnEmptyListWhenNoEndedContests()
+        {
+            // Arrange
+            var endedContests = new List<Contest>();
+
+            MockContestRepository.Setup(x => x.GetEndedContestsWithoutWinnersAsync())
+                .ReturnsAsync(endedContests);
+
+            // Act
+            var result = await _service.ProcessEndedContestsAsync();
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.That(result.Count, Is.EqualTo(0));
+            MockContestRepository.Verify(x => x.GetEndedContestsWithoutWinnersAsync(), Times.Once);
+        }
+
+        [Test]
+        public async Task DeleteContestAsyncShouldReturnFalseWhenNonExistentContest()
+        {
+            // Arrange
+            MockContestRepository.Setup(x => x.GetContestForDeleteAsync(999))
+                .ReturnsAsync((Contest?)null);
+
+            // Act
+            var result = await _service.DeleteContestAsync(999);
+
+            // Assert
+            Assert.IsFalse(result);
+            MockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Never);
+        }
+
+        [Test]
+        public async Task UpdateContestAsyncShouldCreateNewPrizeWhenNoneExistsButPrizeInfoProvided()
+        {
+            // Arrange
+            var contest = CreateTestContest(1);
+            contest.Prizes = new HashSet<Prize>(); // No existing prizes
+
+            var model = new EditContestViewModel
+            {
+                Id = 1,
+                Title = "Updated Contest",
+                Description = "Updated Description",
+                SubmissionStartDate = TestDateTime.AddDays(1),
+                SubmissionEndDate = TestDateTime.AddDays(10),
+                VotingStartDate = TestDateTime.AddDays(11),
+                VotingEndDate = TestDateTime.AddDays(20),
+                ResultDate = TestDateTime.AddDays(21),
+                IsActive = true,
+                PrizeName = "New Prize",
+                PrizeDescription = "New Prize Description",
+                PrizeMonetaryValue = 100m,
+                NewPrizeImageUrl = "new-prize-image.jpg"
+            };
+
+            MockContestRepository.Setup(x => x.GetContestForEditAsync(1))
+                .ReturnsAsync(contest);
+            MockUnitOfWork.Setup(x => x.BeginTransactionAsync())
+                .Returns(Task.CompletedTask);
+            MockPrizeRepository.Setup(x => x.AddAsync(It.IsAny<Prize>()))
+                .Returns(Task.CompletedTask);
+            MockUnitOfWork.Setup(x => x.SaveChangesAsync())
+                .ReturnsAsync(1);
+            MockUnitOfWork.Setup(x => x.CommitTransactionAsync())
+                .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _service.UpdateContestAsync(model);
+
+            // Assert
+            Assert.That(result, Is.True);
+            MockPrizeRepository.Verify(x => x.AddAsync(It.Is<Prize>(p =>
+                p.Name == "New Prize" &&
+                p.Description == "New Prize Description" &&
+                p.MonetaryValue == 100m &&
+                p.ImageUrl == "new-prize-image.jpg" &&
+                p.ContestId == 1)), Times.Once);
+            MockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
+            MockUnitOfWork.Verify(x => x.CommitTransactionAsync(), Times.Once);
+        }
+
+        [Test]
+        public async Task UpdateContestAsyncShouldRollbackTransactionOnException()
+        {
+            // Arrange
+            var contest = CreateTestContest(1);
+            var model = new EditContestViewModel
+            {
+                Id = 1,
+                Title = "Updated Contest",
+                Description = "Updated Description",
+                SubmissionStartDate = TestDateTime.AddDays(1),
+                SubmissionEndDate = TestDateTime.AddDays(10),
+                VotingStartDate = TestDateTime.AddDays(11),
+                VotingEndDate = TestDateTime.AddDays(20),
+                ResultDate = TestDateTime.AddDays(21),
+                IsActive = true
+            };
+
+            MockContestRepository.Setup(x => x.GetContestForEditAsync(1))
+                .ReturnsAsync(contest);
+            MockUnitOfWork.Setup(x => x.BeginTransactionAsync())
+                .Returns(Task.CompletedTask);
+            MockContestRepository.Setup(x => x.UpdateAsync(It.IsAny<Contest>()))
+                .ReturnsAsync(true);
+            MockUnitOfWork.Setup(x => x.SaveChangesAsync())
+                .ThrowsAsync(new InvalidOperationException("Database error"));
+            MockUnitOfWork.Setup(x => x.RollbackTransactionAsync())
+                .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _service.UpdateContestAsync(model);
+
+            // Assert
+            Assert.That(result, Is.False);
+            MockUnitOfWork.Verify(x => x.RollbackTransactionAsync(), Times.Once);
+            MockUnitOfWork.Verify(x => x.CommitTransactionAsync(), Times.Never);
+        }
     }
 }
