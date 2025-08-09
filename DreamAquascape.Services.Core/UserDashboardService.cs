@@ -1,8 +1,9 @@
 ﻿using DreamAquascape.Data;
 using DreamAquascape.Data.Models;
 using DreamAquascape.Data.Repository.Interfaces;
-using DreamAquascape.Services.Core.Interfaces;
+using DreamAquascape.GCommon;
 using DreamAquascape.GCommon.Infrastructure;
+using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels.UserDashboard;
 using Microsoft.Extensions.Logging;
 
@@ -98,19 +99,19 @@ namespace DreamAquascape.Services.Core
 
                 if (now < contest.SubmissionEndDate)
                 {
-                    phase = "Submission";
+                    phase = ContestPhases.Submission;
                     status = "Accepting Submissions";
                     daysRemaining = (int)(contest.SubmissionEndDate - now).TotalDays;
                 }
                 else if (now < contest.VotingEndDate)
                 {
-                    phase = "Voting";
+                    phase = ContestPhases.Voting;
                     status = "Voting Period";
                     daysRemaining = (int)(contest.VotingEndDate - now).TotalDays;
                 }
                 else
                 {
-                    phase = "Results";
+                    phase = ContestPhases.Results;
                     status = "Ended";
                     daysRemaining = 0;
                 }

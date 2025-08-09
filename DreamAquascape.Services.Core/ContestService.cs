@@ -1,7 +1,8 @@
 ﻿using DreamAquascape.Data.Models;
 using DreamAquascape.Data.Repository.Interfaces;
-using DreamAquascape.Services.Core.Interfaces;
+using DreamAquascape.GCommon;
 using DreamAquascape.GCommon.Infrastructure;
+using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels.Contest;
 using DreamAquascape.Web.ViewModels.ContestEntry;
 using DreamAquascape.Web.ViewModels.UserDashboard;
@@ -106,11 +107,11 @@ namespace DreamAquascape.Services.Core
             // Determine contest phase
             string contestPhase;
             if (now < contest.SubmissionEndDate)
-                contestPhase = "Submission";
+                contestPhase = ContestPhases.Submission;
             else if (now < contest.VotingEndDate)
-                contestPhase = "Voting";
+                contestPhase = ContestPhases.Voting;
             else
-                contestPhase = "Results";
+                contestPhase = ContestPhases.Results;
 
             // Check user permissions
             bool isOwnEntry = !string.IsNullOrEmpty(currentUserId) && entry.ParticipantId == currentUserId;

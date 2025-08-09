@@ -1,4 +1,5 @@
-﻿@model DreamAquascape.Web.ViewModels.UserDashboard.UserDashboardViewModel
+﻿@using DreamAquascape.GCommon;
+@model DreamAquascape.Web.ViewModels.UserDashboard.UserDashboardViewModel
 @{
     ViewData["Title"] = "My Dashboard";
 }
@@ -35,8 +36,8 @@
     <!-- Contests Needing Attention Alert -->
     @{
         var needsAttention = Model.ActiveContests.Where(c =>
-        (!c.HasSubmitted && c.Phase == "Submission") ||
-        (!c.HasVoted && c.Phase == "Voting" && !c.HasSubmitted) ||
+        (!c.HasSubmitted && c.Phase == ContestPhases.Submission) ||
+        (!c.HasVoted && c.Phase == ContestPhases.Voting && !c.HasSubmitted) ||
         c.DaysRemaining <= 3).ToList();
     }
 
@@ -121,19 +122,19 @@
                                                 </div>
                                             </div>
                                             <div class="contest-actions mt-2">
-                                                @if (!contest.HasSubmitted && contest.Phase == "Submission")
+                                                @if (!contest.HasSubmitted && contest.Phase == ContestPhases.Submission)
                                                 {
                                                     <a asp-controller="ContestEntries" asp-action="Create" asp-route-contestId="@contest.ContestId" class="btn btn-primary btn-sm">
                                                         <i class="bi bi-upload me-1"></i>Submit Entry
                                                     </a>
                                                 }
-                                                else if (!contest.HasVoted && contest.Phase == "Voting" && !contest.HasSubmitted)
+                                                else if (!contest.HasVoted && contest.Phase == ContestPhases.Voting && !contest.HasSubmitted)
                                                 {
                                                     <a href="/contests/@contest.ContestId/vote" class="btn btn-success btn-sm">
                                                         <i class="bi bi-hand-thumbs-up me-1"></i>Vote Now
                                                     </a>
                                                 }
-                                                else if (contest.HasSubmitted && contest.Phase != "Results")
+                                                else if (contest.HasSubmitted && contest.Phase != ContestPhases.Results)
                                                 {
                                                     <a asp-controller="ContestEntries" asp-action="Details" asp-route-contestId="@contest.ContestId"  asp-route-entryId="@contest.UserEntryId" class="btn btn-info btn-sm">
                                                         <i class="bi bi-eye me-1"></i>View My Entry
@@ -385,9 +386,9 @@
     {
         return phase switch
         {
-            "Submission" => "badge bg-primary",
-            "Voting" => "badge bg-success",
-            "Results" => "badge bg-warning",
+            ContestPhases.Submission => "badge bg-primary",
+            ContestPhases.Voting => "badge bg-success",
+            ContestPhases.Results => "badge bg-warning",
             _ => "badge bg-secondary"
         };
     }

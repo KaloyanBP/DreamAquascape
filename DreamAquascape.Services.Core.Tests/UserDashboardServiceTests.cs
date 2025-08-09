@@ -1,5 +1,6 @@
 ﻿using DreamAquascape.Data.Models;
 using DreamAquascape.Services.Core.Tests.Infrastructure;
+using DreamAquascape.GCommon;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -147,12 +148,12 @@ namespace DreamAquascape.Services.Core.Tests
 
             var firstContest = result.FirstOrDefault(c => c.ContestId == 1);
             Assert.That(firstContest, Is.Not.Null);
-            Assert.That(firstContest.Phase, Is.EqualTo("Submission"));
+            Assert.That(firstContest.Phase, Is.EqualTo(ContestPhases.Submission));
             Assert.That(firstContest.ContestStatus, Is.EqualTo("Accepting Submissions"));
 
             var secondContest = result.FirstOrDefault(c => c.ContestId == 2);
             Assert.That(secondContest, Is.Not.Null);
-            Assert.That(secondContest.Phase, Is.EqualTo("Voting"));
+            Assert.That(secondContest.Phase, Is.EqualTo(ContestPhases.Voting));
             Assert.That(secondContest.ContestStatus, Is.EqualTo("Voting Period"));
         }
 
