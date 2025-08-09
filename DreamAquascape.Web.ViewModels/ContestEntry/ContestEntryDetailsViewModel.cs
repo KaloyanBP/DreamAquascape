@@ -1,3 +1,4 @@
+using DreamAquascape.GCommon;
 using DreamAquascape.Web.ViewModels.UserDashboard;
 
 namespace DreamAquascape.Web.ViewModels.ContestEntry
@@ -23,7 +24,7 @@ namespace DreamAquascape.Web.ViewModels.ContestEntry
         public DateTime ContestSubmissionEndDate { get; set; }
         public DateTime ContestVotingStartDate { get; set; }
         public DateTime ContestVotingEndDate { get; set; }
-        public string ContestPhase { get; set; } = string.Empty; // "Submission", "Voting", "Results"
+        public ContestPhases ContestPhase { get; set; } // "Submission", "Voting", "Results"
         public bool IsContestActive { get; set; }
 
         // Entry Images

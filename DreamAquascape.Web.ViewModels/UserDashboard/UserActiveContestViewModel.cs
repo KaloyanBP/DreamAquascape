@@ -1,4 +1,6 @@
-﻿namespace DreamAquascape.Web.ViewModels.UserDashboard
+﻿using DreamAquascape.GCommon;
+
+namespace DreamAquascape.Web.ViewModels.UserDashboard
 {
     public class UserActiveContestViewModel
     {
@@ -14,7 +16,7 @@
 
         public string ContestStatus { get; set; } = string.Empty; // "Accepting Submissions", "Voting", "Ended"
         public int DaysRemaining { get; set; }
-        public string Phase { get; set; } = string.Empty; // "Submission", "Voting", "Results"
+        public ContestPhases Phase { get; set; } // "Submission", "Voting", "Results"
 
         // User's participation status in this contest
         public bool HasSubmitted { get; set; }

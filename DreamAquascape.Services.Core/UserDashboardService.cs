@@ -93,7 +93,7 @@ namespace DreamAquascape.Services.Core
                 var totalVotes = await _unitOfWork.VoteRepository.GetTotalVotesForContestAsync(contest.Id);
 
                 // Determine contest phase and status
-                string phase;
+                ContestPhases phase;
                 string status;
                 int daysRemaining;
 
@@ -108,6 +108,12 @@ namespace DreamAquascape.Services.Core
                     phase = ContestPhases.Voting;
                     status = "Voting Period";
                     daysRemaining = (int)(contest.VotingEndDate - now).TotalDays;
+                }
+                else if (contest.VotingEndDate < now && contest.Winners.Any() == false)
+                {
+                    phase = ContestPhases.ResultsPending;
+                    status = "Results Pending";
+                    daysRemaining = 0;
                 }
                 else
                 {

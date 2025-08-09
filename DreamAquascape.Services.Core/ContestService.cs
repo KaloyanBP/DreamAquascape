@@ -105,7 +105,7 @@ namespace DreamAquascape.Services.Core
                 null;
 
             // Determine contest phase
-            string contestPhase;
+            ContestPhases contestPhase;
             if (now < contest.SubmissionEndDate)
                 contestPhase = ContestPhases.Submission;
             else if (now < contest.VotingEndDate)
