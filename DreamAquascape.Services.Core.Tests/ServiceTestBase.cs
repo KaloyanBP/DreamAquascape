@@ -18,6 +18,8 @@ namespace DreamAquascape.Services.Core.Tests.Infrastructure
         protected Mock<IContestEntryRepository> MockContestEntryRepository { get; private set; } = null!;
         protected Mock<IContestWinnerRepository> MockContestWinnerRepository { get; private set; } = null!;
         protected Mock<IVoteRepository> MockVoteRepository { get; private set; } = null!;
+        protected Mock<IUserRepository> MockUserRepository { get; private set; } = null!;
+        protected Mock<IPrizeRepository> MockPrizeRepository { get; private set; } = null!;
         protected Mock<IContestBusinessRules> MockBusinessRules { get; private set; } = null!;
         protected Mock<IContestPermissionService> MockPermissionService { get; private set; } = null!;
         protected Mock<IDateTimeProvider> MockDateTimeProvider { get; private set; } = null!;
@@ -31,6 +33,8 @@ namespace DreamAquascape.Services.Core.Tests.Infrastructure
             MockContestEntryRepository = new Mock<IContestEntryRepository>();
             MockContestWinnerRepository = new Mock<IContestWinnerRepository>();
             MockVoteRepository = new Mock<IVoteRepository>();
+            MockUserRepository = new Mock<IUserRepository>();
+            MockPrizeRepository = new Mock<IPrizeRepository>();
             MockBusinessRules = new Mock<IContestBusinessRules>();
             MockPermissionService = new Mock<IContestPermissionService>();
             MockDateTimeProvider = new Mock<IDateTimeProvider>();
@@ -39,6 +43,8 @@ namespace DreamAquascape.Services.Core.Tests.Infrastructure
             MockUnitOfWork.Setup(x => x.ContestEntryRepository).Returns(MockContestEntryRepository.Object);
             MockUnitOfWork.Setup(x => x.ContestWinnerRepository).Returns(MockContestWinnerRepository.Object);
             MockUnitOfWork.Setup(x => x.VoteRepository).Returns(MockVoteRepository.Object);
+            MockUnitOfWork.Setup(x => x.UserRepository).Returns(MockUserRepository.Object);
+            MockUnitOfWork.Setup(x => x.PrizeRepository).Returns(MockPrizeRepository.Object);
             MockDateTimeProvider.Setup(x => x.UtcNow).Returns(TestDateTime);
         }
 
@@ -87,6 +93,43 @@ namespace DreamAquascape.Services.Core.Tests.Infrastructure
                 UserId = userId,
                 VotedAt = TestDateTime.AddDays(-1),
                 IpAddress = "127.0.0.1"
+            };
+        }
+
+        protected ContestWinner CreateTestWinner(int contestId = 1, int entryId = 1, int position = 1)
+        {
+            return new ContestWinner
+            {
+                ContestId = contestId,
+                ContestEntryId = entryId,
+                Position = position,
+                WonAt = TestDateTime,
+                AwardTitle = $"Prize {position}"
+            };
+        }
+
+        protected Prize CreateTestPrize(int id = 1, int contestId = 1)
+        {
+            return new Prize
+            {
+                Id = id,
+                ContestId = contestId,
+                Name = $"Test Prize {id}",
+                Description = $"Test Prize Description {id}",
+                ImageUrl = $"prize-{id}.jpg",
+                MonetaryValue = 100m,
+                Place = 1
+            };
+        }
+
+        protected ApplicationUser CreateTestUser(string id = "test-user", string userName = "TestUser")
+        {
+            return new ApplicationUser
+            {
+                Id = id,
+                UserName = userName,
+                Email = $"{userName.ToLower()}@test.com",
+                EmailConfirmed = true
             };
         }
     }
