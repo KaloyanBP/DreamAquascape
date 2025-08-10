@@ -18,7 +18,7 @@ namespace DreamAquascape.Data.Configuration
             entity.Property(cc => cc.Description)
                 .HasMaxLength(500);
 
-            entity.HasIndex(cc => cc.Name)
+            entity.HasIndex(cc => new { cc.Name, cc.IsDeleted })
                 .IsUnique();
 
             // One-to-Many with relationship entity
