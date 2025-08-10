@@ -78,6 +78,8 @@ namespace DreamAquascape.Data.Repository
                 .Include(c => c.Entries.Where(e => !e.IsDeleted))
                     .ThenInclude(e => e.Votes)
                 .Include(c => c.Prizes)
+                .Include(c => c.Categories)
+                    .ThenInclude(cc => cc.Category)
                 .Where(c => !c.IsDeleted);
 
             if (filters.ExcludeArchived)

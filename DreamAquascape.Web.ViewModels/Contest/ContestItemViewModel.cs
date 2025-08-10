@@ -21,5 +21,6 @@ namespace DreamAquascape.Web.ViewModels.Contest
         public int TotalEntries { get; set; }
         public int TotalVotes { get; set; }
         public List<PrizeViewModel> Prizes { get; set; } = new List<PrizeViewModel>();
+        public List<string> Categories { get; set; } = new List<string>();
     }
 }

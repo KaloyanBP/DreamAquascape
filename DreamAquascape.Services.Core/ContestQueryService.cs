@@ -58,7 +58,8 @@ namespace DreamAquascape.Services.Core
                         MonetaryValue = p.MonetaryValue,
                         Name = p.Name,
                         Description = p.Description
-                    }).ToList()
+                    }).ToList(),
+                    Categories = c.Categories.Select(cc => cc.Category.Name).ToList()
                 }).ToList();
 
                 // Get contest statistics from repository
