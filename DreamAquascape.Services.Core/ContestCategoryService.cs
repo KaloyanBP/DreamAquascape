@@ -1,19 +1,28 @@
 ﻿using DreamAquascape.Data.Common;
 using DreamAquascape.Data.Models;
 using DreamAquascape.Data.Repository.Interfaces;
+using DreamAquascape.GCommon.Infrastructure;
 using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels.AdminDashboard.ContestCategory;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace DreamAquascape.Services.Core
 {
     public class ContestCategoryService : IContestCategoryService
     {
+        private readonly ILogger<ContestCategoryService> _logger;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public ContestCategoryService(IUnitOfWork unitOfWork)
+        public ContestCategoryService(
+            IUnitOfWork unitOfWork,
+            ILogger<ContestCategoryService> logger,
+            IDateTimeProvider dateTimeProvider)
         {
-            _unitOfWork = unitOfWork;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _dateTimeProvider = dateTimeProvider ?? throw new ArgumentNullException(nameof(dateTimeProvider));
         }
 
         public async Task<(IEnumerable<ContestCategoryListViewModel> Categories, int TotalCount)> GetAllCategoriesAsync(int page = 1, int pageSize = 10)
@@ -105,6 +114,7 @@ namespace DreamAquascape.Services.Core
 
             category.Name = model.Name.Trim();
             category.Description = string.IsNullOrWhiteSpace(model.Description) ? null : model.Description.Trim();
+            category.UpdatedAt = _dateTimeProvider.UtcNow;
 
             _unitOfWork.ContestCategoryRepository.Update(category);
             await _unitOfWork.SaveChangesAsync();
@@ -172,11 +182,19 @@ namespace DreamAquascape.Services.Core
                     Id = cc.Contest.Id,
                     Title = cc.Contest.Title,
                     StartDate = cc.Contest.SubmissionStartDate,
-                    EndDate = cc.Contest.SubmissionEndDate,
-                    IsActive = cc.Contest.IsActive,
+                    EndDate = cc.Contest.VotingEndDate,
+                    IsActive = IsContestActive(cc.Contest),
                     EntriesCount = cc.Contest.Entries?.Count ?? 0
                 }) ?? new List<ContestSummaryViewModel>()
             };
+        }
+
+        private bool IsContestActive(Contest contest)
+        {
+            bool isActive = contest.IsActive
+                        && contest.SubmissionStartDate < _dateTimeProvider.UtcNow
+                        && contest.VotingEndDate > _dateTimeProvider.UtcNow;
+            return isActive;
         }
     }
 }

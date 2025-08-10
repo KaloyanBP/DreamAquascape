@@ -68,7 +68,9 @@ namespace DreamAquascape.Data.Repository
         public async Task<(IEnumerable<ContestCategory> categories, int totalCount)> GetCategoriesWithPaginationAsync(
             int page = 1, int pageSize = 20, string? searchTerm = null)
         {
-            var query = GetAllAttached().AsQueryable();
+            var query = GetAllAttached()
+                .Include(c => c.ContestsCategories)
+                .AsQueryable();
 
             // Apply search filter
             if (!string.IsNullOrWhiteSpace(searchTerm))
