@@ -16,7 +16,7 @@ namespace DreamAquascape.Data.Migrations
                 table: "ContestCategories",
                 type: "datetime2",
                 nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
+                defaultValueSql: "GETUTCDATE()");
 
             migrationBuilder.AddColumn<string>(
                 name: "CreatedBy",
@@ -33,7 +33,8 @@ namespace DreamAquascape.Data.Migrations
             migrationBuilder.AddColumn<string>(
                 name: "DeletedBy",
                 table: "ContestCategories",
-                type: "nvarchar(max)",
+                type: "nvarchar(450)",
+                maxLength: 450,
                 nullable: true);
 
             migrationBuilder.AddColumn<bool>(
@@ -54,11 +55,29 @@ namespace DreamAquascape.Data.Migrations
                 table: "ContestCategories",
                 type: "datetime2",
                 nullable: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ContestCategories_DeletedAt",
+                table: "ContestCategories",
+                column: "DeletedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ContestCategories_IsDeleted",
+                table: "ContestCategories",
+                column: "IsDeleted");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropIndex(
+                name: "IX_ContestCategories_DeletedAt",
+                table: "ContestCategories");
+
+            migrationBuilder.DropIndex(
+                name: "IX_ContestCategories_IsDeleted",
+                table: "ContestCategories");
+
             migrationBuilder.DropColumn(
                 name: "CreatedAt",
                 table: "ContestCategories");

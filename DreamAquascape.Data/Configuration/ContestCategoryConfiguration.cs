@@ -1,12 +1,13 @@
-﻿using DreamAquascape.Data.Models;
+﻿using DreamAquascape.Data.Configuration.Base;
+using DreamAquascape.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace DreamAquascape.Data.Configuration
 {
-    public class ContestCategoryConfiguration : IEntityTypeConfiguration<ContestCategory>
+    public class ContestCategoryConfiguration : SoftDeletableEntityConfiguration<ContestCategory>
     {
-        public void Configure(EntityTypeBuilder<ContestCategory> entity)
+        protected override void ConfigureEntity(EntityTypeBuilder<ContestCategory> entity)
         {
             entity.HasKey(cc => cc.Id);
 
@@ -27,6 +28,15 @@ namespace DreamAquascape.Data.Configuration
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.ToTable("ContestCategories");
+        }
+
+        protected override void ConfigureSoftDeletion(EntityTypeBuilder<ContestCategory> entity)
+        {
+            // Call base configuration first
+            base.ConfigureSoftDeletion(entity);
+
+            // Override the global query filter to include related entity checks
+            entity.HasQueryFilter(cc => !cc.IsDeleted);
         }
     }
 }
