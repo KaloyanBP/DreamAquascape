@@ -17,6 +17,7 @@
 
         public static class ContestCategory
         {
+            public const int NameMinLength = 2;
             public const int NameMaxLength = 100;
             public const int DescriptionMaxLength = 500;
         }
@@ -43,7 +44,7 @@
         }
 
         public static class EntryImage
-        {             
+        {
             public const int ImageUrlMaxLength = 2048; // URL length
             public const int CaptionMaxLength = 200;
             public const int DescriptionMaxLength = 500;

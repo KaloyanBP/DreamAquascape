@@ -8,6 +8,7 @@ namespace DreamAquascape.Data.Repository.Interfaces
         IContestRepository ContestRepository { get; }
         IContestEntryRepository ContestEntryRepository { get; }
         IContestWinnerRepository ContestWinnerRepository { get; }
+        IContestCategoryRepository ContestCategoryRepository { get; }
         IVoteRepository VoteRepository { get; }
         IEntryImageRepository EntryImageRepository { get; }
         IPrizeRepository PrizeRepository { get; }

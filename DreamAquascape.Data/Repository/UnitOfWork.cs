@@ -14,6 +14,7 @@ namespace DreamAquascape.Data.Repository
         private IContestRepository? _contestRepository;
         private IContestEntryRepository? _contestEntryRepository;
         private IContestWinnerRepository? _contestWinnerRepository;
+        private IContestCategoryRepository? _contestCategoryRepository;
         private IVoteRepository? _voteRepository;
         private IEntryImageRepository? _entryImageRepository;
         private IPrizeRepository? _prizeRepository;
@@ -50,6 +51,15 @@ namespace DreamAquascape.Data.Repository
             {
                 _contestWinnerRepository ??= new ContestWinnerRepository(_context, _dateTimeProvider);
                 return _contestWinnerRepository;
+            }
+        }
+
+        public IContestCategoryRepository ContestCategoryRepository
+        {
+            get
+            {
+                _contestCategoryRepository ??= new ContestCategoryRepository(_context, _dateTimeProvider);
+                return _contestCategoryRepository;
             }
         }
 
