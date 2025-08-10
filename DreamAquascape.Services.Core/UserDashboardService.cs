@@ -141,7 +141,7 @@ namespace DreamAquascape.Services.Core
                     TotalVotes = totalVotes,
                     PrizeName = contest.PrimaryPrize?.Name,
                     PrizeValue = contest.PrimaryPrize?.MonetaryValue,
-                    Categories = contest.Categories.Select(c => c.Category.Name).ToList(),
+                    Categories = contest.Categories.Select(cc => cc.Category.Name).ToList(),
                 });
             }
 

@@ -65,5 +65,9 @@ namespace DreamAquascape.Web.ViewModels.Contest
 
         [Display(Name = "Remove Current Prize Image")]
         public bool RemoveCurrentPrizeImage { get; set; }
+
+        // Category selection
+        [Display(Name = "Categories")]
+        public List<int> SelectedCategoryIds { get; set; } = new List<int>();
     }
 }

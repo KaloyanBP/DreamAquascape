@@ -17,15 +17,18 @@ namespace DreamAquascape.Web.Controllers
         private readonly IFileUploadService _fileUploadService;
         private readonly IContestService _contestService;
         private readonly IContestQueryService _contestQueryService;
+        private readonly IContestCategoryService _contestCategoryService;
 
         public ContestsController(
             IFileUploadService fileUploadService,
             IContestService contestService,
-            IContestQueryService contestQueryService)
+            IContestQueryService contestQueryService,
+            IContestCategoryService contestCategoryService)
         {
             _fileUploadService = fileUploadService ?? throw new ArgumentNullException(nameof(fileUploadService));
             _contestService = contestService ?? throw new ArgumentNullException(nameof(contestService));
             _contestQueryService = contestQueryService ?? throw new ArgumentNullException(nameof(contestQueryService));
+            _contestCategoryService = contestCategoryService ?? throw new ArgumentNullException(nameof(contestCategoryService));
         }
 
         [HttpGet("")]
@@ -87,7 +90,7 @@ namespace DreamAquascape.Web.Controllers
 
         [HttpGet("Create")]
         [Authorize(Roles = "Admin")]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
             try
             {
@@ -98,6 +101,9 @@ namespace DreamAquascape.Web.Controllers
                     VotingStartDate = DateTime.Now.AddMinutes(1),
                     VotingEndDate = DateTime.Now.AddDays(15),
                 };
+
+                // Load available categories
+                ViewBag.AvailableCategories = await _contestCategoryService.GetActiveCategoriesForSelectionAsync();
 
                 return View(viewModel);
             }
@@ -121,7 +127,8 @@ namespace DreamAquascape.Web.Controllers
             string prizeName,
             string prizeDescription,
             decimal? prizeMonetaryValue,
-            IFormFile? prizeImageFile)
+            IFormFile? prizeImageFile,
+            List<int> selectedCategoryIds)
         {
             try
             {
@@ -159,12 +166,14 @@ namespace DreamAquascape.Web.Controllers
                     SubmissionEndDate = submissionEndDate,
                     VotingStartDate = votingStartDate,
                     VotingEndDate = votingEndDate,
-                    ResultDate = resultDate
+                    ResultDate = resultDate,
+                    SelectedCategoryIds = selectedCategoryIds ?? new List<int>()
                 };
 
                 if (!ModelState.IsValid)
                 {
                     // Reload dropdown data
+                    ViewBag.AvailableCategories = await _contestCategoryService.GetActiveCategoriesForSelectionAsync();
                     return View(viewModel);
                 }
 
@@ -207,6 +216,13 @@ namespace DreamAquascape.Web.Controllers
                     return RedirectToAction("Index", "Admin");
                 }
 
+                // Load current contest categories
+                var currentCategories = await _contestService.GetContestCategoriesAsync(id);
+                contest.SelectedCategoryIds = currentCategories.Select(c => c.Id).ToList();
+
+                // Load available categories
+                ViewBag.AvailableCategories = await _contestCategoryService.GetActiveCategoriesForSelectionAsync();
+
                 return View(contest);
             }
             catch (Exception ex)
@@ -230,6 +246,8 @@ namespace DreamAquascape.Web.Controllers
 
                 if (!ModelState.IsValid)
                 {
+                    // Reload available categories for the view
+                    ViewBag.AvailableCategories = await _contestCategoryService.GetActiveCategoriesForSelectionAsync();
                     return View(model);
                 }
 
@@ -251,6 +269,7 @@ namespace DreamAquascape.Web.Controllers
                     if (string.IsNullOrEmpty(newImageUrl))
                     {
                         ModelState.AddModelError("newImageFile", "Failed to upload contest image.");
+                        ViewBag.AvailableCategories = await _contestCategoryService.GetActiveCategoriesForSelectionAsync();
                         return View(model);
                     }
                     model.NewImageUrl = newImageUrl;
@@ -272,6 +291,7 @@ namespace DreamAquascape.Web.Controllers
                     if (string.IsNullOrEmpty(newPrizeImageUrl))
                     {
                         ModelState.AddModelError("newPrizeImageFile", "Failed to upload prize image.");
+                        ViewBag.AvailableCategories = await _contestCategoryService.GetActiveCategoriesForSelectionAsync();
                         return View(model);
                     }
                     model.NewPrizeImageUrl = newPrizeImageUrl;

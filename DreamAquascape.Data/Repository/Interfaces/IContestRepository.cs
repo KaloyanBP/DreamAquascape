@@ -30,5 +30,9 @@ namespace DreamAquascape.Data.Repository.Interfaces
         Task<int> GetActiveContestsCountForUserAsync(string userId, DateTime currentDate);
         Task<int> GetSubmissionsInProgressCountForUserAsync(string userId, DateTime currentDate);
 
+        // Category management methods
+        Task<List<ContestsCategories>> GetContestCategoriesAsync(int contestId);
+        Task AddContestCategoryAsync(int contestId, int categoryId);
+        Task RemoveContestCategoryAsync(int contestId, int categoryId);
     }
 }

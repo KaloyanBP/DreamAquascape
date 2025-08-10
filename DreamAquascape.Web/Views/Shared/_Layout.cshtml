@@ -39,9 +39,9 @@
             transition: color 0.2s;
         }
 
-        .nav-link.active, .nav-link:hover {
-            color: #26a69a !important;
-        }
+            .nav-link.active, .nav-link:hover {
+                color: #26a69a !important;
+            }
 
         .navbar-toggler-icon {
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='%23009688' viewBox='0 0 30 30'%3e%3cpath stroke='%23009688' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
@@ -104,6 +104,11 @@
                                         </a>
                                     </li>
                                     <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Categories">
+                                            <i class="bi bi-tags me-2"></i>Manage Categories
+                                        </a>
+                                    </li>
+                                    <li>
                                         <a class="dropdown-item" asp-controller="Admin" asp-action="Users">
                                             <i class="bi bi-people me-2"></i>Manage Users
                                         </a>
@@ -113,7 +118,7 @@
                         }
                     </ul>
                     <partial name="_LoginPartial" />
-            </div>
+                </div>
         </nav>
     </header>
     <div class="container">

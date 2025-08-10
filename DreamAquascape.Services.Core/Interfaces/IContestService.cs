@@ -15,5 +15,9 @@ namespace DreamAquascape.Services.Core.Interfaces
         Task<bool> ToggleContestActiveStatusAsync(int contestId);
         Task<bool> DeleteContestAsync(int contestId);
         Task<bool> UpdateContestAsync(EditContestViewModel model);
+
+        // Category management
+        Task<bool> UpdateContestCategoriesAsync(int contestId, List<int> categoryIds);
+        Task<List<ContestCategory>> GetContestCategoriesAsync(int contestId);
     }
 }

@@ -202,6 +202,7 @@ namespace DreamAquascape.Data.Repository
                 .Where(c => c.IsActive && !c.IsDeleted &&
                            c.SubmissionStartDate <= now && c.VotingEndDate >= now)
                 .Include(c => c.Categories)
+                    .ThenInclude(cc => cc.Category)
                 .Include(c => c.Prizes)
                 .Include(c => c.Entries.Where(e => !e.IsDeleted))
                 .ToListAsync();
@@ -239,6 +240,36 @@ namespace DreamAquascape.Data.Repository
                            c.SubmissionStartDate <= currentDate && c.SubmissionEndDate >= currentDate &&
                            !c.Entries.Any(e => e.ParticipantId == userId && !e.IsDeleted))
                 .CountAsync();
+        }
+
+        public async Task<List<ContestsCategories>> GetContestCategoriesAsync(int contestId)
+        {
+            return await DbContext.ContestsCategories
+                .Include(cc => cc.Category)
+                .Where(cc => cc.ContestId == contestId)
+                .ToListAsync();
+        }
+
+        public async Task AddContestCategoryAsync(int contestId, int categoryId)
+        {
+            var contestCategory = new ContestsCategories
+            {
+                ContestId = contestId,
+                CategoryId = categoryId
+            };
+
+            await DbContext.ContestsCategories.AddAsync(contestCategory);
+        }
+
+        public async Task RemoveContestCategoryAsync(int contestId, int categoryId)
+        {
+            var contestCategory = await DbContext.ContestsCategories
+                .FirstOrDefaultAsync(cc => cc.ContestId == contestId && cc.CategoryId == categoryId);
+
+            if (contestCategory != null)
+            {
+                DbContext.ContestsCategories.Remove(contestCategory);
+            }
         }
     }
 }

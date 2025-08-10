@@ -63,7 +63,15 @@ namespace DreamAquascape.Services.Core
 
                 // Create contest with prize using repository
                 var createdContest = await _unitOfWork.ContestRepository.CreateContestWithPrizeAsync(contest, primaryPrize);
+
+                // Save the contest first to get the ID
                 await _unitOfWork.SaveChangesAsync();
+
+                // Add categories if any were selected
+                if (dto.SelectedCategoryIds.Any())
+                {
+                    await UpdateContestCategoriesAsync(createdContest.Id, dto.SelectedCategoryIds);
+                }
 
                 _logger.LogInformation("Contest {ContestId} created by user {UserId}", createdContest.Id, createdBy);
                 return createdContest;
@@ -434,6 +442,13 @@ namespace DreamAquascape.Services.Core
 
                 // Save all changes in a single transaction
                 await _unitOfWork.SaveChangesAsync();
+
+                // Update categories
+                if (model.SelectedCategoryIds != null)
+                {
+                    await UpdateContestCategoriesAsync(model.Id, model.SelectedCategoryIds);
+                }
+
                 await _unitOfWork.CommitTransactionAsync();
 
                 _logger.LogInformation("Contest {ContestId} updated successfully", model.Id);
@@ -445,6 +460,62 @@ namespace DreamAquascape.Services.Core
                 await _unitOfWork.RollbackTransactionAsync();
                 _logger.LogError(ex, "Error updating contest {ContestId}", model.Id);
                 return false;
+            }
+        }
+
+        public async Task<bool> UpdateContestCategoriesAsync(int contestId, List<int> categoryIds)
+        {
+            try
+            {
+                // Get existing category associations
+                var existingCategories = await _unitOfWork.ContestRepository.GetContestCategoriesAsync(contestId);
+                var existingCategoryIds = existingCategories.Select(cc => cc.CategoryId).ToList();
+
+                // Find categories to add and remove
+                var categoriesToAdd = categoryIds.Except(existingCategoryIds).ToList();
+                var categoriesToRemove = existingCategoryIds.Except(categoryIds).ToList();
+
+                // Remove categories that are no longer selected
+                foreach (var categoryId in categoriesToRemove)
+                {
+                    var contestCategory = existingCategories.FirstOrDefault(cc => cc.CategoryId == categoryId);
+                    if (contestCategory != null)
+                    {
+                        await _unitOfWork.ContestRepository.RemoveContestCategoryAsync(contestId, categoryId);
+                    }
+                }
+
+                // Add new categories
+                foreach (var categoryId in categoriesToAdd)
+                {
+                    await _unitOfWork.ContestRepository.AddContestCategoryAsync(contestId, categoryId);
+                }
+
+                await _unitOfWork.SaveChangesAsync();
+
+                _logger.LogInformation("Updated categories for contest {ContestId}: added {AddedCount}, removed {RemovedCount}",
+                    contestId, categoriesToAdd.Count, categoriesToRemove.Count);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating categories for contest {ContestId}", contestId);
+                return false;
+            }
+        }
+
+        public async Task<List<ContestCategory>> GetContestCategoriesAsync(int contestId)
+        {
+            try
+            {
+                var contestCategories = await _unitOfWork.ContestRepository.GetContestCategoriesAsync(contestId);
+                return contestCategories.Select(cc => cc.Category).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting categories for contest {ContestId}", contestId);
+                return new List<ContestCategory>();
             }
         }
     }
