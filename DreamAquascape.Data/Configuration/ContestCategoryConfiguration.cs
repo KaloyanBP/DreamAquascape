@@ -18,8 +18,10 @@ namespace DreamAquascape.Data.Configuration
             entity.Property(cc => cc.Description)
                 .HasMaxLength(500);
 
-            entity.HasIndex(cc => new { cc.Name, cc.IsDeleted })
-                .IsUnique();
+            // Unique index on Name, but only for non-deleted records
+            entity.HasIndex(cc => cc.Name)
+                .IsUnique()
+                .HasFilter("IsDeleted = 0");
 
             // One-to-Many with relationship entity
             entity.HasMany(cc => cc.ContestsCategories)

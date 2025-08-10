@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DreamAquascape.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250810092235_ModifyCategoryNameUniqueIndex")]
-    partial class ModifyCategoryNameUniqueIndex
+    [Migration("20250810144549_ContestCategoryModelUpdate")]
+    partial class ContestCategoryModelUpdate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -135,8 +135,9 @@ namespace DreamAquascape.Data.Migrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.HasIndex("Name", "IsDeleted")
-                        .IsUnique();
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasFilter("IsDeleted = 0");
 
                     b.ToTable("ContestCategories", (string)null);
                 });

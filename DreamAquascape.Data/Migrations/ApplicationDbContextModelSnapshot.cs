@@ -132,8 +132,9 @@ namespace DreamAquascape.Data.Migrations
 
                     b.HasIndex("IsDeleted");
 
-                    b.HasIndex("Name", "IsDeleted")
-                        .IsUnique();
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasFilter("IsDeleted = 0");
 
                     b.ToTable("ContestCategories", (string)null);
                 });
