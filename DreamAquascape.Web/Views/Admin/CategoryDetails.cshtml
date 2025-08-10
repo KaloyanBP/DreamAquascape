@@ -1,0 +1,184 @@
+@model DreamAquascape.Web.ViewModels.AdminDashboard.ContestCategory.ContestCategoryWithContestsViewModel
+@{
+    ViewData["Title"] = "Category Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0">
+                        <i class="bi bi-tag me-2"></i>@Model.Name
+                    </h3>
+                    <div>
+                        <a asp-action="EditCategory" asp-route-id="@Model.Id" class="btn btn-primary">
+                            <i class="bi bi-pencil me-2"></i>Edit Category
+                        </a>
+                        <a asp-action="Categories" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Back to Categories
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h5 class="mb-3">Category Information</h5>
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="fw-bold" style="width: 30%;">Name:</td>
+                                    <td>@Model.Name</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Description:</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(Model.Description))
+                                        {
+                                            @Model.Description
+                                        }
+                                        else
+                                        {
+                                            <em class="text-muted">No description provided</em>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Created:</td>
+                                    <td>@Model.CreatedOn.ToString("MMMM dd, yyyy 'at' HH:mm")</td>
+                                </tr>
+                                @if (Model.ModifiedOn.HasValue)
+                                {
+                                    <tr>
+                                        <td class="fw-bold">Last Modified:</td>
+                                        <td>@Model.ModifiedOn.Value.ToString("MMMM dd, yyyy 'at' HH:mm")</td>
+                                    </tr>
+                                }
+                                <tr>
+                                    <td class="fw-bold">Total Contests:</td>
+                                    <td>
+                                        <span class="badge bg-info fs-6">@Model.Contests.Count()</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-lg-6">
+                            <h5 class="mb-3">Quick Stats</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="card bg-primary text-white">
+                                        <div class="card-body text-center">
+                                            <i class="bi bi-trophy fs-1 mb-2"></i>
+                                            <h4>@Model.Contests.Count()</h4>
+                                            <small>Total Contests</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card bg-success text-white">
+                                        <div class="card-body text-center">
+                                            <i class="bi bi-play-circle fs-1 mb-2"></i>
+                                            <h4>@Model.Contests.Count(c => c.IsActive)</h4>
+                                            <small>Active Contests</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Contests.Any())
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-trophy me-2"></i>Associated Contests
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Contest Title</th>
+                                        <th>Start Date</th>
+                                        <th>End Date</th>
+                                        <th>Status</th>
+                                        <th>Entries</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var contest in Model.Contests.OrderByDescending(c => c.StartDate))
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@contest.Title</strong>
+                                            </td>
+                                            <td>
+                                                @contest.StartDate.ToString("MMM dd, yyyy")
+                                            </td>
+                                            <td>
+                                                @contest.EndDate.ToString("MMM dd, yyyy")
+                                            </td>
+                                            <td>
+                                                @if (contest.IsActive)
+                                                {
+                                                    if (contest.StartDate <= DateTime.Now && contest.EndDate >= DateTime.Now)
+                                                    {
+                                                        <span class="badge bg-success">Active</span>
+                                                    }
+                                                    else if (contest.StartDate > DateTime.Now)
+                                                    {
+                                                        <span class="badge bg-warning">Upcoming</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-info">Ended</span>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">Inactive</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">@contest.EntriesCount</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <a asp-controller="Admin" asp-action="ContestDetails" asp-route-id="@contest.Id" 
+                                                   class="btn btn-outline-primary btn-sm" title="View Contest">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-trophy fs-1 text-muted mb-3"></i>
+                        <h5 class="text-muted">No Contests Associated</h5>
+                        <p class="text-muted">This category has not been assigned to any contests yet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
