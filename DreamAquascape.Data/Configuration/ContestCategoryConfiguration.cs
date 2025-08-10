@@ -21,7 +21,7 @@ namespace DreamAquascape.Data.Configuration
                 .IsUnique();
 
             // One-to-Many with relationship entity
-            entity.HasMany(cc => cc.Contests)
+            entity.HasMany(cc => cc.ContestsCategories)
                 .WithOne(cr => cr.Category)
                 .HasForeignKey(cr => cr.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);

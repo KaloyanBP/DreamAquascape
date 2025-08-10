@@ -45,6 +45,8 @@
 
         public virtual DbSet<ContestCategory> ContestCategories { get; set; } = null!;
 
+        public virtual DbSet<ContestsCategories> ContestsCategories { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
