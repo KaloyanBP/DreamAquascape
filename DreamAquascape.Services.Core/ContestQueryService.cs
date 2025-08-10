@@ -253,7 +253,7 @@ namespace DreamAquascape.Services.Core
             return new ContestEntryViewModel
             {
                 Id = entry.Id,
-                UserName = entry.Participant.DisplayName ?? entry.Participant.UserName,
+                UserName = GetUserDisplayName(entry),
                 Title = entry.Title,
                 Description = entry.Description,
                 SubmittedAt = entry.SubmittedAt,
@@ -273,6 +273,11 @@ namespace DreamAquascape.Services.Core
                 // Contest status
                 IsWinner = winnerId == entry.Id
             };
+        }
+
+        private static string GetUserDisplayName(ContestEntry entry)
+        {
+            return entry.Participant?.DisplayName ?? entry.Participant?.UserName ?? string.Empty;
         }
 
         #endregion

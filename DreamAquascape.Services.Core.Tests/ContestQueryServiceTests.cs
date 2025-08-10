@@ -28,12 +28,14 @@ namespace DreamAquascape.Services.Core.Tests
             var userId = "test-user";
             var contest = CreateTestContest(contestId);
             var entry = CreateTestEntry(1, contestId, "participant-1");
+            var participant = CreateTestUser("participant-1", "TestParticipant");
             var vote = CreateTestVote(1, entry.Id, userId);
 
             // Set up navigation properties properly
             contest.Entries = new List<ContestEntry> { entry };
             entry.Votes = new List<Vote> { vote };
             entry.Contest = contest;
+            entry.Participant = participant;
             vote.ContestEntry = entry; // This was missing!
 
             MockContestRepository
