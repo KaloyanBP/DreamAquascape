@@ -1,17 +1,18 @@
-﻿using DreamAquascape.Data.Models;
+﻿using DreamAquascape.Data.Configuration.Base;
+using DreamAquascape.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using static DreamAquascape.Data.Common.EntityConstants.Contest;
 
 namespace DreamAquascape.Data.Configuration
 {
-    public class ContestConfiguration : IEntityTypeConfiguration<Contest>
+    public class ContestConfiguration : SoftDeletableEntityConfiguration<Contest>
     {
-        public void Configure(EntityTypeBuilder<Contest> entity)
+        protected override void ConfigureEntity(EntityTypeBuilder<Contest> entity)
         {
-            // Define the primary key of the Contest entity
+            // Primary Key
             entity
-                .HasKey(c => c.Id);
+                .HasKey(e => e.Id);
 
             // Define constraints for the Title column
             entity
@@ -53,12 +54,6 @@ namespace DreamAquascape.Data.Configuration
             entity
                 .Property(c => c.ResultDate);
 
-            // Define constraints for the CreatedDate column
-            entity
-                .Property(c => c.CreatedDate)
-                .IsRequired()
-                .HasDefaultValueSql("GETUTCDATE()");
-
             // Define constraints for the CreatedBy column
             entity
                 .Property(c => c.CreatedBy)
@@ -70,16 +65,6 @@ namespace DreamAquascape.Data.Configuration
                 .Property(c => c.IsActive)
                 .IsRequired()
                 .HasDefaultValue(true);
-
-            // Define constraints for the IsDeleted column
-            entity
-                .Property(c => c.IsDeleted)
-                .IsRequired()
-                .HasDefaultValue(false);
-
-            // Global query filter to exclude soft deleted contests
-            entity
-                .HasQueryFilter(c => !c.IsDeleted);
 
             // One-to-zero-or-one relationship
             entity

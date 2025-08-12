@@ -67,8 +67,8 @@ namespace DreamAquascape.Services.Core
                 {
                     ContestEntryId = entryId,
                     UserId = userId,
-                    VotedAt = _dateTimeProvider.UtcNow,
-                    IpAddress = ipAddress
+                    IpAddress = ipAddress,
+                    CreatedAt = _dateTimeProvider.UtcNow
                 };
 
                 await _unitOfWork.VoteRepository.AddAsync(vote);

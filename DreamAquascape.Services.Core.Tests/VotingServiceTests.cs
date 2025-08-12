@@ -57,7 +57,7 @@ namespace DreamAquascape.Services.Core.Tests
             Assert.That(result, Is.Not.Null);
             Assert.That(result.ContestEntryId, Is.EqualTo(entryId));
             Assert.That(result.UserId, Is.EqualTo(userId));
-            Assert.That(result.VotedAt, Is.EqualTo(TestDateTime));
+            Assert.That(result.CreatedAt, Is.EqualTo(TestDateTime));
             Assert.That(result.IpAddress, Is.EqualTo(ipAddress));
 
             MockVoteRepository.Verify(x => x.AddAsync(It.IsAny<Vote>()), Times.Once);

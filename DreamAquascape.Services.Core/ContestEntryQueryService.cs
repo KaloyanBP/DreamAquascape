@@ -130,12 +130,12 @@ namespace DreamAquascape.Services.Core
                     // Voting Information
                     VoteCount = entry.Votes.Count,
                     Votes = entry.Votes
-                        .OrderByDescending(v => v.VotedAt)
+                        .OrderByDescending(v => v.CreatedAt)
                         .Select(v => new VoteDetailViewModel
                         {
                             Id = v.Id,
                             VoterName = v.User.UserName ?? "Anonymous",
-                            VotedAt = v.VotedAt,
+                            VotedAt = v.CreatedAt,
                             IsAnonymous = true // Keep voter names private by default
                         }).ToList(),
 
@@ -153,8 +153,8 @@ namespace DreamAquascape.Services.Core
                     WinnerPosition = winnerPosition,
 
                     // Statistics
-                    LastVoteDate = entry.Votes.Any() ? entry.Votes.Max(v => v.VotedAt) : null,
-                    FirstVoteDate = entry.Votes.Any() ? entry.Votes.Min(v => v.VotedAt) : null,
+                    LastVoteDate = entry.Votes.Any() ? entry.Votes.Max(v => v.CreatedAt) : null,
+                    FirstVoteDate = entry.Votes.Any() ? entry.Votes.Min(v => v.CreatedAt) : null,
 
                     // Related Entries (top 5 other entries from same contest)
                     RelatedEntries = rankedEntries

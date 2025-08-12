@@ -9,6 +9,9 @@ namespace DreamAquascape.Data.Configuration
     {
         protected override void ConfigureEntity(EntityTypeBuilder<Vote> entity)
         {
+            entity
+                .HasKey(v => v.Id); // Primary Key
+
             // Properties specific to Vote entity
             entity.Property(v => v.ContestEntryId)
                 .IsRequired();
@@ -16,13 +19,6 @@ namespace DreamAquascape.Data.Configuration
             entity.Property(v => v.UserId)
                 .IsRequired()
                 .HasMaxLength(450); // Standard IdentityUser ID length
-
-            entity.Property(v => v.VotedAt)
-                .IsRequired()
-                .HasDefaultValueSql("GETUTCDATE()")
-                .HasConversion(
-                    v => v.ToUniversalTime(),
-                    v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
 
             entity.Property(v => v.IpAddress)
                 .HasMaxLength(45) // IPv6 max length
@@ -46,7 +42,7 @@ namespace DreamAquascape.Data.Configuration
                 .HasFilter("[IsDeleted] = 0"); // Only active votes should be unique
 
             entity.HasIndex(v => v.ContestEntryId);
-            entity.HasIndex(v => v.VotedAt);
+            entity.HasIndex(v => v.CreatedAt);
         }
 
         protected override void ConfigureSoftDeletion(EntityTypeBuilder<Vote> builder)

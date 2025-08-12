@@ -27,9 +27,6 @@ namespace DreamAquascape.Data.Configuration.Base
         /// </summary>
         protected virtual void ConfigureBaseEntity(EntityTypeBuilder<TEntity> entity)
         {
-            // Primary Key
-            entity.HasKey(e => e.Id);
-
             // CreatedAt
             entity.Property(e => e.CreatedAt)
                 .IsRequired()

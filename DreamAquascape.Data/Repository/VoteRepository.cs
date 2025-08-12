@@ -40,7 +40,7 @@ namespace DreamAquascape.Data.Repository
         public async Task<IEnumerable<string>> GetVoterIdsSinceAsync(DateTime fromDate)
         {
             return await GetAllAttached()
-                .Where(v => v.VotedAt >= fromDate)
+                .Where(v => v.CreatedAt >= fromDate)
                 .Select(v => v.UserId)
                 .Distinct()
                 .ToListAsync();
@@ -58,7 +58,7 @@ namespace DreamAquascape.Data.Repository
                     .ThenInclude(e => e.EntryImages)
                 .Include(v => v.ContestEntry)
                     .ThenInclude(e => e.Participant)
-                .OrderByDescending(v => v.VotedAt)
+                .OrderByDescending(v => v.CreatedAt)
                 .Skip(skip)
                 .Take(pageSize)
                 .ToListAsync();

@@ -9,7 +9,8 @@ namespace DreamAquascape.Data.Configuration
     {
         protected override void ConfigureEntity(EntityTypeBuilder<ContestCategory> entity)
         {
-            entity.HasKey(cc => cc.Id);
+            entity
+                .HasKey(cc => cc.Id);
 
             entity.Property(cc => cc.Name)
                 .IsRequired()
@@ -30,15 +31,6 @@ namespace DreamAquascape.Data.Configuration
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.ToTable("ContestCategories");
-        }
-
-        protected override void ConfigureSoftDeletion(EntityTypeBuilder<ContestCategory> entity)
-        {
-            // Call base configuration first
-            base.ConfigureSoftDeletion(entity);
-
-            // Override the global query filter to include related entity checks
-            entity.HasQueryFilter(cc => !cc.IsDeleted);
         }
     }
 }

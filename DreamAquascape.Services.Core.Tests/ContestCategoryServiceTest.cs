@@ -214,7 +214,7 @@ namespace DreamAquascape.Services.Core.Tests
                 CreatedAt = TestDateTime.AddDays(-5),
                 UpdatedAt = TestDateTime,
                 CreatedBy = "test-admin",
-                ModifiedBy = "test-admin",
+                UpdatedBy = "test-admin",
                 ContestsCategories = new List<ContestsCategories>()
             };
         }

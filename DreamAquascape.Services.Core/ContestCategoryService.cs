@@ -73,7 +73,7 @@ namespace DreamAquascape.Services.Core
                 CreatedOn = category.CreatedAt,
                 ModifiedOn = category.UpdatedAt,
                 CreatedBy = category.CreatedBy,
-                ModifiedBy = category.ModifiedBy
+                ModifiedBy = category.UpdatedBy
             };
         }
 

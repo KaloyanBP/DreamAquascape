@@ -173,12 +173,12 @@ namespace DreamAquascape.Services.Core
                 // Voting Information
                 VoteCount = entry.Votes.Count,
                 Votes = entry.Votes
-                    .OrderByDescending(v => v.VotedAt)
+                    .OrderByDescending(v => v.CreatedAt)
                     .Select(v => new VoteDetailViewModel
                     {
                         Id = v.Id,
                         VoterName = v.User.UserName ?? "Anonymous",
-                        VotedAt = v.VotedAt,
+                        VotedAt = v.CreatedAt,
                         IsAnonymous = true // Keep voter names private by default
                     }).ToList(),
 

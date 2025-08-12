@@ -64,7 +64,7 @@ namespace DreamAquascape.Services.Core.Tests.Infrastructure
                 ResultDate = TestDateTime.AddDays(10),
                 IsActive = isActive,
                 IsDeleted = isDeleted,
-                CreatedDate = TestDateTime.AddDays(-15),
+                CreatedAt = TestDateTime.AddDays(-15),
                 CreatedBy = "test-user"
             };
         }
@@ -91,7 +91,7 @@ namespace DreamAquascape.Services.Core.Tests.Infrastructure
                 Id = id,
                 ContestEntryId = entryId,
                 UserId = userId,
-                VotedAt = TestDateTime.AddDays(-1),
+                CreatedAt = TestDateTime.AddDays(-1),
                 IpAddress = "127.0.0.1"
             };
         }

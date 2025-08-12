@@ -259,7 +259,7 @@ namespace DreamAquascape.Services.Core
                     EntryId = entry.Id,
                     EntryTitle = entry.Title,
                     EntryOwner = entry.Participant?.UserName,
-                    VotedAt = vote.VotedAt,
+                    VotedAt = vote.CreatedAt,
                     CanChangeVote = canChangeVote,
                     ContestVotingStatus = contestStatus,
                     VotingEndDate = contest.VotingEndDate,

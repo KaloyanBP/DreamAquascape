@@ -1,7 +1,10 @@
 ﻿namespace DreamAquascape.Data.Models
 {
-    public class Contest
+    public class Contest : SoftDeletableEntity
     {
+        /// <summary>
+        /// Unique identifier for the entity.
+        /// </summary>
         public int Id { get; set; }
 
         public string Title { get; set; } = string.Empty;
@@ -20,13 +23,7 @@
 
         public DateTime? ResultDate { get; set; }
 
-        public DateTime CreatedDate { get; set; }
-
-        public string CreatedBy { get; set; } = string.Empty; // User ID or username
-
         public bool IsActive { get; set; } = true;
-
-        public bool IsDeleted { get; set; } = false;
 
         // Navigation properties
         public virtual ICollection<Prize> Prizes { get; set; } = new HashSet<Prize>();

@@ -1,15 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.Tracing;
 
 namespace DreamAquascape.Data.Models
 {
     public class Vote: SoftDeletableEntity
     {
+        public int Id { get; set; }
+
         public int ContestEntryId { get; set; }
 
         [Comment("Foreign key to the referenced AspNetUser.")]
         public string UserId { get; set; } = string.Empty;
-
-        public DateTime VotedAt { get; set; }
 
         public string? IpAddress { get; set; }
 
