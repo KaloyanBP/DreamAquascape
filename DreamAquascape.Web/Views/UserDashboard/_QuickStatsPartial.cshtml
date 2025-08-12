@@ -51,9 +51,9 @@
                 <div class="col">
                     <h5 class="card-title text-muted mb-0">Votes Cast</h5>
                     <h2 class="card-text fw-bold text-success mb-0">@Model.TotalVotesCast</h2>
-                    <small class="text-warning">
-                        <i class="bi bi-clock"></i>
-                        @Model.PendingVotes pending
+                    <small class="text-success">
+                        <i class="bi bi-heart"></i>
+                        @Model.TotalVotesReceived received
                     </small>
                 </div>
                 <div class="col-auto">
@@ -73,11 +73,13 @@
                 <div class="col">
                     <h5 class="card-title text-muted mb-0">Win Rate</h5>
                     <h2 class="card-text fw-bold text-warning mb-0">@Model.WinRate.ToString("F1")%</h2>
-                    <small class="text-success">
-                        <i class="bi bi-heart"></i>
-                           123456
-@*                         @Model.ContestsFollowing following
- *@                    </small>
+                    <small class="text-warning">
+                        @{
+                            var (icon, text) = GetWinRateMessage(Model.WinRate);
+                        }
+                        <i class="bi @icon"></i>
+                        @text
+                    </small>
                 </div>
                 <div class="col-auto">
                     <div class="stats-icon bg-warning">
@@ -105,4 +107,19 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     </div>
+}
+
+@{
+    (string icon, string text) GetWinRateMessage(double winRate)
+    {
+        return winRate switch
+        {
+            0 => ("bi-heart", "Stay strong!"),
+            < 10 => ("bi-arrow-up", "Keep going!"),
+            < 25 => ("bi-fire", "Getting hot!"),
+            < 50 => ("bi-star", "Rising star!"),
+            < 75 => ("bi-trophy", "Champion level!"),
+            _ => ("bi-crown", "Absolute legend!")
+        };
+    }
 }
