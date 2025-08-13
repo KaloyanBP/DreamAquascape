@@ -1,4 +1,5 @@
-﻿@model DreamAquascape.Web.ViewModels.Contest.ContestListViewModel
+﻿@using System.Globalization
+@model DreamAquascape.Web.ViewModels.Contest.ContestListViewModel
 @{
     ViewData["Title"] = "Manage Contests";
 }
@@ -139,9 +140,9 @@
                                         }
                                     </td>
                                     <td class="text-center">
-                                        @if (contest.Prizes.Any())
+                                        @if (contest.Prizes.Any() && User.IsInRole("Admin"))
                                         {
-                                            <strong>@contest.Prizes.Sum(p => p.MonetaryValue ?? 0).ToString("C")</strong>
+                                            <strong>@contest.Prizes.Sum(p => p.MonetaryValue ?? 0).ToString("C", new CultureInfo("fr-FR"))</strong>
                                             <br>
 
                                             <small class="text-muted">@contest.Prizes.Count prize(s)</small>

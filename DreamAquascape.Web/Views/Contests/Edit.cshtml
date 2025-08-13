@@ -1,4 +1,5 @@
-﻿@model DreamAquascape.Web.ViewModels.Contest.EditContestViewModel
+﻿@using DreamAquascape.Web.ViewModels.AdminDashboard.ContestCategory
+@model DreamAquascape.Web.ViewModels.Contest.EditContestViewModel
 
 @{
     ViewData["Title"] = "Edit Contest";
@@ -79,22 +80,25 @@
                         <div class="card-body">
                             @if (ViewBag.AvailableCategories != null)
                             {
-                                @foreach (var category in (IEnumerable<DreamAquascape.Web.ViewModels.AdminDashboard.ContestCategory.ContestCategorySelectViewModel>)ViewBag.AvailableCategories)
-                                {
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="SelectedCategoryIds" value="@category.Id" id="category_@category.Id"
-                                               @(Model.SelectedCategoryIds != null && Model.SelectedCategoryIds.Contains(category.Id) ? "checked" : "") />
-                                        <label class="form-check-label" for="category_@category.Id">
-                                            <strong>@category.Name</strong>
-                                            @if (!string.IsNullOrEmpty(category.Description))
-                                            {
-                                                <br>
-                                    
-                                                <small class="text-muted">@category.Description</small>
-                                            }
-                                        </label>
-                                    </div>
-                                }
+                                <div class="d-flex flex-wrap gap-3">
+                                    @foreach (var category in (IEnumerable<ContestCategorySelectViewModel>)ViewBag.AvailableCategories)
+                                    {
+                                        <div class="card border-secondary bg-light p-3 flex-fill" style="min-width: 200px; max-width: 250px;">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="SelectedCategoryIds" value="@category.Id" id="category_@category.Id"
+                                                       @(Model.SelectedCategoryIds != null && Model.SelectedCategoryIds.Contains(category.Id) ? "checked" : "") />
+                                                <label class="form-check-label" for="category_@category.Id">
+                                                    <strong>@category.Name</strong>
+                                                    @if (!string.IsNullOrEmpty(category.Description))
+                                                    {
+                                                        <br>
+                                                        <small class="text-muted">@category.Description</small>
+                                                    }
+                                                </label>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
                             }
                             else
                             {
@@ -122,7 +126,7 @@
                         <span asp-validation-for="VotingEndDate" class="text-danger"></span>
                     </div>
                 </div>
-                <div class="form-check mt-4">
+                <div class="form-check mb-4">
                     <input asp-for="IsActive" class="form-check-input" type="checkbox" />
                     <label asp-for="IsActive" class="form-check-label fw-bold">
                         Contest is Active
@@ -172,7 +176,7 @@
                             </div>
                             <div class="mb-3">
                                 <label asp-for="PrizeMonetaryValue" class="form-label fw-bold">
-                                    Prize Monetary Value
+                                    Prize Monetary Value (EUR)
                                 </label>
                                 <input asp-for="PrizeMonetaryValue" class="form-control" type="number" step="0.01" min="0" />
                                 <span asp-validation-for="PrizeMonetaryValue" class="text-danger"></span>

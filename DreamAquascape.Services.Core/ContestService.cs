@@ -388,56 +388,34 @@ namespace DreamAquascape.Services.Core
 
                 // Update prize if exists
                 var prize = contest.Prizes.FirstOrDefault();
-                if (prize != null)
+                if (prize != null && !string.IsNullOrEmpty(model.PrizeName))
                 {
-                    if (!string.IsNullOrEmpty(model.PrizeName))
+                    prize.Name = model.PrizeName;
+                    prize.Description = model.PrizeDescription ?? "";
+                    prize.MonetaryValue = model.PrizeMonetaryValue;
+
+                    // Update prize image - handle removal or replacement
+                    if (!string.IsNullOrEmpty(model.NewPrizeImageUrl))
                     {
-                        prize.Name = model.PrizeName;
-                        prize.Description = model.PrizeDescription ?? "";
-                        prize.MonetaryValue = model.PrizeMonetaryValue;
-
-                        // Update prize image - handle removal or replacement
-                        if (!string.IsNullOrEmpty(model.NewPrizeImageUrl))
-                        {
-                            prize.ImageUrl = model.NewPrizeImageUrl;
-                        }
-                        else if (model.RemoveCurrentPrizeImage)
-                        {
-                            // Explicitly remove the current prize image
-                            prize.ImageUrl = null;
-                        }
-
-                        // Update prize image - use NewPrizeImageUrl from model if provided, otherwise use parameter
-                        if (!string.IsNullOrEmpty(model.NewPrizeImageUrl))
-                        {
-                            prize.ImageUrl = model.NewPrizeImageUrl;
-                        }
-
-                        // Save the updated prize
-                        await _unitOfWork.PrizeRepository.UpdateAsync(prize);
+                        prize.ImageUrl = model.NewPrizeImageUrl;
+                    }
+                    else if (model.RemoveCurrentPrizeImage)
+                    {
+                        // Explicitly remove the current prize image
+                        prize.ImageUrl = null;
                     }
 
-                    // Save contest changes
-                    await _unitOfWork.ContestRepository.UpdateAsync(contest);
-                }
-                else if (!string.IsNullOrEmpty(model.PrizeName))
-                {
-                    // Create new prize if none exists but prize info provided
-                    var prizeImageUrl = model.NewPrizeImageUrl;
-                    var newPrize = new Prize
+                    // Update prize image - use NewPrizeImageUrl from model if provided, otherwise use parameter
+                    if (!string.IsNullOrEmpty(model.NewPrizeImageUrl))
                     {
-                        Name = model.PrizeName,
-                        Description = model.PrizeDescription ?? "",
-                        MonetaryValue = model.PrizeMonetaryValue,
-                        ImageUrl = prizeImageUrl,
-                        ContestId = contest.Id
-                    };
-                    await _unitOfWork.PrizeRepository.AddAsync(newPrize);
+                        prize.ImageUrl = model.NewPrizeImageUrl;
+                    }
+
+                    // Save the updated prize
+                    await _unitOfWork.PrizeRepository.UpdateAsync(prize);
                 }
-                else
-                {
-                    await _unitOfWork.ContestRepository.UpdateAsync(contest);
-                }
+
+                await _unitOfWork.ContestRepository.UpdateAsync(contest);
 
                 // Save all changes in a single transaction
                 await _unitOfWork.SaveChangesAsync();

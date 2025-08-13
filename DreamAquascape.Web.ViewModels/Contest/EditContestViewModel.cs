@@ -48,6 +48,7 @@ namespace DreamAquascape.Web.ViewModels.Contest
         public bool IsActive { get; set; }
 
         // Prize information
+        [Required(ErrorMessage = "Prize Name is required.")]
         [Display(Name = "Prize Name")]
         public string? PrizeName { get; set; }
 
