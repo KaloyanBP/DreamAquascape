@@ -1,27 +1,76 @@
 ﻿@model DreamAquascape.Web.ViewModels.Contest.ContestDetailsViewModel
 
+@{
+    var hasContestImage = !string.IsNullOrEmpty(Model.ImageUrl);
+    var cardStyle = hasContestImage ?
+        $"background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.3)), url('{Model.ImageUrl}'); background-size: cover; background-position: center; background-repeat: no-repeat;" :
+        "";
+}
+
 <div class="container my-4">
-    <div class="card shadow-lg mb-4">
-        <div class="card-body">
-            <h2 class="card-title">@Model.Title</h2>
-            <p class="card-text">@Model.Description</p>
-            <div class="mb-2">
-                <span class="badge bg-info me-2">
-                    Start: @Model.StartDate.ToShortDateString()
-                </span>
-                <span class="badge bg-info me-2">
-                    End: @Model.EndDate.ToShortDateString()
-                </span>
-                <span class="badge @(Model.IsActive ? "bg-success" : "bg-secondary")">
-                    @(Model.IsActive ? "Active" : "Archived")
-                </span>
-            </div>
-            @if (Model.Prize != null)
-            {
-                <div class="alert alert-warning mt-3">
-                    <strong>Prize:</strong> @Model.Prize.Name - @Model.Prize.Description
+    <div class="card shadow-lg mb-4 @(hasContestImage ? "contest-card-with-bg" : "")"
+         style="@cardStyle">
+        <div class="card-body @(hasContestImage ? "text-white" : "")">
+            <div class="row">
+                <!-- Left Column - Contest Information -->
+                <div class="col-lg-8">
+                    <h2 class="card-title @(hasContestImage ? "text-white" : "")">@Model.Title</h2>
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <p class="card-text mb-3 @(hasContestImage ? "text-white" : "")">@Model.Description</p>
+                    }
+
+                    <div class="mb-3">
+                        <span class="badge bg-info me-2">
+                            Start: @Model.StartDate.ToShortDateString()
+                        </span>
+                        <span class="badge bg-info me-2">
+                            End: @Model.EndDate.ToShortDateString()
+                        </span>
+                        <span class="badge @(Model.IsActive ? "bg-success" : "bg-secondary")">
+                            @(Model.IsActive ? "Active" : "Archived")
+                        </span>
+                    </div>
                 </div>
-            }
+
+                <!-- Right Column - Prize Information -->
+                @if (Model.Prize != null)
+                {
+                    <div class="col-lg-4">
+                        <div class="prize-section @(hasContestImage ? "bg-white bg-opacity-90" : "bg-light") rounded p-3 h-100">
+                            <h5 class="text-primary mb-3">
+                                <i class="bi bi-trophy-fill me-2"></i>Prize
+                            </h5>
+
+                            @if (!string.IsNullOrEmpty(Model.Prize.ImageUrl))
+                            {
+                                <div class="prize-image mb-3 text-center">
+                                    <img src="@Model.Prize.ImageUrl"
+                                         alt="@Model.Prize.Name Prize Image"
+                                         class="rounded shadow-sm"
+                                         style="width: 120px; height: 120px; object-fit: cover;">
+                                </div>
+                            }
+
+                            <div class="prize-details text-center">
+                                <h6 class="fw-bold text-dark">@Model.Prize.Name</h6>
+                                @if (!string.IsNullOrEmpty(Model.Prize.Description))
+                                {
+                                    <p class="text-muted small mb-2">@Model.Prize.Description</p>
+                                }
+                                @if (Model.Prize.MonetaryValue.HasValue)
+                                {
+                                    <div class="prize-value">
+                                        <span class="badge bg-success fs-6">
+                                            <i class="bi bi-currency-dollar me-1"></i>@Model.Prize.MonetaryValue.Value.ToString("F2")
+                                        </span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
 
             <!-- Winner Announcement Section -->
             @if (Model.WinnerEntryId.HasValue)
@@ -256,6 +305,42 @@
 
 @section Styles {
     <style>
+        /* Contest Card with Background Image */
+        .contest-card-with-bg {
+            min-height: 300px;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .contest-card-with-bg .card-body {
+                position: relative;
+                z-index: 2;
+            }
+
+            .contest-card-with-bg::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.2) 100%);
+                z-index: 1;
+            }
+
+            /* Enhanced prize section for background cards */
+            .contest-card-with-bg .prize-section {
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            }
+
+            /* Text shadows for better readability on background images */
+            .contest-card-with-bg .card-title,
+            .contest-card-with-bg .card-text {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            }
+
         /* Winner Announcement Styles */
         .winner-announcement {
             background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
@@ -264,14 +349,13 @@
         }
 
         @@keyframes winnerGlow {
-        from {
-            box-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
-        }
+            from {
+                box-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
+            }
 
-        to {
-            box-shadow: 0 0 20px rgba(255, 193, 7, 0.8);
-        }
-
+            to {
+                box-shadow: 0 0 20px rgba(255, 193, 7, 0.8);
+            }
         }
 
         .winner-trophy-icon {
@@ -280,18 +364,17 @@
         }
 
         @@keyframes trophyBounce {
-        0%, 20%, 60%, 100% {
-            transform: translateY(0);
-        }
+            0%, 20%, 60%, 100% {
+                transform: translateY(0);
+            }
 
-        40% {
-            transform: translateY(-10px);
-        }
+            40% {
+                transform: translateY(-10px);
+            }
 
-        80% {
-            transform: translateY(-5px);
-        }
-
+            80% {
+                transform: translateY(-5px);
+            }
         }
 
         /* Winner Card Styles */
@@ -304,14 +387,13 @@
         }
 
         @@keyframes winnerPulse {
-        0%, 100% {
-            transform: scale(1.02);
-        }
+            0%, 100% {
+                transform: scale(1.02);
+            }
 
-        50% {
-            transform: scale(1.05);
-        }
-
+            50% {
+                transform: scale(1.05);
+            }
         }
 
         /* Winner Crown Overlay */
@@ -337,29 +419,28 @@
             animation: crownRotate 4s linear infinite;
         }
 
-        .winner-crown i {
-            color: #fff !important;
-            font-size: 20px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-        }
+            .winner-crown i {
+                color: #fff !important;
+                font-size: 20px;
+                text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            }
 
         @@keyframes crownRotate {
-        0% {
-            transform: rotate(0deg);
-        }
+            0% {
+                transform: rotate(0deg);
+            }
 
-        25% {
-            transform: rotate(-5deg);
-        }
+            25% {
+                transform: rotate(-5deg);
+            }
 
-        75% {
-            transform: rotate(5deg);
-        }
+            75% {
+                transform: rotate(5deg);
+            }
 
-        100% {
-            transform: rotate(0deg);
-        }
-
+            100% {
+                transform: rotate(0deg);
+            }
         }
 
         /* Winner Ribbon */
@@ -385,14 +466,13 @@
         }
 
         @@keyframes voteHighlight {
-        from {
-            transform: scale(1);
-        }
+            from {
+                transform: scale(1);
+            }
 
-        to {
-            transform: scale(1.1);
-        }
-
+            to {
+                transform: scale(1.1);
+            }
         }
 
         /* Contest Statistics */
@@ -446,11 +526,10 @@
             transform: scale(1);
         }
 
-            .winner-card:hover {
-                transform: scale(1.02);
-            }
-
+        .winner-card:hover {
+            transform: scale(1.02);
         }
+
+    }
     </style>
 }
-
