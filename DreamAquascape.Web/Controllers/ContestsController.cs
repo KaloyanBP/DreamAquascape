@@ -1,4 +1,5 @@
-﻿using DreamAquascape.Services.Core.Infrastructure;
+﻿using DreamAquascape.GCommon.Infrastructure;
+using DreamAquascape.Services.Core.Infrastructure;
 using DreamAquascape.Services.Core.Interfaces;
 using DreamAquascape.Web.ViewModels.Contest;
 using Microsoft.AspNetCore.Authorization;
@@ -18,17 +19,23 @@ namespace DreamAquascape.Web.Controllers
         private readonly IContestService _contestService;
         private readonly IContestQueryService _contestQueryService;
         private readonly IContestCategoryService _contestCategoryService;
+        private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly ILogger<HomeController> _logger;
 
         public ContestsController(
             IFileUploadService fileUploadService,
             IContestService contestService,
             IContestQueryService contestQueryService,
-            IContestCategoryService contestCategoryService)
+            IContestCategoryService contestCategoryService,
+            IDateTimeProvider dateTimeProvider,
+            ILogger<HomeController> logger)
         {
             _fileUploadService = fileUploadService ?? throw new ArgumentNullException(nameof(fileUploadService));
             _contestService = contestService ?? throw new ArgumentNullException(nameof(contestService));
             _contestQueryService = contestQueryService ?? throw new ArgumentNullException(nameof(contestQueryService));
             _contestCategoryService = contestCategoryService ?? throw new ArgumentNullException(nameof(contestCategoryService));
+            _dateTimeProvider = dateTimeProvider ?? throw new ArgumentNullException(nameof(dateTimeProvider));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         [HttpGet("")]
@@ -77,12 +84,24 @@ namespace DreamAquascape.Web.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
-            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var currentUserId = GetUserId();
+
             var contest = await _contestQueryService.GetContestDetailsAsync(id, currentUserId);
 
             if (contest == null)
             {
-                return NotFound();
+                _logger.LogError("Contest with ID {ContestId} not found", id);
+                TempData["ErrorMessage"] = "Contest not found. It may have been removed or the link is invalid.";
+                TempData["ErrorType"] = "warning";
+                return RedirectToAction("Index");
+            }
+
+            if (contest.IsActive == false && IsAdminUser() == false)
+            {
+                _logger.LogWarning("Contest with ID {ContestId} is not active and user is not admin", id);
+                TempData["ErrorMessage"] = "This contest is not available. It may have been deactivated, removed, or the link is invalid.";
+                TempData["ErrorType"] = "warning";
+                return RedirectToAction("Index");
             }
 
             return View(contest);
@@ -92,14 +111,19 @@ namespace DreamAquascape.Web.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create()
         {
+            // Prepopulate example dates for the contest creation form
+            DateTime startDate = _dateTimeProvider.UtcNow.AddDays(10);
+            DateTime votingDate = startDate.AddDays(8);
+            DateTime endDate = startDate.AddDays(15);
+
             try
             {
                 var viewModel = new CreateContestViewModel
                 {
-                    SubmissionStartDate = DateTime.Now,
-                    SubmissionEndDate = DateTime.Now.AddDays(8),
-                    VotingStartDate = DateTime.Now.AddMinutes(1),
-                    VotingEndDate = DateTime.Now.AddDays(15),
+                    SubmissionStartDate = startDate,
+                    SubmissionEndDate = votingDate,
+                    VotingStartDate = votingDate,
+                    VotingEndDate = endDate,
                 };
 
                 // Load available categories
@@ -120,10 +144,8 @@ namespace DreamAquascape.Web.Controllers
             string description,
             IFormFile imageFile,
             DateTime submissionStartDate,
-            DateTime submissionEndDate,
             DateTime votingStartDate,
             DateTime votingEndDate,
-            DateTime? resultDate,
             string prizeName,
             string prizeDescription,
             decimal? prizeMonetaryValue,
@@ -132,6 +154,12 @@ namespace DreamAquascape.Web.Controllers
         {
             try
             {
+                if (!ValidateContestDates(submissionStartDate, votingStartDate, votingEndDate))
+                {
+                    ViewBag.AvailableCategories = await _contestCategoryService.GetActiveCategoriesForSelectionAsync();
+                    return View();
+                }
+
                 var imageUrl = await _fileUploadService.SaveContestImageAsync(imageFile);
                 if (string.IsNullOrEmpty(imageUrl))
                 {
@@ -163,10 +191,9 @@ namespace DreamAquascape.Web.Controllers
                     Description = description,
                     ImageFileUrl = imageUrl,
                     SubmissionStartDate = submissionStartDate,
-                    SubmissionEndDate = submissionEndDate,
+                    SubmissionEndDate = votingStartDate,
                     VotingStartDate = votingStartDate,
                     VotingEndDate = votingEndDate,
-                    ResultDate = resultDate,
                     SelectedCategoryIds = selectedCategoryIds ?? new List<int>()
                 };
 
@@ -251,6 +278,12 @@ namespace DreamAquascape.Web.Controllers
                     return View(model);
                 }
 
+                if (!ValidateContestDates(model.SubmissionStartDate, model.VotingStartDate, model.VotingEndDate))
+                {
+                    ViewBag.AvailableCategories = await _contestCategoryService.GetActiveCategoriesForSelectionAsync();
+                    return View(model);
+                }
+
                 string? newImageUrl = null;
                 string? newPrizeImageUrl = null;
 
@@ -297,6 +330,7 @@ namespace DreamAquascape.Web.Controllers
                     model.NewPrizeImageUrl = newPrizeImageUrl;
                 }
 
+                model.SubmissionEndDate = model.VotingStartDate; // Ensure submission end date is equal to voting start date
                 var success = await _contestService.UpdateContestAsync(model);
 
                 if (success)
@@ -316,5 +350,42 @@ namespace DreamAquascape.Web.Controllers
                 return View(model);
             }
         }
+
+
+        #region Private Helper Methods
+
+        /// <summary>
+        /// Validates contest date logic and adds appropriate model errors
+        /// </summary>
+        private bool ValidateContestDates(DateTime submissionStartDate, DateTime votingStartDate, DateTime votingEndDate)
+        {
+            var isValid = true;
+            var now = _dateTimeProvider.UtcNow;
+
+            // Check if submission start is not in the past (allow some tolerance)
+            if (submissionStartDate < now.AddMinutes(-1))
+            {
+                ModelState.AddModelError("SubmissionStartDate", "Submission start date cannot be in the past.");
+                isValid = false;
+            }
+
+            // Check voting start is after submission start
+            if (votingStartDate <= submissionStartDate)
+            {
+                ModelState.AddModelError("VotingStartDate", "Voting start date must be after submission start date.");
+                isValid = false;
+            }
+
+            // Check voting end is after voting start
+            if (votingEndDate <= votingStartDate)
+            {
+                ModelState.AddModelError("VotingEndDate", "Voting end date must be after voting start date.");
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        #endregion
     }
 }

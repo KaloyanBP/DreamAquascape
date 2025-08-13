@@ -79,35 +79,20 @@
                 </div>
 
                 <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label asp-for="SubmissionStartDate" class="form-label fw-bold">Submission Start Date <span class="text-danger">*</span></label>
+                    <div class="col-md-4">
+                        <label asp-for="SubmissionStartDate" class="form-label fw-bold">Contest Start Date <span class="text-danger">*</span></label>
                         <input asp-for="SubmissionStartDate" class="form-control" type="datetime-local" required />
                         <span asp-validation-for="SubmissionStartDate" class="text-danger"></span>
                     </div>
-                    <div class="col-md-6">
-                        <label asp-for="SubmissionEndDate" class="form-label fw-bold">Submission End Date <span class="text-danger">*</span></label>
-                        <input asp-for="SubmissionEndDate" class="form-control" type="datetime-local" required />
-                        <span asp-validation-for="SubmissionEndDate" class="text-danger"></span>
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label asp-for="VotingStartDate" class="form-label fw-bold">Voting Start Date <span class="text-danger">*</span></label>
                         <input asp-for="VotingStartDate" class="form-control" type="datetime-local" required />
                         <span asp-validation-for="VotingStartDate" class="text-danger"></span>
                     </div>
-                    <div class="col-md-6">
-                        <label asp-for="VotingEndDate" class="form-label fw-bold">Voting End Date <span class="text-danger">*</span></label>
+                    <div class="col-md-4">
+                        <label asp-for="VotingEndDate" class="form-label fw-bold">Contest End Date <span class="text-danger">*</span></label>
                         <input asp-for="VotingEndDate" class="form-control" type="datetime-local" required />
                         <span asp-validation-for="VotingEndDate" class="text-danger"></span>
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label asp-for="ResultDate" class="form-label fw-bold">Result Publish Date (Optional)</label>
-                        <input asp-for="ResultDate" class="form-control" type="datetime-local" />
                     </div>
                 </div>
 

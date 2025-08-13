@@ -32,7 +32,7 @@ namespace DreamAquascape.Services.Core
             {
                 // Validate submission dates
                 if (dto.SubmissionStartDate >= dto.SubmissionEndDate)
-                    throw new InvalidOperationException("Submission start date must be before end date");
+                    throw new InvalidOperationException("Submission start date must be before end date dsfdsf");
                 if (dto.VotingStartDate <= dto.SubmissionStartDate || dto.VotingEndDate <= dto.VotingStartDate)
                     throw new InvalidOperationException("Start voting date must be after submission start date and before voting end date");
 

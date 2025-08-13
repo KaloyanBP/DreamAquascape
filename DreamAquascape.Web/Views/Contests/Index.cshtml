@@ -13,6 +13,17 @@
         </div>
     </div>
 
+    @if (TempData["ErrorMessage"] != null)
+    {
+        var alertType = TempData["ErrorType"]?.ToString() ?? "danger";
+        var iconClass = alertType == "warning" ? "bi-exclamation-triangle" : "bi-x-circle";
+        <div class="alert alert-@alertType alert-dismissible fade show" role="alert">
+            <i class="@iconClass me-2"></i>
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     <!-- Filter Component -->
     <partial name="_ContestFilters" model="@Model.Filters" />
 

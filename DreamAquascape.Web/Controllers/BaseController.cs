@@ -42,5 +42,14 @@ namespace DreamAquascape.Web.Controllers
             return userName;
         }
 
+        protected bool IsAdminUser()
+        {
+            if (!this.IsUserAuthenticated())
+            {
+                return false;
+            }
+
+            return this.User.IsInRole("Admin");
+        }
     }
 }
