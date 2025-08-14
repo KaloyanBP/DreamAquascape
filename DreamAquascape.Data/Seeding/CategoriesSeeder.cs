@@ -15,115 +15,95 @@ namespace DreamAquascape.Data.Seeding
 
         public async Task SeedCategoriesAsync()
         {
+            // Check if categories already exist
             if (await context.ContestCategories.AnyAsync())
             {
-                return;
+                return; // Categories already seeded
             }
 
             var categories = new List<ContestCategory>
             {
                 new ContestCategory
                 {
-                    Name = "Nano Aquascapes",
-                    Description = "Small aquascapes in tanks under 30 liters. Perfect for desktop setups and intimate aquatic landscapes.",
-                    CreatedBy = "System",
-                    CreatedAt = DateTime.UtcNow
-                },
-                new ContestCategory
-                {
-                    Name = "Planted Tanks",
-                    Description = "Aquascapes featuring live aquatic plants as the primary focus. Includes all planting styles and techniques.",
+                    Name = "Nano Tank",
+                    Description = "Small tanks under 30 liters",
                     CreatedBy = "System",
                     CreatedAt = DateTime.UtcNow
                 },
                 new ContestCategory
                 {
                     Name = "Nature Style",
-                    Description = "Aquascapes inspired by natural landscapes, following the principles of Takashi Amano and natural aquascaping.",
-                    CreatedBy = "System",
-                    CreatedAt = DateTime.UtcNow
-                },
-                new ContestCategory
-                {
-                    Name = "Dutch Style",
-                    Description = "Traditional Dutch aquascaping with terraced plant arrangements, vibrant colors, and meticulous plant management.",
+                    Description = "Inspired by natural landscapes",
                     CreatedBy = "System",
                     CreatedAt = DateTime.UtcNow
                 },
                 new ContestCategory
                 {
                     Name = "Iwagumi",
-                    Description = "Minimalist aquascaping style focusing on stone arrangements with simple plant compositions.",
+                    Description = "Minimalist rock-focused layout",
+                    CreatedBy = "System",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new ContestCategory
+                {
+                    Name = "Dutch Style",
+                    Description = "Dense, colorful plant arrangements",
                     CreatedBy = "System",
                     CreatedAt = DateTime.UtcNow
                 },
                 new ContestCategory
                 {
                     Name = "Biotope",
-                    Description = "Aquascapes replicating specific natural aquatic environments with region-appropriate plants and hardscape.",
+                    Description = "Mimics a real-world ecosystem",
+                    CreatedBy = "System",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new ContestCategory
+                {
+                    Name = "Beginner",
+                    Description = "For new aquascapers",
                     CreatedBy = "System",
                     CreatedAt = DateTime.UtcNow
                 },
                 new ContestCategory
                 {
                     Name = "Hardscape Only",
-                    Description = "Aquascapes featuring only rocks, driftwood, and substrate without live plants. Focus on composition and layout.",
+                    Description = "Focus on rocks and wood, no plants",
                     CreatedBy = "System",
                     CreatedAt = DateTime.UtcNow
                 },
                 new ContestCategory
                 {
-                    Name = "Low-Tech",
-                    Description = "Aquascapes maintained without CO2 injection or high-intensity lighting. Emphasis on simple, sustainable setups.",
-                    CreatedBy = "System",
-                    CreatedAt = DateTime.UtcNow
-                },
-                new ContestCategory
-                {
-                    Name = "High-Tech",
-                    Description = "Advanced aquascapes with CO2 injection, high-intensity lighting, and sophisticated filtration systems.",
-                    CreatedBy = "System",
-                    CreatedAt = DateTime.UtcNow
-                },
-                new ContestCategory
-                {
-                    Name = "Aquatic Gardens",
-                    Description = "Large-scale planted aquariums resembling underwater gardens with diverse plant species and complex layouts.",
+                    Name = "Themed Tank",
+                    Description = "Creative or fantasy-inspired setups",
                     CreatedBy = "System",
                     CreatedAt = DateTime.UtcNow
                 },
                 new ContestCategory
                 {
                     Name = "Paludarium",
-                    Description = "Half-aquatic, half-terrestrial setups combining underwater and above-water plant and hardscape elements.",
+                    Description = "Combo of water and land elements",
                     CreatedBy = "System",
                     CreatedAt = DateTime.UtcNow
                 },
                 new ContestCategory
                 {
-                    Name = "Minimalist",
-                    Description = "Simple, clean aquascapes with few elements. Focus on negative space, simplicity, and elegant composition.",
+                    Name = "Large Tank",
+                    Description = "Over 200 liters of aquascaping",
+                    CreatedBy = "System",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new ContestCategory
+                {
+                    Name = "Low Tech",
+                    Description = "No CO2 or high-tech equipment needed",
                     CreatedBy = "System",
                     CreatedAt = DateTime.UtcNow
                 },
                 new ContestCategory
                 {
                     Name = "Jungle Style",
-                    Description = "Dense, wild-looking aquascapes with abundant plant growth creating a lush, overgrown appearance.",
-                    CreatedBy = "System",
-                    CreatedAt = DateTime.UtcNow
-                },
-                new ContestCategory
-                {
-                    Name = "Beginner Friendly",
-                    Description = "Aquascapes designed for newcomers to the hobby, featuring easy-to-care-for plants and simple maintenance.",
-                    CreatedBy = "System",
-                    CreatedAt = DateTime.UtcNow
-                },
-                new ContestCategory
-                {
-                    Name = "Innovative Design",
-                    Description = "Creative and experimental aquascapes pushing the boundaries of traditional aquascaping concepts.",
+                    Description = "Wild, overgrown plant arrangements",
                     CreatedBy = "System",
                     CreatedAt = DateTime.UtcNow
                 }
