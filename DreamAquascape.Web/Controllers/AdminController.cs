@@ -215,191 +215,191 @@ namespace DreamAquascape.Web.Controllers
             return RedirectToAction("Users");
         }
 
-        #region Contest Categories Management
+        //#region Contest Categories Management
 
-        [HttpGet]
-        public async Task<IActionResult> Categories(int page = 1, int pageSize = 10)
-        {
-            try
-            {
-                var (categories, totalCount) = await _contestCategoryService.GetAllCategoriesAsync(page, pageSize);
+        //[HttpGet]
+        //public async Task<IActionResult> Categories(int page = 1, int pageSize = 10)
+        //{
+        //    try
+        //    {
+        //        var (categories, totalCount) = await _contestCategoryService.GetAllCategoriesAsync(page, pageSize);
 
-                ViewBag.CurrentPage = page;
-                ViewBag.PageSize = pageSize;
-                ViewBag.TotalCount = totalCount;
-                ViewBag.TotalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+        //        ViewBag.CurrentPage = page;
+        //        ViewBag.PageSize = pageSize;
+        //        ViewBag.TotalCount = totalCount;
+        //        ViewBag.TotalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
-                return View(categories);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error loading contest categories");
-                TempData["Error"] = "Failed to load contest categories.";
-                return RedirectToAction("Index");
-            }
-        }
+        //        return View(categories);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error loading contest categories");
+        //        TempData["Error"] = "Failed to load contest categories.";
+        //        return RedirectToAction("Index");
+        //    }
+        //}
 
-        [HttpGet]
-        public IActionResult CreateCategory()
-        {
-            return View(new ContestCategoryCreateViewModel());
-        }
+        //[HttpGet]
+        //public IActionResult CreateCategory()
+        //{
+        //    return View(new ContestCategoryCreateViewModel());
+        //}
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateCategory(ContestCategoryCreateViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> CreateCategory(ContestCategoryCreateViewModel model)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return View(model);
+        //    }
 
-            try
-            {
-                // Check for uniqueness
-                if (!await _contestCategoryService.IsCategoryNameUniqueAsync(model.Name))
-                {
-                    ModelState.AddModelError(nameof(model.Name), "A category with this name already exists.");
-                    return View(model);
-                }
+        //    try
+        //    {
+        //        // Check for uniqueness
+        //        if (!await _contestCategoryService.IsCategoryNameUniqueAsync(model.Name))
+        //        {
+        //            ModelState.AddModelError(nameof(model.Name), "A category with this name already exists.");
+        //            return View(model);
+        //        }
 
-                var categoryId = await _contestCategoryService.CreateCategoryAsync(model);
-                TempData["Success"] = $"Contest category '{model.Name}' created successfully.";
-                return RedirectToAction("Categories");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating contest category");
-                TempData["Error"] = "Failed to create contest category.";
-                return View(model);
-            }
-        }
+        //        var categoryId = await _contestCategoryService.CreateCategoryAsync(model);
+        //        TempData["Success"] = $"Contest category '{model.Name}' created successfully.";
+        //        return RedirectToAction("Categories");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error creating contest category");
+        //        TempData["Error"] = "Failed to create contest category.";
+        //        return View(model);
+        //    }
+        //}
 
-        [HttpGet]
-        public async Task<IActionResult> EditCategory(int id)
-        {
-            try
-            {
-                var category = await _contestCategoryService.GetCategoryByIdAsync(id);
-                if (category == null)
-                {
-                    TempData["Error"] = "Contest category not found.";
-                    return RedirectToAction("Categories");
-                }
+        //[HttpGet]
+        //public async Task<IActionResult> EditCategory(int id)
+        //{
+        //    try
+        //    {
+        //        var category = await _contestCategoryService.GetCategoryByIdAsync(id);
+        //        if (category == null)
+        //        {
+        //            TempData["Error"] = "Contest category not found.";
+        //            return RedirectToAction("Categories");
+        //        }
 
-                var model = new ContestCategoryEditViewModel
-                {
-                    Id = category.Id,
-                    Name = category.Name,
-                    Description = category.Description
-                };
+        //        var model = new ContestCategoryEditViewModel
+        //        {
+        //            Id = category.Id,
+        //            Name = category.Name,
+        //            Description = category.Description
+        //        };
 
-                return View(model);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error loading contest category for editing");
-                TempData["Error"] = "Failed to load contest category.";
-                return RedirectToAction("Categories");
-            }
-        }
+        //        return View(model);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error loading contest category for editing");
+        //        TempData["Error"] = "Failed to load contest category.";
+        //        return RedirectToAction("Categories");
+        //    }
+        //}
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditCategory(int id, ContestCategoryEditViewModel model)
-        {
-            if (id != model.Id)
-            {
-                TempData["Error"] = "Invalid category ID.";
-                return RedirectToAction("Categories");
-            }
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> EditCategory(int id, ContestCategoryEditViewModel model)
+        //{
+        //    if (id != model.Id)
+        //    {
+        //        TempData["Error"] = "Invalid category ID.";
+        //        return RedirectToAction("Categories");
+        //    }
 
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return View(model);
+        //    }
 
-            try
-            {
-                // Check for uniqueness (excluding current category)
-                if (!await _contestCategoryService.IsCategoryNameUniqueAsync(model.Name, id))
-                {
-                    ModelState.AddModelError(nameof(model.Name), "A category with this name already exists.");
-                    return View(model);
-                }
+        //    try
+        //    {
+        //        // Check for uniqueness (excluding current category)
+        //        if (!await _contestCategoryService.IsCategoryNameUniqueAsync(model.Name, id))
+        //        {
+        //            ModelState.AddModelError(nameof(model.Name), "A category with this name already exists.");
+        //            return View(model);
+        //        }
 
-                var success = await _contestCategoryService.UpdateCategoryAsync(id, model);
-                if (success)
-                {
-                    TempData["Success"] = $"Contest category '{model.Name}' updated successfully.";
-                    return RedirectToAction("Categories");
-                }
-                else
-                {
-                    TempData["Error"] = "Contest category not found.";
-                    return RedirectToAction("Categories");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating contest category");
-                TempData["Error"] = "Failed to update contest category.";
-                return View(model);
-            }
-        }
+        //        var success = await _contestCategoryService.UpdateCategoryAsync(id, model);
+        //        if (success)
+        //        {
+        //            TempData["Success"] = $"Contest category '{model.Name}' updated successfully.";
+        //            return RedirectToAction("Categories");
+        //        }
+        //        else
+        //        {
+        //            TempData["Error"] = "Contest category not found.";
+        //            return RedirectToAction("Categories");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error updating contest category");
+        //        TempData["Error"] = "Failed to update contest category.";
+        //        return View(model);
+        //    }
+        //}
 
-        [HttpGet]
-        public async Task<IActionResult> CategoryDetails(int id)
-        {
-            try
-            {
-                var category = await _contestCategoryService.GetCategoryWithContestsAsync(id);
-                if (category == null)
-                {
-                    TempData["Error"] = "Contest category not found.";
-                    return RedirectToAction("Categories");
-                }
+        //[HttpGet]
+        //public async Task<IActionResult> CategoryDetails(int id)
+        //{
+        //    try
+        //    {
+        //        var category = await _contestCategoryService.GetCategoryWithContestsAsync(id);
+        //        if (category == null)
+        //        {
+        //            TempData["Error"] = "Contest category not found.";
+        //            return RedirectToAction("Categories");
+        //        }
 
-                return View(category);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error loading contest category details");
-                TempData["Error"] = "Failed to load contest category details.";
-                return RedirectToAction("Categories");
-            }
-        }
+        //        return View(category);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error loading contest category details");
+        //        TempData["Error"] = "Failed to load contest category details.";
+        //        return RedirectToAction("Categories");
+        //    }
+        //}
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteCategory(int id)
-        {
-            try
-            {
-                var success = await _contestCategoryService.DeleteCategoryAsync(id);
-                if (success)
-                {
-                    TempData["Success"] = "Contest category deleted successfully.";
-                }
-                else
-                {
-                    TempData["Error"] = "Contest category not found.";
-                }
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning(ex, "Cannot delete contest category with associated contests");
-                TempData["Error"] = ex.Message;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deleting contest category");
-                TempData["Error"] = "Failed to delete contest category.";
-            }
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> DeleteCategory(int id)
+        //{
+        //    try
+        //    {
+        //        var success = await _contestCategoryService.DeleteCategoryAsync(id);
+        //        if (success)
+        //        {
+        //            TempData["Success"] = "Contest category deleted successfully.";
+        //        }
+        //        else
+        //        {
+        //            TempData["Error"] = "Contest category not found.";
+        //        }
+        //    }
+        //    catch (InvalidOperationException ex)
+        //    {
+        //        _logger.LogWarning(ex, "Cannot delete contest category with associated contests");
+        //        TempData["Error"] = ex.Message;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error deleting contest category");
+        //        TempData["Error"] = "Failed to delete contest category.";
+        //    }
 
-            return RedirectToAction("Categories");
-        }
+        //    return RedirectToAction("Categories");
+        //}
 
-        #endregion
+        //#endregion
     }
 }
