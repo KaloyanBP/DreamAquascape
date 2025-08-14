@@ -29,5 +29,20 @@
 
             return app;
         }
+
+        public static IApplicationBuilder SeedDefaultCategories(this IApplicationBuilder app)
+        {
+            using IServiceScope scope = app.ApplicationServices.CreateScope();
+            IServiceProvider serviceProvider = scope.ServiceProvider;
+
+            ICategoriesSeeder identitySeeder = serviceProvider
+                .GetRequiredService<ICategoriesSeeder>();
+            identitySeeder
+                .SeedCategoriesAsync()
+                .GetAwaiter()
+                .GetResult();
+
+            return app;
+        }
     }
 }

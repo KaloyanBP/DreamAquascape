@@ -68,8 +68,9 @@ namespace DreamAquascape.Web
             builder.Services.AddHostedService<WinnerDeterminationService>();
 
             builder.Services.AddTransient<IIdentitySeeder, IdentitySeeder>();
+			builder.Services.AddTransient<ICategoriesSeeder, CategoriesSeeder>();
 
-            var app = builder.Build();
+			var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -89,8 +90,9 @@ namespace DreamAquascape.Web
             app.UseRouting();
 
             app.SeedDefaultIdentity();
+            app.SeedDefaultCategories();
 
-            app.UseAuthorization();
+			app.UseAuthorization();
 
             app.MapControllerRoute(
                 name: "default",
