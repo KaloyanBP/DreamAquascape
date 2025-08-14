@@ -38,8 +38,6 @@
         // Computed properties for quick access
         public int TotalEntries => Entries?.Count ?? 0;
         public int TotalVotes => Entries?.SelectMany(e => e.Votes).Count() ?? 0;
-        public bool IsSubmissionOpen => DateTime.UtcNow >= SubmissionStartDate && DateTime.UtcNow <= SubmissionEndDate;
-        public bool IsVotingOpen => DateTime.UtcNow >= VotingStartDate && DateTime.UtcNow <= VotingEndDate;
 
         // Helpers
         public ContestWinner? PrimaryWinner => Winners.FirstOrDefault(w => w.Position == 1);

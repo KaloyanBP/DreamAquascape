@@ -5,6 +5,7 @@
         public const string AdminRoleName = "Admin";
         public const string UserRoleName = "User";
         public const string AnonymousUser = "Anonymous user";
+        public const string ContestWinner = "Contest Winner";
         public const string UnknownUserName = "Unknown";
         public const string ApplicationName = "Dream Aquascape";
         public const string ApplicationVersion = "1.0.0";

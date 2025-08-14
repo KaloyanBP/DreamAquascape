@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DreamAquascape.Data.Models\DreamAquascape.Data.Models.csproj" />
+  </ItemGroup>
+
 </Project>

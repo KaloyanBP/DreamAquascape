@@ -134,7 +134,7 @@ namespace DreamAquascape.Services.Core
                         .Select(v => new VoteDetailViewModel
                         {
                             Id = v.Id,
-                            VoterName = v.User.UserName ?? "Anonymous",
+                            VoterName = v.User.UserName ?? ApplicationConstants.AnonymousUser,
                             VotedAt = v.CreatedAt,
                             IsAnonymous = true // Keep voter names private by default
                         }).ToList(),

@@ -3,6 +3,7 @@ using DreamAquascape.Data.Repository.Interfaces;
 using DreamAquascape.GCommon;
 using DreamAquascape.GCommon.Infrastructure;
 using DreamAquascape.Services.Core.Interfaces;
+using DreamAquascape.Services.Common.Extensions;
 using DreamAquascape.Web.ViewModels.Contest;
 using DreamAquascape.Web.ViewModels.ContestEntry;
 using DreamAquascape.Web.ViewModels.UserDashboard;
@@ -145,7 +146,7 @@ namespace DreamAquascape.Services.Core
 
                 // Participant Information
                 ParticipantId = entry.ParticipantId,
-                ParticipantName = entry.Participant.UserName ?? "Unknown",
+                ParticipantName = entry.Participant.UserName ?? ApplicationConstants.AnonymousUser,
 
                 // Contest Information
                 ContestId = contest.Id,
@@ -177,7 +178,7 @@ namespace DreamAquascape.Services.Core
                     .Select(v => new VoteDetailViewModel
                     {
                         Id = v.Id,
-                        VoterName = v.User.UserName ?? "Anonymous",
+                        VoterName = v.User.UserName ?? ApplicationConstants.AnonymousUser,
                         VotedAt = v.CreatedAt,
                         IsAnonymous = true // Keep voter names private by default
                     }).ToList(),
@@ -213,7 +214,7 @@ namespace DreamAquascape.Services.Core
             }
 
             // Check if voting has ended
-            if (contest.IsVotingOpen)
+            if (contest.IsVotingOpen(_dateTimeProvider))
             {
                 _logger.LogInformation("Contest {ContestId} voting is still open, cannot determine winner yet", contestId);
                 return null;
@@ -246,7 +247,7 @@ namespace DreamAquascape.Services.Core
                 ContestEntryId = winnerEntry.Id,
                 Position = 1,
                 WonAt = _dateTimeProvider.UtcNow,
-                AwardTitle = "Contest Winner",
+                AwardTitle = ApplicationConstants.ContestWinner,
                 Notes = $"Won with {winnerEntry.Votes.Count} votes"
             };
 
