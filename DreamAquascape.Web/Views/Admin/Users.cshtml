@@ -74,14 +74,6 @@
                                     </td>
                                     <td>
                                         @user.Email
-                                        @if (user.EmailConfirmed)
-                                        {
-                                            <i class="bi bi-check-circle-fill text-success ms-1" title="Email confirmed"></i>
-                                        }
-                                        else
-                                        {
-                                            <i class="bi bi-exclamation-circle-fill text-warning ms-1" title="Email not confirmed"></i>
-                                        }
                                     </td>
                                     <td>
                                         <small class="text-muted">
@@ -100,11 +92,6 @@
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
-                                            <button type="button" class="btn btn-outline-info"
-                                                    title="View Details"
-                                                    onclick="viewUserDetails('@user.Id')">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
                                             <form method="post" asp-action="ToggleUserStatus" class="d-inline">
                                                 <input type="hidden" name="userId" value="@user.Id" />
                                                 @Html.AntiForgeryToken()
@@ -172,11 +159,6 @@
 
 @section Scripts {
     <script>
-        function viewUserDetails(userId) {
-            // Placeholder for user details modal or page
-            alert('User details for ID: ' + userId + '\n\nThis feature will be implemented in a future update.');
-        }
-
         // Simple search functionality
         document.getElementById('userSearch').addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();

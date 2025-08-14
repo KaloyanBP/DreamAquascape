@@ -4,6 +4,7 @@ using DreamAquascape.GCommon.Infrastructure;
 using DreamAquascape.Web.ViewModels.Contest;
 using DreamAquascape.Data.Models;
 using Microsoft.Extensions.Logging;
+using DreamAquascape.Services.Common.Extensions;
 
 namespace DreamAquascape.Services.Core
 {
@@ -208,6 +209,7 @@ namespace DreamAquascape.Services.Core
                     VotingEndDate = contest.VotingEndDate,
                     ResultDate = contest.ResultDate,
                     IsActive = contest.IsActive,
+                    InProgress = contest.InProgress(_dateTimeProvider),
                     CurrentImageUrl = contest.ImageFileUrl,
 
                     // Prize information
