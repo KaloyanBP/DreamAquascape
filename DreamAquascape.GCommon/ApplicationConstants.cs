@@ -19,6 +19,6 @@
         public const string ContestImageUploadPath = "contests";
         public const string PrizeImageUploadPath = "prizes";
         public const long MaxFileSize = 5 * 1024 * 1024;
-        public static readonly string[] AllowedImageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+        public static readonly string[] AllowedImageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".jfif"];
     }
 }

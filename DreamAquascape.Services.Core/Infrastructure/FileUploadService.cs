@@ -72,7 +72,9 @@ namespace DreamAquascape.Services.Core.Infrastructure
 
             if (errors.Any())
             {
-                _logger.LogWarning($"Some files failed to upload: {string.Join(", ", errors)}");
+                string errorMessage = string.Join(", ", errors);
+                _logger.LogWarning($"Some files failed to upload: {errorMessage}");
+                throw new InvalidOperationException(errorMessage);
             }
 
             return imageUrls;

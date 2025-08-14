@@ -58,30 +58,28 @@ namespace DreamAquascape.Web.Controllers
         [HttpPost("Create")]
         public async Task<IActionResult> Create(int contestId, string title, string description, IFormFile[] imageFiles)
         {
-            // Handle file upload
-            var imageUrls = await _fileUploadService.SaveMultipleEntryImagesAsync(imageFiles);
+            var model = new CreateContestEntryViewModel
+            {
+                ContestId = contestId,
+                Title = title,
+                Description = description
+            };
 
             try
             {
+                // Handle file upload
+                var imageUrls = await _fileUploadService.SaveMultipleEntryImagesAsync(imageFiles);
+                model.EntryImages = imageUrls;
+
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 var userName = User.FindFirst(ClaimTypes.Name)?.Value;
 
-                var model = new CreateContestEntryViewModel
-                {
-                    ContestId = contestId,
-                    Title = title,
-                    Description = description,
-                    EntryImages = imageUrls
-                };
                 var entry = await _contestEntryService.SubmitEntryAsync(model, userId, userName);
             }
-            catch (InvalidOperationException ex)
+            catch (Exception ex)
             {
-                return BadRequest(ex.Message);
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(ex.Message);
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(model);
             }
 
             return RedirectToAction("Index", "Contests");
