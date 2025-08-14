@@ -12,18 +12,10 @@
             <h2 class="mb-0">Edit Contest: @Model.Title</h2>
         </div>
         <div class="card-body">
-            @if (Model.IsEnded)
+            @if (Model.IsEnded || @Model.InProgress)
             {
                 <div class="alert alert-danger" role="alert">
-                    <i class="bi bi-exclamation-octagon-fill"></i> Contest has ended. You can no longer edit details.
-                </div>
-            }
-            else if (@Model.InProgress)
-            {
-                <div class="col-md-12">
-                    <div class="alert alert-warning" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill"></i> Contest is currently in progress. Some fields are disabled.
-                    </div>
+                    <i class="bi bi-exclamation-octagon-fill"></i> Contest has inProgress or ended. You can no longer edit details.
                 </div>
             }
             <form asp-action="Edit" asp-route-id="@Model.Id" enctype="multipart/form-data" method="post" novalidate>
@@ -128,17 +120,17 @@
                 <div class="row mb-3">
                     <div class="col-md-4">
                         <label asp-for="SubmissionStartDate" class="form-label fw-bold">Submission Start Date <span class="text-danger">*</span></label>
-                        <input asp-for="SubmissionStartDate" class="form-control" type="datetime-local" required disabled="@(Model.InProgress ? true : (bool?)null)" />
+                        <input asp-for="SubmissionStartDate" class="form-control" type="datetime-local" required />
                         <span asp-validation-for="SubmissionStartDate" class="text-danger"></span>
                     </div>
                     <div class="col-md-4">
                         <label asp-for="VotingStartDate" class="form-label fw-bold">Voting Start Date <span class="text-danger">*</span></label>
-                        <input asp-for="VotingStartDate" class="form-control" type="datetime-local" required disabled="@(Model.InProgress ? true : (bool?)null)" />
+                        <input asp-for="VotingStartDate" class="form-control" type="datetime-local" required />
                         <span asp-validation-for="VotingStartDate" class="text-danger"></span>
                     </div>
                     <div class="col-md-4">
                         <label asp-for="VotingEndDate" class="form-label fw-bold">Voting End Date <span class="text-danger">*</span></label>
-                        <input asp-for="VotingEndDate" class="form-control" type="datetime-local" required disabled="@(Model.InProgress ? true : (bool?)null)" />
+                        <input asp-for="VotingEndDate" class="form-control" type="datetime-local" required />
                         <span asp-validation-for="VotingEndDate" class="text-danger"></span>
                     </div>
                 </div>
@@ -218,7 +210,7 @@
                         <a class="btn btn-secondary btn-lg w-100" href="@Url.Action("Contests", "Admin")">Cancel</a>
                     </div>
                     <div class="col">
-                        <button type="submit" class="btn btn-warning btn-lg w-100" @(Model.IsEnded ? "disabled" : "")>Update Contest</button>
+                        <button type="submit" class="btn btn-warning btn-lg w-100" @(Model.IsEnded || Model.InProgress ? "disabled" : "")>Update Contest</button>
                     </div>
                 </div>
             </form>
