@@ -201,6 +201,113 @@ namespace DreamAquascape.Services.Core.Tests
             MockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Never);
         }
 
+        [Test]
+        public async Task GetCategoryByIdAsyncShouldReturnCategoryWhenExists()
+        {
+            // Arrange
+            var categoryId = 1;
+            var category = CreateTestCategory(categoryId, "Test Category", "Test Description");
+
+            _mockContestCategoryRepository
+                .Setup(x => x.GetByIdAsync(categoryId))
+                .ReturnsAsync(category);
+
+            // Act
+            var result = await _contestCategoryService.GetCategoryByIdAsync(categoryId);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Id, Is.EqualTo(categoryId));
+            Assert.That(result.Name, Is.EqualTo("Test Category"));
+            Assert.That(result.Description, Is.EqualTo("Test Description"));
+
+            _mockContestCategoryRepository.Verify(x => x.GetByIdAsync(categoryId), Times.Once);
+        }
+
+        [Test]
+        public async Task GetCategoryByIdAsyncShouldReturnNullWhenNotExists()
+        {
+            // Arrange
+            var categoryId = 999;
+
+            _mockContestCategoryRepository
+                .Setup(x => x.GetByIdAsync(categoryId))
+                .ReturnsAsync((ContestCategory?)null);
+
+            // Act
+            var result = await _contestCategoryService.GetCategoryByIdAsync(categoryId);
+
+            // Assert
+            Assert.That(result, Is.Null);
+
+            _mockContestCategoryRepository.Verify(x => x.GetByIdAsync(categoryId), Times.Once);
+        }
+
+        [Test]
+        public async Task UpdateCategoryAsyncShouldReturnFalseWhenCategoryNotFound()
+        {
+            // Arrange
+            var categoryId = 999;
+            var updateModel = new ContestCategoryEditViewModel
+            {
+                Name = "Updated Category",
+                Description = "Updated description"
+            };
+
+            _mockContestCategoryRepository
+                .Setup(x => x.GetByIdAsync(categoryId))
+                .ReturnsAsync((ContestCategory?)null);
+
+            // Act
+            var result = await _contestCategoryService.UpdateCategoryAsync(categoryId, updateModel);
+
+            // Assert
+            Assert.That(result, Is.False);
+
+            _mockContestCategoryRepository.Verify(x => x.GetByIdAsync(categoryId), Times.Once);
+            _mockContestCategoryRepository.Verify(x => x.IsCategoryNameUniqueAsync(It.IsAny<string>(), It.IsAny<int?>()), Times.Never);
+            _mockContestCategoryRepository.Verify(x => x.Update(It.IsAny<ContestCategory>()), Times.Never);
+            MockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Never);
+        }
+
+        [Test]
+        public async Task IsCategoryNameUniqueAsyncShouldReturnTrueWhenNameIsUnique()
+        {
+            // Arrange
+            var categoryName = "Unique Category Name";
+
+            _mockContestCategoryRepository
+                .Setup(x => x.IsCategoryNameUniqueAsync(categoryName, null))
+                .ReturnsAsync(true);
+
+            // Act
+            var result = await _contestCategoryService.IsCategoryNameUniqueAsync(categoryName);
+
+            // Assert
+            Assert.That(result, Is.True);
+
+            _mockContestCategoryRepository.Verify(x => x.IsCategoryNameUniqueAsync(categoryName, null), Times.Once);
+        }
+
+        [Test]
+        public async Task IsCategoryNameUniqueAsyncShouldReturnFalseWhenNameExists()
+        {
+            // Arrange
+            var categoryName = "Existing Category Name";
+
+            _mockContestCategoryRepository
+                .Setup(x => x.IsCategoryNameUniqueAsync(categoryName, null))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _contestCategoryService.IsCategoryNameUniqueAsync(categoryName);
+
+            // Assert
+            Assert.That(result, Is.False);
+
+            _mockContestCategoryRepository.Verify(x => x.IsCategoryNameUniqueAsync(categoryName, null), Times.Once);
+        }
+
         #region Helper Methods
 
         private ContestCategory CreateTestCategory(int id, string name, string? description = null, bool isDeleted = false)
