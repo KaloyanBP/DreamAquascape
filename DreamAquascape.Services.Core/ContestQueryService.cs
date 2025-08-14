@@ -188,7 +188,7 @@ namespace DreamAquascape.Services.Core
 
             try
             {
-                var contest = await _unitOfWork.ContestRepository.GetByIdAsync(contestId);
+                var contest = await _unitOfWork.ContestRepository.GetContestForEditAsync(contestId);
 
                 if (contest == null || contest.IsDeleted)
                 {
@@ -196,7 +196,7 @@ namespace DreamAquascape.Services.Core
                     return null;
                 }
 
-                var prize = contest.Prizes.FirstOrDefault();
+                var prize = contest.PrimaryPrize;
 
                 var result = new EditContestViewModel
                 {
