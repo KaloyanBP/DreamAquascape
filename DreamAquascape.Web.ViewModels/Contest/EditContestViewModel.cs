@@ -50,6 +50,9 @@ namespace DreamAquascape.Web.ViewModels.Contest
         [Display(Name = "Is In Progress")]
         public bool InProgress { get; set; }
 
+        [Display(Name = "Is Ended")]
+        public bool IsEnded { get; set; }
+
         // Prize information
         [Required(ErrorMessage = "Prize Name is required.")]
         [Display(Name = "Prize Name")]

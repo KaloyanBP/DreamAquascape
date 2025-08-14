@@ -12,19 +12,27 @@
             <h2 class="mb-0">Edit Contest: @Model.Title</h2>
         </div>
         <div class="card-body">
-            @if (@Model.InProgress)
+            @if (Model.IsEnded)
             {
-            <div class="col-md-12">
-                <div class="alert alert-warning" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill"></i> Contest is currently in progress. Some fields are disabled.
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-octagon-fill"></i> Contest has ended. You can no longer edit details.
                 </div>
-            </div>
+            }
+            else if (@Model.InProgress)
+            {
+                <div class="col-md-12">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Contest is currently in progress. Some fields are disabled.
+                    </div>
+                </div>
             }
             <form asp-action="Edit" asp-route-id="@Model.Id" enctype="multipart/form-data" method="post" novalidate>
                 @* Display validation summary *@
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                 @Html.HiddenFor(m => m.Id)
+                @Html.HiddenFor(m => m.InProgress)
+                @Html.HiddenFor(m => m.IsEnded)
 
                 <!-- Current Contest Image -->
                 @if (!string.IsNullOrEmpty(Model.CurrentImageUrl))
@@ -210,7 +218,7 @@
                         <a class="btn btn-secondary btn-lg w-100" href="@Url.Action("Contests", "Admin")">Cancel</a>
                     </div>
                     <div class="col">
-                        <button type="submit" class="btn btn-warning btn-lg w-100">Update Contest</button>
+                        <button type="submit" class="btn btn-warning btn-lg w-100" @(Model.IsEnded ? "disabled" : "")>Update Contest</button>
                     </div>
                 </div>
             </form>

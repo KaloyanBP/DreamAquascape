@@ -46,5 +46,20 @@ namespace DreamAquascape.Services.Common.Extensions
             return contest.IsVotingOpen(dateTimeProvider) 
                 || contest.IsSubmissionOpen(dateTimeProvider);
         }
+
+        /// <summary>
+        /// Checks if the contest has ended based on the current date and time.
+        /// </summary>
+        /// <param name="contest"></param>
+        /// <param name="dateTimeProvider"></param>
+        /// <returns></returns>
+        public static bool IsEnded(this Contest contest, IDateTimeProvider dateTimeProvider)
+        {
+            var now = dateTimeProvider.UtcNow;
+            return !contest.IsDeleted 
+                && contest.IsActive 
+                && now > contest.VotingEndDate 
+                && (contest.ResultDate == null || now > contest.ResultDate);
+        }
     }
 }

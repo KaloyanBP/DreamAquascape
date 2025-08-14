@@ -210,6 +210,7 @@ namespace DreamAquascape.Services.Core
                     ResultDate = contest.ResultDate,
                     IsActive = contest.IsActive,
                     InProgress = contest.InProgress(_dateTimeProvider),
+                    IsEnded = contest.IsEnded(_dateTimeProvider),
                     CurrentImageUrl = contest.ImageFileUrl,
 
                     // Prize information

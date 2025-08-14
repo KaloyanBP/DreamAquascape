@@ -265,11 +265,18 @@ namespace DreamAquascape.Web.Controllers
         {
             try
             {
-                if (id != model.Id)
+                if (model == null || id != model.Id)
                 {
                     TempData["ErrorMessage"] = "Invalid contest ID.";
                     return RedirectToAction("Index", "Admin");
                 }
+
+                if (model.IsEnded)
+                {
+                    TempData["ErrorMessage"] = "Cannot edit an ended contest.";
+                    return RedirectToAction("Details", new { id });
+                }
+
 
                 if (!ModelState.IsValid)
                 {
@@ -278,7 +285,8 @@ namespace DreamAquascape.Web.Controllers
                     return View(model);
                 }
 
-                if (!ValidateContestDates(model.SubmissionStartDate, model.VotingStartDate, model.VotingEndDate))
+                // When model.InPorgress is true, ensure dates are not modified
+                if (!model.InProgress && !ValidateContestDates(model.SubmissionStartDate, model.VotingStartDate, model.VotingEndDate))
                 {
                     ViewBag.AvailableCategories = await _contestCategoryService.GetActiveCategoriesForSelectionAsync();
                     return View(model);
