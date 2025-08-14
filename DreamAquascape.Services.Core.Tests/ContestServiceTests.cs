@@ -37,14 +37,10 @@ namespace DreamAquascape.Services.Core.Tests
                 SubmissionEndDate = TestDateTime.AddDays(10),
                 VotingStartDate = TestDateTime.AddDays(11),
                 VotingEndDate = TestDateTime.AddDays(20),
-                ResultDate = TestDateTime.AddDays(21)
-            };
-
-            var prizeDto = new PrizeViewModel
-            {
-                Name = "Test Prize",
-                Description = "Test Prize Description",
-                ImageUrl = "prize-image.jpg"
+                ResultDate = TestDateTime.AddDays(21),
+                PrizeName = "Test Prize",
+                PrizeDescription = "Test Prize Description",
+                PrizeImageUrl = "prize-image.jpg"
             };
 
             var expectedContest = CreateTestContest(1, true);
@@ -58,7 +54,7 @@ namespace DreamAquascape.Services.Core.Tests
                 .ReturnsAsync(1);
 
             // Act
-            var result = await _service.SubmitContestAsync(dto, prizeDto, "test-user");
+            var result = await _service.SubmitContestAsync(dto, "test-user");
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -81,18 +77,14 @@ namespace DreamAquascape.Services.Core.Tests
                 SubmissionEndDate = TestDateTime.AddDays(5),   // End before start
                 VotingStartDate = TestDateTime.AddDays(11),
                 VotingEndDate = TestDateTime.AddDays(20),
-                ResultDate = TestDateTime.AddDays(21)
-            };
-
-            var prizeDto = new PrizeViewModel
-            {
-                Name = "Test Prize",
-                Description = "Test Prize Description"
+                ResultDate = TestDateTime.AddDays(21),
+                PrizeName = "Test Prize",
+                PrizeDescription = "Test Prize Description"
             };
 
             // Act & Assert
             Assert.ThrowsAsync<InvalidOperationException>(
-                async () => await _service.SubmitContestAsync(dto, prizeDto, "test-user"));
+                async () => await _service.SubmitContestAsync(dto, "test-user"));
         }
 
         [Test]
@@ -311,18 +303,14 @@ namespace DreamAquascape.Services.Core.Tests
                 SubmissionEndDate = TestDateTime.AddDays(5),    // End before start
                 VotingStartDate = TestDateTime.AddDays(11),
                 VotingEndDate = TestDateTime.AddDays(20),
-                ResultDate = TestDateTime.AddDays(21)
-            };
-
-            var prizeDto = new PrizeViewModel
-            {
-                Name = "Test Prize",
-                Description = "Test Prize Description"
+                ResultDate = TestDateTime.AddDays(21),
+                PrizeName = "Test Prize",
+                PrizeDescription = "Test Prize Description"
             };
 
             // Act & Assert
             var ex = Assert.ThrowsAsync<InvalidOperationException>(
-                async () => await _service.SubmitContestAsync(dto, prizeDto, "test-user"));
+                async () => await _service.SubmitContestAsync(dto, "test-user"));
 
             Assert.That(ex.Message, Contains.Substring("Submission start date must be before end date"));
         }
@@ -339,18 +327,14 @@ namespace DreamAquascape.Services.Core.Tests
                 SubmissionEndDate = TestDateTime.AddDays(10),
                 VotingStartDate = TestDateTime.AddDays(1), // Voting starts at same time as submission
                 VotingEndDate = TestDateTime.AddDays(8),   // This violates the rule: VotingStartDate <= SubmissionStartDate
-                ResultDate = TestDateTime.AddDays(21)
-            };
-
-            var prizeDto = new PrizeViewModel
-            {
-                Name = "Test Prize",
-                Description = "Test Prize Description"
+                ResultDate = TestDateTime.AddDays(21),
+                PrizeName = "Test Prize",
+                PrizeDescription = "Test Prize Description"
             };
 
             // Act & Assert
             var ex = Assert.ThrowsAsync<InvalidOperationException>(
-                async () => await _service.SubmitContestAsync(dto, prizeDto, "test-user"));
+                async () => await _service.SubmitContestAsync(dto, "test-user"));
 
             Assert.That(ex.Message, Contains.Substring("Start voting date must be after submission start date"));
         }

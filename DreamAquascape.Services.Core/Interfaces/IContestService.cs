@@ -5,7 +5,7 @@ namespace DreamAquascape.Services.Core.Interfaces
 {
     public interface IContestService
     {
-        Task<Contest> SubmitContestAsync(CreateContestViewModel dto, PrizeViewModel prizeDto, string createdBy);
+        Task<Contest> SubmitContestAsync(CreateContestViewModel dto, string createdBy);
 
         // Winner determination
         Task<ContestWinner?> DetermineAndSetWinnerAsync(int contestId);

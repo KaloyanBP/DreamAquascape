@@ -14,15 +14,12 @@ namespace DreamAquascape.Web.ViewModels.Contest
         [Display(Name = "Description")]
         public string Description { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Image is required.")]
-
         public string ImageFileUrl { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Submission start date is required.")]
         public DateTime SubmissionStartDate { get; set; }
 
-        [Required(ErrorMessage = "Submission end date is required.")]
-        public DateTime SubmissionEndDate { get; set; }
+        public DateTime SubmissionEndDate { get; set; } // Equal to VotingStartDate by default
 
         [Required(ErrorMessage = "Voting start date is required.")]
         public DateTime VotingStartDate { get; set; }
@@ -35,5 +32,19 @@ namespace DreamAquascape.Web.ViewModels.Contest
         // Category selection
         [Display(Name = "Categories")]
         public List<int> SelectedCategoryIds { get; set; } = new List<int>();
+
+        // Prize information
+        [Required(ErrorMessage = "Prize Name is required.")]
+        [Display(Name = "Prize Name")]
+        public string? PrizeName { get; set; }
+
+        [Display(Name = "Prize Description")]
+        public string? PrizeDescription { get; set; }
+
+        [Display(Name = "Prize Monetary Value")]
+        public decimal? PrizeMonetaryValue { get; set; }
+
+        [Display(Name = "Prize Image Url")]
+        public string? PrizeImageUrl { get; set; }
     }
 }

@@ -27,7 +27,7 @@ namespace DreamAquascape.Services.Core
             _dateTimeProvider = dateTimeProvider ?? throw new ArgumentNullException(nameof(dateTimeProvider));
         }
 
-        public async Task<Contest> SubmitContestAsync(CreateContestViewModel dto, PrizeViewModel prizeDto, string createdBy)
+        public async Task<Contest> SubmitContestAsync(CreateContestViewModel dto, string createdBy)
         {
             try
             {
@@ -40,9 +40,9 @@ namespace DreamAquascape.Services.Core
                 // Create the primary prize
                 var primaryPrize = new Prize
                 {
-                    Name = prizeDto.Name,
-                    Description = prizeDto.Description,
-                    ImageUrl = prizeDto.ImageUrl,
+                    Name = dto.PrizeName,
+                    Description = dto.PrizeDescription,
+                    ImageUrl = dto.PrizeImageUrl,
                     Place = 1
                 };
 

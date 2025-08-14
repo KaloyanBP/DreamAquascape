@@ -121,7 +121,6 @@ namespace DreamAquascape.Web.Controllers
                 var viewModel = new CreateContestViewModel
                 {
                     SubmissionStartDate = startDate,
-                    SubmissionEndDate = votingDate,
                     VotingStartDate = votingDate,
                     VotingEndDate = endDate,
                 };
@@ -139,32 +138,22 @@ namespace DreamAquascape.Web.Controllers
 
         [HttpPost("Create")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create(
-            string title,
-            string description,
-            IFormFile imageFile,
-            DateTime submissionStartDate,
-            DateTime votingStartDate,
-            DateTime votingEndDate,
-            string prizeName,
-            string prizeDescription,
-            decimal? prizeMonetaryValue,
-            IFormFile? prizeImageFile,
-            List<int> selectedCategoryIds)
+        public async Task<IActionResult> Create(CreateContestViewModel model, IFormFile imageFile, IFormFile? prizeImageFile)
         {
             try
             {
-                if (!ValidateContestDates(submissionStartDate, votingStartDate, votingEndDate))
+                model.SubmissionEndDate = model.VotingStartDate; // Ensure submission end date is equal to voting start date
+                if (!ValidateContestDates(model.SubmissionStartDate, model.VotingStartDate, model.VotingEndDate))
                 {
                     ViewBag.AvailableCategories = await _contestCategoryService.GetActiveCategoriesForSelectionAsync();
-                    return View();
+                    return View(model);
                 }
 
                 var imageUrl = await _fileUploadService.SaveContestImageAsync(imageFile);
                 if (string.IsNullOrEmpty(imageUrl))
                 {
                     ModelState.AddModelError("ImageFile", "Failed to upload contest image.");
-                    return View();
+                    return View(model);
                 }
 
                 string prizeImageUrl = null;
@@ -174,45 +163,30 @@ namespace DreamAquascape.Web.Controllers
                     if (string.IsNullOrEmpty(prizeImageUrl))
                     {
                         ModelState.AddModelError("PrizeImage", "Failed to upload prize image.");
-                        return View();
+                        return View(model);
                     }
                 }
 
-                var prizeViewModel = new PrizeViewModel
-                {
-                    Name = prizeName,
-                    Description = prizeDescription,
-                    ImageUrl = prizeImageUrl
-                };
+                model.ImageFileUrl = imageUrl;
+                model.PrizeImageUrl = prizeImageUrl;
 
-                var viewModel = new CreateContestViewModel
-                {
-                    Title = title,
-                    Description = description,
-                    ImageFileUrl = imageUrl,
-                    SubmissionStartDate = submissionStartDate,
-                    SubmissionEndDate = votingStartDate,
-                    VotingStartDate = votingStartDate,
-                    VotingEndDate = votingEndDate,
-                    SelectedCategoryIds = selectedCategoryIds ?? new List<int>()
-                };
 
                 if (!ModelState.IsValid)
                 {
                     // Reload dropdown data
                     ViewBag.AvailableCategories = await _contestCategoryService.GetActiveCategoriesForSelectionAsync();
-                    return View(viewModel);
+                    return View(model);
                 }
 
                 // Get current user ID
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userId = GetUserId();
                 if (string.IsNullOrEmpty(userId))
                 {
                     return RedirectToAction("Login", "Account");
                 }
 
                 // Submit the contest
-                var createdContest = await _contestService.SubmitContestAsync(viewModel, prizeViewModel, userId);
+                var createdContest = await _contestService.SubmitContestAsync(model, userId);
 
                 TempData["SuccessMessage"] = $"Contest '{createdContest.Title}' has been created successfully!";
 
@@ -221,12 +195,12 @@ namespace DreamAquascape.Web.Controllers
             catch (InvalidOperationException ex)
             {
                 ModelState.AddModelError("", ex.Message);
-                return View();
+                return View(model);
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", "An error occurred while creating the contest. Please try again.");
-                return View();
+                return View(model);
             }
         }
 
