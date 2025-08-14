@@ -133,12 +133,13 @@ namespace DreamAquascape.Services.Core.Tests
                 ContestId = contestId,
                 Name = "Test Prize",
                 Description = "Test Prize Description",
-                MonetaryValue = 100.50m
+                MonetaryValue = 100.50m,
+                Place = 1
             };
             contest.Prizes = new List<Prize> { prize };
 
             MockContestRepository
-                .Setup(x => x.GetByIdAsync(contestId))
+                .Setup(x => x.GetContestForEditAsync(contestId))
                 .ReturnsAsync(contest);
 
             // Act
