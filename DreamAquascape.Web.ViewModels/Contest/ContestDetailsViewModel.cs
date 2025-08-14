@@ -1,4 +1,6 @@
-﻿namespace DreamAquascape.Web.ViewModels.Contest
+﻿using DreamAquascape.Web.ViewModels.AdminDashboard.ContestCategory;
+
+namespace DreamAquascape.Web.ViewModels.Contest
 {
     public class ContestDetailsViewModel
     {
@@ -9,6 +11,9 @@
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public bool IsActive { get; set; }
+
+        // Categories for this contest
+        public List<ContestCategorySelectViewModel> Categories { get; set; } = new();
 
         // Prize info
         public PrizeViewModel? Prize { get; set; }

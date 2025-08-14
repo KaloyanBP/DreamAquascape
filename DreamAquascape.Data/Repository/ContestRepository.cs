@@ -23,6 +23,8 @@ namespace DreamAquascape.Data.Repository
                     .ThenInclude(e => e.EntryImages)
                 .Include(c => c.Prizes)
                 .Include(c => c.Winners)
+                .Include(c => c.Categories)
+                    .ThenInclude(cc => cc.Category)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Id == contestId && !c.IsDeleted);
             return contest;

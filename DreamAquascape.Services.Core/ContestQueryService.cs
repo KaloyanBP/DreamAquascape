@@ -1,10 +1,11 @@
-﻿using DreamAquascape.Data.Repository.Interfaces;
-using DreamAquascape.Services.Core.Interfaces;
+﻿using DreamAquascape.Data.Models;
+using DreamAquascape.Data.Repository.Interfaces;
 using DreamAquascape.GCommon.Infrastructure;
-using DreamAquascape.Web.ViewModels.Contest;
-using DreamAquascape.Data.Models;
-using Microsoft.Extensions.Logging;
 using DreamAquascape.Services.Common.Extensions;
+using DreamAquascape.Services.Core.Interfaces;
+using DreamAquascape.Web.ViewModels.AdminDashboard.ContestCategory;
+using DreamAquascape.Web.ViewModels.Contest;
+using Microsoft.Extensions.Logging;
 
 namespace DreamAquascape.Services.Core
 {
@@ -162,6 +163,17 @@ namespace DreamAquascape.Services.Core
 
                     // Winner information (if contest is finished)
                     WinnerEntryId = contest.Winners.FirstOrDefault()?.ContestEntryId,
+
+                    // Categories for this contest
+                    Categories = contest.Categories
+                        .Where(cc => !cc.Category.IsDeleted)
+                        .Select(cc => new ContestCategorySelectViewModel
+                        {
+                            Id = cc.Category.Id,
+                            Name = cc.Category.Name,
+                            Description = cc.Category.Description
+                        })
+                        .ToList(),
 
                     // Entries with full details
                     Entries = contest.Entries
